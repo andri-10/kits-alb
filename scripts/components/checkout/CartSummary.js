@@ -101,7 +101,11 @@ export class CartSummary extends ComponentV2 {
           <div class="delivery-date">
             <span class="js-delivery-date"></span>
           </div>
+
+          <div class="cart-item-details-and-delivery">
+          <div class="cart-item-details-grid">
           <img class="product-image" src="${cartItem.image}" alt="${cartItem.name}">
+          <div class="product-details-and-quantity">
           <div class="product-details">
             <div class="product-name">${cartItem.name}</div>
             <div class="product-price">${MoneyUtils.formatMoney(cartItem.priceCents * cartItem.quantity)}</div>
@@ -116,15 +120,17 @@ export class CartSummary extends ComponentV2 {
               min="1" 
               data-cart-item-id="${cartItem.productId}" />
             <span class="js-delete-quantity-link link-primary">Delete</span>
+            <div class="quantity-message quantity-message-${cartItem.productId}"></div>
           </div>
-
+          </div>
+</div>
           <div class="delivery-options">
             <div class="delivery-options-title">Choose a delivery option:</div>
             ${this.#createDeliveryOptionsHTML(cartItem)}
           </div>
-
+</div>
           <div class="update-container">
-            <button class="js-update-button">Update</button>
+            <button class="js-update-button">Update sizes</button>
 
             <!-- Hidden dropdown with size selectors -->
             <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
@@ -161,7 +167,7 @@ export class CartSummary extends ComponentV2 {
       quantityInput.setAttribute('readonly', 'readonly'); // Prevent the user from modifying the quantity
     } else {
       dropdown.style.display = 'none'; // Hide the size selector
-      updateButton.textContent = 'Update'; // Reset button text
+      updateButton.textContent = 'Update sizes'; // Reset button text
   
       // Revert the readonly state when the size selector is hidden (allow editing again)
       quantityInput.removeAttribute('readonly'); // Re-enable editing of the quantity
@@ -207,126 +213,159 @@ export class CartSummary extends ComponentV2 {
   
   // Populates the size selector dropdown with fetched kit products
   #populateSizeSelector(dropdown, kitProducts) {
-    let productQuantity = 1; // Move this inside the method to ensure it is initialized on each render
     const sizeSelectorContainer = dropdown.querySelector('.size-options');
     sizeSelectorContainer.innerHTML = ''; // Clear existing options
-  
+
     if (kitProducts.length === 0) {
       sizeSelectorContainer.innerHTML = `<div>No products available for this kit</div>`;
       return;
     }
     
     kitProducts.forEach(product => {
-      console.log(product); // Check what product data looks like
-      const selectedSize = product.cart_size; // This should be the selected size for each product
-      console.log(`Selected size for ${product.product_name}:`, selectedSize);  // Debugging output
+      console.log(product); // Debugging: Log product details
+
+      const selectedSize = product.cart_size; // Fetch the selected size for this product
+      console.log(`Selected size for ${product.product_name}:`, selectedSize); // Debugging output
   
       // Generate size options for each product
-      const sizeOptionsHTML = this.#createSizeSelectorForProduct(product, selectedSize, productQuantity);
+      const sizeOptionsHTML = this.#createSizeSelectorForProduct(product, selectedSize, product.cart_id);
   
       // Create the product container and append size options
       const productElement = document.createElement('div');
       productElement.classList.add('kit-product');
       productElement.innerHTML = `
+        
+        
+        <div class="kit-product-image-container">
+        <img class="product-image" style="margin:0" src="${product.product_image}" alt="${product.product_name}"/>
+        <div class="product-details">
         <div class="product-name">${product.product_name || 'Unnamed Product'}</div>
+        <div class="product-price">${MoneyUtils.formatMoney(product.product_pricecents)}</div>
+        <div class="size-options-radio">${sizeOptionsHTML}</div>
+        <div class="button-and-message">
+        <button class="js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
+        <span class="update-size-message update-size-message-${product.cart_id}"></span>
+        </div>
+        </div>
         
-        <img class="product-image" src="${product.product_image}"/>
+
+        </div>
         
-        <div class="size-options">${sizeOptionsHTML}</div>
-        <button class="js-save-size-button">Save Size</button>
       `;
       sizeSelectorContainer.appendChild(productElement);
   
       // Add event listener for the save button
       productElement.querySelector('.js-save-size-button').addEventListener('click', (event) => {
-        this.#handleSizeUpdate(event, product.product_id);
+        this.#handleSizeUpdate(event, product.cart_id);
       });
-      
-      productQuantity++;  // Increment for the next product
     });
   }
   
   // Create the size options for each individual product in the kit
-  #createSizeSelectorForProduct(product, selectedSize, productQuantity) {
+  #createSizeSelectorForProduct(product, selectedSize, cartId) {
     let sizeOptionsHTML = '';
-    
+
     // Available sizes (can be fetched from the backend or set beforehand)
     const availableSizes = ['S', 'M', 'L', 'XL', '2XL']; // Default sizes
-    
+
     // Loop through all available sizes and create the radio buttons
     availableSizes.forEach(size => {
-        // Check if the current size matches the selectedSize for this product
         const isChecked = selectedSize === size;
-  
+
         sizeOptionsHTML += `
             <label>
                 <input 
                     type="radio" 
-                    name="size-${product.product_id}-${productQuantity}"
+                    name="size-${cartId}"
                     value="${size}" 
                     ${isChecked ? 'checked' : ''} />
                 ${size}
             </label><br>
         `;
     });
-  
+
     return sizeOptionsHTML;
-  }
+}
 
 
   /**
-   * Handle size update and send the new size to the backend.
-   * @param {Event} event - The event triggered when the "Update" button is clicked.
-   */
-  #handleSizeUpdate(event, productId) {
+ * Handle size update when a size is selected.
+ * @param {Event} event - The click event.
+ * @param {String} cartId - The cart ID.
+ */
+  async #handleSizeUpdate(event, cartId) {
     const productElement = event.target.closest('.kit-product');
     const selectedSize = productElement.querySelector('input[type="radio"]:checked')?.value;
-
+  
     if (!selectedSize) {
-        console.error('No size selected');
-        return;
-    }
-
-    console.log(`Saving size ${selectedSize} for product ${productId}`);
-
-    // Send the updated size to the backend
-    this.#updateProductSizeInCart(productId, selectedSize);
-  }
-
-  /**
-   * Update the size for the product in the cart via the backend.
-   * @param {String} productId - The product ID.
-   * @param {String} size - The selected size.
-   */
-  async #updateProductSizeInCart(productId, size) {
-    const userId = await this.#getUserId();
-
-    if (!userId) {
-      console.error("User is not logged in");
-      window.location.href = 'login.php';  // Redirect to login if no user ID
+      console.error('No size selected');
+      alert('Please select a size before saving.');
       return;
     }
-
-    const response = await fetch('/kits-alb/backend/update-cart-size.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        product_id: productId,
-        size: size,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.success) {
-      console.log(`Size updated for product ${productId} to ${size}`);
-      // Update the UI with the new size (optional)
-    } else {
-      console.error('Failed to update size:', data.message);
+  
+    console.log(`Saving size ${selectedSize} for cart ID ${cartId}`); // Debugging: Log cart ID and size
+  
+    try {
+      const response = await fetch('/kits-alb/backend/update-cart-size.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart_id: cartId, // Ensure cartId is passed here
+          size: selectedSize, // Pass selectedSize correctly
+        }),
+      });
+  
+      const result = await response.json();
+  
+      // Get the message container for this cart item
+      const messageContainer = productElement.querySelector(`.update-size-message-${cartId}`);
+  
+      if (result.success) {
+        console.log(`Size updated successfully for cart ID ${cartId}`);
+        
+        // Show success message in green
+        messageContainer.textContent = 'Size updated successfully.';
+        messageContainer.style.color = 'green'; // Optional: Green text for success
+      } else {
+        console.error('Failed to update size:', result.message);
+        
+        // Show error message in red
+        messageContainer.textContent = `Size is already selected!`;
+        messageContainer.style.color = 'red'; // Optional: Red text for error
+      }
+  
+      // Show the message by adding the 'is-visible' class
+      messageContainer.classList.add('is-visible');
+  
+      setTimeout(() => {
+        console.log('Fading out message'); // Debugging: Check if timeout runs
+        messageContainer.classList.remove('is-visible');
+      }, 2000);
+  
+    } catch (error) {
+      console.error('Error updating size:', error);
+  
+      // Show error message in red
+      const messageContainer = productElement.querySelector(`.update-size-message-${cartId}`);
+      messageContainer.textContent = 'An error occurred while updating size.';
+      messageContainer.style.color = 'red'; // Optional: Red text for error
+  
+      // Show the message by adding the 'is-visible' class
+      messageContainer.classList.add('is-visible');
+  
+      // After 2 seconds, fade out the message by removing the 'is-visible' class
+      setTimeout(() => {
+        messageContainer.classList.remove('is-visible');
+      }, 2000);
     }
   }
+  
+
+ 
+
+
   #createDeliveryOptionsHTML(cartItem) {
     let deliverOptionsHTML = '';
 
@@ -593,7 +632,9 @@ async #sendAddToCartRequest(productId) {
   const currentQuantityLabel = cartItemContainer.querySelector('.js-quantity-label');
   const currentQuantity = parseInt(currentQuantityLabel.textContent, 10);
 
+  // If quantity hasn't changed, show a message and exit
   if (newQuantity === currentQuantity) {
+    this.#showQuantityMessage(cartItemId, 'Quantity is the same', 'red');
     console.log("No change in quantity. Exiting...");
     return; // If the quantity hasn't changed, exit
   }
@@ -604,9 +645,11 @@ async #sendAddToCartRequest(productId) {
   if (quantityDifference > 0) {
     console.log(`Adding ${quantityDifference} item(s) to cart for product ID: ${cartItemId}`);
     this.#addProductsToCart(cartItemId, quantityDifference);
+    this.#showQuantityMessage(cartItemId, `Added ${quantityDifference} item(s)`, 'black');
   } else if (quantityDifference < 0) {
     console.log(`Removing ${Math.abs(quantityDifference)} item(s) from cart for product ID: ${cartItemId}`);
     this.#removeSomeProductsFromCart(cartItemId, Math.abs(quantityDifference));
+    this.#showQuantityMessage(cartItemId, `Removed ${Math.abs(quantityDifference)} item(s)`, 'black');
   }
 
   // Update the current quantity label with the new quantity
@@ -615,6 +658,24 @@ async #sendAddToCartRequest(productId) {
   // Optionally, log or handle further UI updates here
   console.log(`Updated quantity for product ID: ${cartItemId} to ${newQuantity}`);
 }
+
+#showQuantityMessage(cartItemId, message, color) {
+  const cartItemContainer = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
+  const messageContainer = cartItemContainer.querySelector(`.quantity-message-${cartItemId}`);
+
+  // Set the message and apply color
+  messageContainer.textContent = message;
+  messageContainer.style.color = color;
+
+  // Make the message visible by adding a class
+  messageContainer.classList.add('is-visible');
+
+  // After 2 seconds, fade out the message by removing the 'is-visible' class
+  setTimeout(() => {
+    messageContainer.classList.remove('is-visible');
+  }, 2000);
+}
+
 
 
 

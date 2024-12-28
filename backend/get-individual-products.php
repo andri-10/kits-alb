@@ -43,9 +43,11 @@ if ($product_id === null) {
 // Prepare the SQL query to get the individual products for this user and product_id
 $sql = "
     SELECT 
+        c.id AS cart_id,         -- Add cart ID to the selection
         p.id AS product_id,
         p.image AS product_image,
         p.name AS product_name,
+        p.priceCents AS product_pricecents,
         c.size AS cart_size
     FROM products p
     JOIN shopping_cart c ON p.id = c.product_id
