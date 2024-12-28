@@ -23,6 +23,9 @@ export class KitsHeader extends ComponentV2 {
     // Wait for the total quantity to be fetched
     const totalCartQuantity = await cart.calculateTotalQuantity();
     
+
+    const userId = await this.#getUserId();
+
     // Render the header HTML
     this.element.innerHTML = `
       <section class="left-section">
@@ -40,7 +43,7 @@ export class KitsHeader extends ComponentV2 {
       </section>
   
       <section class="right-section">
-        <a class="orders-link header-link" href="orders.php">
+        <a class="orders-link header-link" href="${userId ? 'orders.php' : 'login.php'}">
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
@@ -53,6 +56,7 @@ export class KitsHeader extends ComponentV2 {
           <div class="cart-text">Cart</div>
         </a>
       </section>
+
   
       <section class="right-section-mobile">
         <img class="js-hamburger-menu-toggle hamburger-menu-toggle" src="images/icons/hamburger-menu.png" data-testid="hamburger-menu-toggle">
@@ -142,4 +146,19 @@ export class KitsHeader extends ComponentV2 {
 
     WindowUtils.setHref(`./?search=${searchText}`);
   }
+
+  async #getUserId() {
+    const basePath = window.location.origin + '/kits-alb/backend/';
+    try {
+      const response = await fetch(`${basePath}/get-user-id.php`);
+      const data = await response.json();
+      console.log('User ID response:', data);  // Debugging line
+      return data.userId || null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  }
+  
+
 }
