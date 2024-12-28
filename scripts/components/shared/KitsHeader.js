@@ -41,9 +41,8 @@ export class KitsHeader extends ComponentV2 {
   
       <section class="right-section">
         <a class="orders-link header-link" href="orders.php">
-        <a class="orders-link header-link" href="login.php">
-        <span class="returns-text">Returns</span>
-        <span class="orders-text">& Orders</span>
+          <span class="returns-text">Returns</span>
+          <span class="orders-text">& Orders</span>
         </a>
 
         <a class="cart-link header-link" href="checkout.php">
