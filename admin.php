@@ -22,23 +22,22 @@
         <section class="stats-section">
             <div class="stat-card">
                 <h3>Total Earnings</h3>
-                <p>$2,5 million</p> <!-- shifer fikse se sdita si me e ba per me llogarit fitimet -->
+                <p>$2,5 million</p> <!-- Placeholder for total earnings -->
             </div>
             <div class="stat-card">
                 <h3>Total Sales</h3>
-                <p>120k</p> <!-- same si ajo nalt -->
+                <p>120k</p> <!-- Placeholder for total sales -->
             </div>
         </section>
 
         <section class="management-section">
             <div class="products-management">
                 <h2>Manage Products</h2>
-                <button onclick="openForm('create-product')">Create New Product</button>
-                <button onclick="openForm('update-product')">Update Product</button>
-                <button onclick="openForm('delete-product')">Delete Product</button>
+                <button id="create-product-btn">Create New Product</button>
+                <button id="update-product-btn">Update Product</button>
+                <button id="delete-product-btn">Delete Product</button>
                 <div id="product-list">
                     <h3>Product List</h3>
-
                 </div>
             </div>
         </section>
@@ -46,21 +45,12 @@
         <section class="users-management">
             <h2>Manage Users</h2>
             <div id="user-actions">
-                <button onclick="openForm('promote-user')">Promote to Admin</button>
-                <button onclick="openForm('demote-user')">Demote Admin</button>
-                <button onclick="openForm('delete-user')">Delete User</button>
+                <button id="promote-user-btn">Promote to Admin</button>
+                <button id="demote-user-btn">Demote Admin</button>
+                <button id="delete-user-btn">Delete User</button>
             </div>
             <div id="user-list">
                 <h3>All Users</h3>
-
-            </div>
-        </section>
-
-        <section class="profile-section">
-            <h2>Manage Profiles</h2>
-            <div id="profile-actions">
-                <button onclick="openForm('view-profile')">View User Profile</button>
-                <button onclick="openForm('change-picture')">Change Profile Picture</button>
             </div>
         </section>
     </main>
@@ -71,5 +61,8 @@
             <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
         </p>
     </footer>
+
+    <!-- Link to the JavaScript file -->
+    <script type="module" src="scripts/pages/admin.js"></script>
 </body>
 </html>

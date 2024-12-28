@@ -70,6 +70,9 @@ main {
 
   display: flex;
   flex-direction: column;
+  opacity: 0;
+  transform: translateY(20px); 
+  animation: fadeIn 1s ease-out forwards;
 }
 
 .products-grid .product-image-container {
@@ -187,7 +190,14 @@ main {
   
 }
 
-/* .view-product-button :hover {
-  background-color: green; 
-  border-color: green; 
-} */
+
+@keyframes fadeIn {
+  0% {
+      opacity: 0;
+      transform: translateY(20px); 
+  }
+  100% {
+      opacity: 1;
+      transform: translateY(0); /* Element reaches its original position */
+  }
+}
