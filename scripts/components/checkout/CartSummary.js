@@ -44,13 +44,17 @@ export class CartSummary extends ComponentV2 {
   }
 
   #attachEventListeners() {
-    // Loop through the `this.events` map and attach listeners
     Object.keys(this.events).forEach((selector) => {
       const [eventType, targetSelector] = selector.split(' ');
-
+  
+      // Log to check if the event listeners are being attached
+      console.log(`Attaching listener for ${eventType} on ${targetSelector}`);
+  
       this.element.addEventListener(eventType, (event) => {
-        // Check if the event target matches the specified selector
-        if (event.target.matches(targetSelector)) {
+        const targetElem = event.target.closest(targetSelector); // Use closest for delegation
+  
+        if (targetElem) {
+          console.log('Event triggered on:', targetElem);
           this.events[selector](event);
         }
       });
@@ -91,60 +95,64 @@ export class CartSummary extends ComponentV2 {
       this.#renderEmptyCartMessage();
       return;
     }
-
+  
     let cartSummaryHTML = '';
     cartData.forEach(cartItem => {
-      
-
+      // Generate unique delivery options HTML for each cart item
+      const deliveryOptionsHTML = this.#createDeliveryOptionsHTML(cartItem);
+  
       cartSummaryHTML += `
         <div class="js-cart-item cart-item-container" data-cart-item-id="${cartItem.productId}">
-          <div class="delivery-date">
-            <span class="js-delivery-date"></span>
+          <div class="delivery-date delivery-date-${cartItem.productId}">
+            <span class="js-delivery-date js-delivery-date-${cartItem.productId}"></span>
           </div>
-
+  
           <div class="cart-item-details-and-delivery">
-          <div class="cart-item-details-grid">
-          <img class="product-image" src="${cartItem.image}" alt="${cartItem.name}">
-          <div class="product-details-and-quantity">
-          <div class="product-details">
-            <div class="product-name">${cartItem.name}</div>
-            <div class="product-price">${MoneyUtils.formatMoney(cartItem.priceCents * cartItem.quantity)}</div>
+            <div class="cart-item-details-grid">
+              <img class="product-image" src="${cartItem.image}" alt="${cartItem.name}">
+              <div class="product-details-and-quantity">
+                <div class="product-details">
+                  <div class="product-name">${cartItem.name}</div>
+                  <div class="product-price">${MoneyUtils.formatMoney(cartItem.priceCents * cartItem.quantity)}</div>
+                </div>
+                <div class="quantity-container js-quantity-container">
+                  Quantity: 
+                  <span class="js-quantity-label">${cartItem.quantity}</span>
+                  <input 
+                    class="js-quantity-input js-new-quantity-input" 
+                    type="number" 
+                    value="${cartItem.quantity}" 
+                    min="1" 
+                    data-cart-item-id="${cartItem.productId}" />
+                  <span class="js-delete-quantity-link link-primary">Delete</span>
+                  <div class="quantity-message quantity-message-${cartItem.productId}"></div>
+                </div>
+              </div>
+            </div>
+  
+            <div class="delivery-options">
+              <div class="delivery-options-title">Choose a delivery option:</div>
+              ${deliveryOptionsHTML}
+            </div>
           </div>
-          <div class="quantity-container js-quantity-container">
-            Quantity: 
-            <span class="js-quantity-label">${cartItem.quantity}</span>
-            <input 
-              class="js-quantity-input js-new-quantity-input" 
-              type="number" 
-              value="${cartItem.quantity}" 
-              min="1" 
-              data-cart-item-id="${cartItem.productId}" />
-            <span class="js-delete-quantity-link link-primary">Delete</span>
-            <div class="quantity-message quantity-message-${cartItem.productId}"></div>
-          </div>
-          </div>
-</div>
-          <div class="delivery-options">
-            <div class="delivery-options-title">Choose a delivery option:</div>
-            ${this.#createDeliveryOptionsHTML(cartItem)}
-          </div>
-</div>
+  
           <div class="update-container">
             <button class="js-update-button">Update sizes</button>
-
+  
             <!-- Hidden dropdown with size selectors -->
             <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
-  <div class="size-options">
-    <!-- The fetched product options will be injected here -->
-  </div>
-  
-</div>
+              <div class="size-options">
+                <!-- The fetched product options will be injected here -->
+              </div>
+            </div>
           </div>
-        </div>`;
+        </div>
+      `;
     });
-
+  
     this.element.innerHTML = cartSummaryHTML;
   }
+  
 
 
   #toggleSizeSelector(event) {
@@ -366,108 +374,95 @@ export class CartSummary extends ComponentV2 {
  
 
 
-  #createDeliveryOptionsHTML(cartItem) {
-    let deliverOptionsHTML = '';
+#createDeliveryOptionsHTML(cartItem) {
+  let deliverOptionsHTML = '';
+  
+  // Loop through all delivery options for this cart item
+  deliveryOptions.all.forEach(deliveryOption => {
+    const id = deliveryOption.id;
+    const costCents = deliveryOption.costCents;
+    const deliveryDate = deliveryOption.calculateDeliveryDate();
 
-    deliveryOptions.all.forEach(deliveryOption => {
-      const id = deliveryOption.id;
-      const costCents = deliveryOption.costCents;
-      const deliveryDate = deliveryOption.calculateDeliveryDate();
+    const shippingText = costCents === 0
+      ? 'FREE Shipping'
+      : `${MoneyUtils.formatMoney(costCents)} - Shipping`;
 
-      const shippingText = costCents === 0
-        ? 'FREE Shipping'
-        : `${MoneyUtils.formatMoney(costCents)} - Shipping`;
-
-      deliverOptionsHTML += `
-        <div class="js-delivery-option delivery-option"
-          data-delivery-option-id="${id}" data-testid="delivery-option-${id}">
-          <input
-            class="js-delivery-option-input delivery-option-input"
-            ${cartItem.deliveryOptionId === id ? 'checked' : ''}
-            name="${cartItem.id}-delivery-option"
-            type="radio"
-            data-testid="delivery-option-input"
-          >
-          <div>
-            <div class="delivery-option-date">
-              ${DateUtils.formatDateWeekday(deliveryDate)}
-            </div>
-            <div class="delivery-option-price">
-              ${shippingText}
-            </div>
+    deliverOptionsHTML += `
+      <div class="js-delivery-option delivery-option"
+        data-delivery-option-id="${id}" data-testid="delivery-option-${id}">
+        
+        <input
+          class="js-delivery-option-input delivery-option-input"
+          name="delivery-option-${cartItem.productId}" 
+          type="radio"
+          data-testid="delivery-option-input"
+          ${deliveryOption.isDefault ? 'checked' : ''} 
+        >
+        
+        <div>
+          <div class="delivery-option-date">
+            ${DateUtils.formatDateWeekday(deliveryDate)}
+          </div>
+          <div class="delivery-option-price">
+            ${shippingText}
           </div>
         </div>
-      `;
-    });
+      </div>
+    `;
+  });
 
-    return deliverOptionsHTML;
-  }
+  return deliverOptionsHTML;
+}
 
   /**
    * Handles delivery option selection.
    * @param {Event} event - The click event on the delivery option.
    */
   #selectDeliveryOption(event) {
-    // Ensure the clicked target is a radio input with the correct class
-    let radioInput = event.target;
+    const deliveryOptionElem = event.target.closest('.js-delivery-option');
   
-    // If the target is a label, find the corresponding radio input
-    if (radioInput.tagName === 'LABEL') {
-      radioInput = radioInput.querySelector('input.js-delivery-option-input');
-    }
-  
-    // If it's still not a valid radio input, exit the method
-    if (!radioInput || !radioInput.classList.contains('js-delivery-option-input')) {
-      console.log('Clicked target is not a delivery option radio input.');
-      return;
-    }
-  
-    // Find the closest cart item element
-    const cartItemElem = radioInput.closest('.js-cart-item');
-    if (!cartItemElem) {
-      console.log('No cart item found for the selected delivery option.');
-      return;
-    }
-  
-    const cartItemId = cartItemElem.getAttribute('data-cart-item-id');
-    console.log('Cart Item ID:', cartItemId);
-  
-    // Find the closest delivery option element (which contains the radio input)
-    const deliveryOptionElem = radioInput.closest('.js-delivery-option');
+    // If deliveryOptionElem is null, it means the click did not happen on a .js-delivery-option
     if (!deliveryOptionElem) {
-      console.log('No delivery option found for the selected radio input.');
+      console.error('Clicked element is not a .js-delivery-option');
       return;
     }
   
+    // Get the delivery option ID from the clicked element
     const deliveryOptionId = deliveryOptionElem.getAttribute('data-delivery-option-id');
-    console.log('Selected Delivery Option ID:', deliveryOptionId);
   
-    // Find the corresponding delivery option from the deliveryOptions list
-    const deliveryOption = deliveryOptions.findById(deliveryOptionId);
-    if (!deliveryOption) {
-      console.error("Delivery option not found!");
+    console.log('Selected delivery option ID:', deliveryOptionId); // Debugging log
+    
+    if (!deliveryOptionId) {
+      console.error('Delivery option ID is not valid or missing');
       return;
     }
   
-    // Calculate the new delivery date
-    const newDeliveryDate = deliveryOption.calculateDeliveryDate();
-    console.log('Raw Calculated Delivery Date:', newDeliveryDate);
+    // Log all delivery options to check if IDs match
+    console.log('Available Delivery Options:', deliveryOptions.all);
   
-    // Format the delivery date
-    const formattedDeliveryDate = DateUtils.formatDateWeekday(newDeliveryDate);
-    console.log('Formatted Delivery Date:', formattedDeliveryDate);
+    // Find the selected delivery option using the string ID
+    const selectedDeliveryOption = deliveryOptions.all.find(option => option.id === deliveryOptionId);
   
-    // Update the delivery date in the UI for the cart item
+    if (!selectedDeliveryOption) {
+      console.error('Selected delivery option not found!');
+      return;
+    }
+  
+    // Calculate the new delivery date based on the selected delivery option
+    const newDeliveryDate = selectedDeliveryOption.calculateDeliveryDate();
+  
+    // Update the delivery date display for this cart item in the UI
+    const cartItemElem = deliveryOptionElem.closest('.js-cart-item');
     const deliveryDateElem = cartItemElem.querySelector('.js-delivery-date');
     if (deliveryDateElem) {
-      deliveryDateElem.textContent = `Delivery date: ${formattedDeliveryDate}`;
+      deliveryDateElem.textContent = `Delivery date: ${DateUtils.formatDateWeekday(newDeliveryDate)}`;
     } else {
-      console.log('Delivery date element not found in the cart item.');
+      console.error('Delivery date element not found!');
     }
-  
-    // Optionally, update the header or global delivery information
-    this.#updateHeaderWithDeliveryOption(deliveryOption);
   }
+  
+  
+  
   
   
 
