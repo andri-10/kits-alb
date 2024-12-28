@@ -40,21 +40,13 @@ export class KitsHeader extends ComponentV2 {
       </section>
   
       <section class="right-section">
-
-      <?php if ($isLoggedIn): ?>
-            <a class="orders-link header-link" href="orders.php">
-          <?php else: ?>
-            <a class="orders-link header-link" href="login.php">
-          <?php endif; ?>
-          <span class="returns-text">Returns</span>
-          <span class="orders-text">& Orders</span>
+        <a class="orders-link header-link" href="orders.php">
+        <a class="orders-link header-link" href="login.php">
+        <span class="returns-text">Returns</span>
+        <span class="orders-text">& Orders</span>
         </a>
-        <?php if ($isLoggedIn): ?>
-            <a class="cart-link header-link" href="checkout.php">
-          <?php else: ?>
-            <a class="cart-link header-link" href="login.php">
-          <?php endif; ?>
-        
+
+        <a class="cart-link header-link" href="checkout.php">
           <img class="cart-icon" src="images/icons/cart-icon.png">
           <div class="js-cart-quantity cart-quantity" data-testid="cart-quantity">
             ${totalCartQuantity}
