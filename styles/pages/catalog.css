@@ -164,6 +164,7 @@ main {
 
   /* We will use JavaScript to change this opacity. */
   opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .products-grid .added-to-cart-message img {
