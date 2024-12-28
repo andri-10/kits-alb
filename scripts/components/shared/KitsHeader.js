@@ -40,15 +40,18 @@ export class KitsHeader extends ComponentV2 {
       </section>
   
       <section class="right-section">
-        <a class="orders-link header-link" href="orders.php">
+
+      <?php if ($isLoggedIn): ?>
+            <a class="orders-link header-link" href="orders.php">
+          <?php else: ?>
+            <a class="orders-link header-link" href="login.php">
+          <?php endif; ?>
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
         <?php if ($isLoggedIn): ?>
-            <!-- If logged in, show the logout button -->
             <a class="cart-link header-link" href="checkout.php">
           <?php else: ?>
-            <!-- If not logged in, show the login button -->
             <a class="cart-link header-link" href="login.php">
           <?php endif; ?>
         
