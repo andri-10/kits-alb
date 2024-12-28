@@ -45,8 +45,8 @@ if (!isset($data['product_id'])) {
 
 $product_id = $data['product_id'];
 
-// Set size to "M" for all quantity (hardcoded size)
-$size = 'M';
+// Set size to "L" for all quantity (hardcoded size)
+$size = 'L';
 
 // Prepare and execute query to check if the product exists in the database
 $query_check_product = "SELECT id FROM products WHERE id = ?";

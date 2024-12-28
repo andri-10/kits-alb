@@ -408,35 +408,68 @@ export class CartSummary extends ComponentV2 {
    * @param {Event} event - The click event on the delivery option.
    */
   #selectDeliveryOption(event) {
-    // Ensure the event is triggered by a delivery option
-    const radioInput = event.target;
-
-    // Check if this is the radio input (should be the event target)
+    // Ensure the clicked target is a radio input with the correct class
+    let radioInput = event.target;
+  
+    // If the target is a label, find the corresponding radio input
+    if (radioInput.tagName === 'LABEL') {
+      radioInput = radioInput.querySelector('input.js-delivery-option-input');
+    }
+  
+    // If it's still not a valid radio input, exit the method
     if (!radioInput || !radioInput.classList.contains('js-delivery-option-input')) {
       console.log('Clicked target is not a delivery option radio input.');
       return;
     }
-
-    // Find the parent cart item element
+  
+    // Find the closest cart item element
     const cartItemElem = radioInput.closest('.js-cart-item');
+    if (!cartItemElem) {
+      console.log('No cart item found for the selected delivery option.');
+      return;
+    }
+  
     const cartItemId = cartItemElem.getAttribute('data-cart-item-id');
-    const deliveryOptionId = radioInput.closest('.js-delivery-option').getAttribute('data-delivery-option-id');
-
+    console.log('Cart Item ID:', cartItemId);
+  
+    // Find the closest delivery option element (which contains the radio input)
+    const deliveryOptionElem = radioInput.closest('.js-delivery-option');
+    if (!deliveryOptionElem) {
+      console.log('No delivery option found for the selected radio input.');
+      return;
+    }
+  
+    const deliveryOptionId = deliveryOptionElem.getAttribute('data-delivery-option-id');
+    console.log('Selected Delivery Option ID:', deliveryOptionId);
+  
     // Find the corresponding delivery option from the deliveryOptions list
     const deliveryOption = deliveryOptions.findById(deliveryOptionId);
     if (!deliveryOption) {
       console.error("Delivery option not found!");
       return;
     }
-
-    // Calculate the delivery date using the deliveryOption's method
+  
+    // Calculate the new delivery date
     const newDeliveryDate = deliveryOption.calculateDeliveryDate();
+    console.log('Raw Calculated Delivery Date:', newDeliveryDate);
+  
+    // Format the delivery date
     const formattedDeliveryDate = DateUtils.formatDateWeekday(newDeliveryDate);
-
-    // Update the UI for the selected cart item (the delivery date)
-    cartItemElem.querySelector('.js-delivery-date').textContent = `Delivery date: ${formattedDeliveryDate}`;
+    console.log('Formatted Delivery Date:', formattedDeliveryDate);
+  
+    // Update the delivery date in the UI for the cart item
+    const deliveryDateElem = cartItemElem.querySelector('.js-delivery-date');
+    if (deliveryDateElem) {
+      deliveryDateElem.textContent = `Delivery date: ${formattedDeliveryDate}`;
+    } else {
+      console.log('Delivery date element not found in the cart item.');
+    }
+  
+    // Optionally, update the header or global delivery information
     this.#updateHeaderWithDeliveryOption(deliveryOption);
   }
+  
+  
 
 
 /**
