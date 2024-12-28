@@ -88,7 +88,7 @@ export class ProductsGrid extends ComponentV2 {
             </div>
 
             <button class="js-view-product-button view-product-button button-secondary" data-testid="view-product-button">
-              View Product
+              <a href="view-product.php?id=${product.id}">View Product</a>
             </button>
 
             <button class="js-add-to-cart-button add-to-cart-button button-primary" data-testid="add-to-cart-button">
