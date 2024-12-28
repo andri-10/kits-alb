@@ -107,6 +107,28 @@ body {
   .new_home_web .topHead {
     margin-bottom: 30px;
   }
+
+  .new_home_web .checkbox-container{
+    margin-bottom: 20px;
+  }
+
+  .new_home_web .links{
+    text-align: center;
+    margin-top: 20px;
+    color: #939393;
+  }
+
+  .new_home_web .links .link{
+    color: rgb(233, 144, 11);
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  .new_home_web .links .link:hover{
+    text-decoration: underline;
+  }
+
+
   
   @media (max-width: 768px) {
     .new_home_web .form-box {

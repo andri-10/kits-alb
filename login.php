@@ -138,12 +138,12 @@ $conn->close();
                                 <input type="checkbox" id="keep-signed-in" name="keep-signed-in">
                                 <label for="keep-signed-in">Keep me signed in</label>
                             </div>
-                            <input type="submit" name="submit" class="send">
+                            <input type="submit" name="submit" value = "Sign in" class="send">
                         </div>
                     </form>
                     <div class="links">
-                        <a href="passwordreset.php">Forgot your password?</a>
-                        <p>New to Kits.alb? <a href="registration.php">Create your Kits.alb account</a></p>
+                        <a class = "link" href="passwordreset.php">Forgot your password?</a>
+                        <p>New to Kits Alb? <a class = "link" href="registration.php">Create your account.</a></p>
                     </div>
                 </div>
             </div>

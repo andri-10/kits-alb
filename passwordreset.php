@@ -54,6 +54,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles/pages/passwordreset.css">
     <link rel="stylesheet" href="styles/shared/kits-header.css">
+    <link rel="stylesheet" href="styles/shared/kits-footer.css">
     <title>Reset Password</title>
 </head>
 <body>
@@ -66,7 +67,6 @@ $conn->close();
         </section>
     </header>
 
-    <main class="main-content">
         <div class="new_home_web">
             <div class="responsive-container-block big-container">
                 <div class="responsive-container-block textContainer">
@@ -101,13 +101,13 @@ $conn->close();
                                     </div>
                                 </div>
                                 <input type="submit" name="submit" class="send" id="w-c-s-bgc_p-1-dm-id">
+                                <p  class = "return"><a class = "link" href = "login.php">Return to Sign In</a></p>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
 
     <footer class="kits-footer">
       <p>&copy; 2024 Kits Alb. All rights reserved. <br> Follow us on 

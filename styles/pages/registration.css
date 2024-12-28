@@ -109,6 +109,22 @@ body {
   margin-bottom: 30px;
 }
 
+.new_home_web .return{
+  margin-top: 20px;
+  color: #939393;
+  text-align: center;
+}
+
+.new_home_web .link{
+  color: rgb(233, 144, 11);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.new_home_web .link:hover{
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .new_home_web .form-box {
       width: 100%;

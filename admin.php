@@ -22,7 +22,7 @@
         <section class="stats-section">
             <div class="stat-card">
                 <h3>Total Earnings</h3>
-                <p>$2,5 million </p> <!-- shifer fikse se sdita si me e ba per me llogarit fitimet -->
+                <p>$2,5 million</p> <!-- shifer fikse se sdita si me e ba per me llogarit fitimet -->
             </div>
             <div class="stat-card">
                 <h3>Total Sales</h3>

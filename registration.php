@@ -70,7 +70,6 @@ $conn->close();
         </section>
     </header>
 
-    <main class="main-content">
         <div class="new_home_web">
             <div class="responsive-container-block big-container">
                 <div class="responsive-container-block textContainer">
@@ -107,14 +106,15 @@ $conn->close();
                                         </div>
                                     </div>
                                 </div>
-                                <input type="submit" name="submit" class="send" id="w-c-s-bgc_p-1-dm-id">
+                                <input type="submit" name="submit" class="send" value = "Create Account" id="w-c-s-bgc_p-1-dm-id">
+
+                                <p  class = "return"> Already have an account? <a class = "link" href = "login.php">Return to Sign In</a></p>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
 
     <footer class="kits-footer">
       <p>&copy; 2024 Football Kits Albania. All rights reserved. <br> Follow us on 
