@@ -73,7 +73,7 @@ main {
   opacity: 0;
   transform: translateY(20px); 
   animation: fadeIn 1s ease-out forwards;
-  z-index: -1000;
+  z-index: 1;
 }
 
 .products-grid .product-image-container {
