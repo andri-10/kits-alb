@@ -1,6 +1,8 @@
 <?php
-@include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'session_timeout.php');
-session_start();
+  @include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'session_timeout.php');
+  session_start();
+
+
 ?>
 
 <!DOCTYPE html>

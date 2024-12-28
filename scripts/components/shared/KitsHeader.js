@@ -148,4 +148,19 @@ export class KitsHeader extends ComponentV2 {
 
     WindowUtils.setHref(`./?search=${searchText}`);
   }
+
+  async #getUserId() {
+    const basePath = window.location.origin + '/kits-alb/backend/';
+    try {
+      const response = await fetch(`${basePath}/get-user-id.php`);
+      const data = await response.json();
+      console.log('User ID response:', data);  // Debugging line
+      return data.userId || null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  }
+  
+
 }
