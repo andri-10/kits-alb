@@ -23,13 +23,15 @@ $isLoggedIn = isset($_SESSION['user_id']);
   <body>
     <div class="wrapper">
       <!-- Header -->
-      <div class="kits-header">
-        <div class="kits-header-left-section">
-          <a href="index.php" class="header-link">
-            <img class="kits-logo" src="images/kits-logo-white.png">
-            <img class="kits-mobile-logo" src="images/kits-mobile-logo-white.png">
-          </a>
-        </div>
+      <header class="kits-header">
+        <section class="left-section">
+            <a href="index.php" class="header-link">
+                <img class="kits-logo" src="images/kits-logo-white.png" alt="Kits Alb Logo">
+                <img class="kits-mobile-logo" src="images/kits-mobile-logo-white.png" alt="Kits Alb Mobile Logo">
+            </a>
+        </section>
+      
+
         <div class="kits-header-right-section">
           <?php if ($isLoggedIn): ?>
             <!-- If logged in, show the logout button -->
@@ -43,6 +45,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
           <a href="catalog.php" class="header-link">Catalog</a>
         </div>
       </div>
+    </header>
 
       <!-- Main Content -->
       <div class="content">

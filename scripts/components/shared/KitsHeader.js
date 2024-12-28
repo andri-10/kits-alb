@@ -40,12 +40,21 @@ export class KitsHeader extends ComponentV2 {
       </section>
   
       <section class="right-section">
-        <a class="orders-link header-link" href="orders.php">
+
+      <?php if ($isLoggedIn): ?>
+            <a class="orders-link header-link" href="orders.php">
+          <?php else: ?>
+            <a class="orders-link header-link" href="login.php">
+          <?php endif; ?>
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
-  
-        <a class="cart-link header-link" href="checkout.php">
+        <?php if ($isLoggedIn): ?>
+            <a class="cart-link header-link" href="checkout.php">
+          <?php else: ?>
+            <a class="cart-link header-link" href="login.php">
+          <?php endif; ?>
+        
           <img class="cart-icon" src="images/icons/cart-icon.png">
           <div class="js-cart-quantity cart-quantity" data-testid="cart-quantity">
             ${totalCartQuantity}
@@ -106,16 +115,19 @@ export class KitsHeader extends ComponentV2 {
     }
   }
 
-  #toggleDropdownMenu() {
+  #toggleDropdownMenu(event) {
     const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
     const isOpened = dropdownMenu.classList.contains('hamburger-menu-opened');
-
+  
     if (!isOpened) {
       dropdownMenu.classList.add('hamburger-menu-opened');
+      dropdownMenu.style.height = '88px'; // Set to the height of the menu
     } else {
       dropdownMenu.classList.remove('hamburger-menu-opened');
+      dropdownMenu.style.height = '0'; // Collapse the menu
     }
   }
+  
 
   #handleSearchBarInput(event) {
     if (event.key === 'Enter') {
