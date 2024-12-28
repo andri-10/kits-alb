@@ -50,9 +50,6 @@ $form_submitted = isset($_POST['submit']);
                   <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12">
                     <input class="input" name="Email" type="email" placeholder="Email Address" required>
                   </div>
-                  <div class="responsive-cell-block wk-desk-6 wk-ipadp-6 wk-tab-12 wk-mobile-12 lastPhone">
-                    <input class="input" name="PhoneNumber" placeholder="Phone Number">
-                  </div>
                 </div>
                 <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-12 wk-ipadp-12">
                   <textarea class="textinput" name="Message" placeholder="Message" required></textarea>

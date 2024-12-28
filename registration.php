@@ -108,7 +108,7 @@ $conn->close();
                                 </div>
                                 <input type="submit" name="submit" class="send" value = "Create Account" id="w-c-s-bgc_p-1-dm-id">
 
-                                <p  class = "return"> Already have an account? <a class = "link" href = "login.php">Return to Sign In</a></p>
+                                <p  class = "return"> Already have an account? <a class = "link" href = "login.php">Sign In</a></p>
                             </div>
                         </form>
                     </div>

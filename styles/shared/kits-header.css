@@ -133,17 +133,20 @@
   z-index: 100;
   text-align: center;
 
-  display: none;
+  max-height: 0; /* Start with collapsed state */
   overflow: hidden;
-
-  /* We will use JavaScript to change this height. */
-  height: 0px;
-  transition: height 0.25s;
+  transition: max-height 0.25s ease-out;
 }
+
+.kits-header .hamburger-menu-opened {
+  max-height: 88px; /* Expanded height */
+}
+
 
 @media (max-width: 575px) {
   .kits-header .hamburger-menu-dropdown {
     display: block;
+    max-height: 0;
   }
 
   .kits-header .hamburger-menu-opened {

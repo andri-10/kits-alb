@@ -1,21 +1,13 @@
 /* General Styling */
-html, body {
+body {
   margin: 0;
   padding: 0;
   font-family: 'Roboto', sans-serif;
   background-color: #f4f4f4;
-  height: 100%; /* Ensure the height covers the entire viewport */
-}
-
-body {
   display: flex;
   flex-direction: column;
-}
-
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Ensures the wrapper spans the entire height */
+  flex: 1;
+  min-height: 100vh;
 }
 
 .content {
@@ -61,7 +53,7 @@ body {
 }
 
 .carousel-container {
-  margin-top: 60px; /* Below header */
+  margin-top:43px;
   display: flex;
   justify-content: center;
   align-items: center;
