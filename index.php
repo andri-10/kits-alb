@@ -1,6 +1,5 @@
 <?php
-@include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'session_timeout.php');
-session_start(); // Start the session to access session variables
+include("backend/session-timeout.php");
 
 // Check if the user is logged in
 $isLoggedIn = isset($_SESSION['user_id']);
@@ -31,7 +30,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
             </a>
         </section>
       
-
         <div class="kits-header-right-section">
           <?php if ($isLoggedIn): ?>
             <!-- If logged in, show the logout button -->
@@ -44,8 +42,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
           <a href="contact.php" class="header-link">Contact Us</a>
           <a href="catalog.php" class="header-link">Catalog</a>
         </div>
-      </div>
-    </header>
+      </header>
 
       <!-- Main Content -->
       <div class="content">
@@ -66,6 +63,11 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </p>
       </footer>
     </div>
+
+    <!-- Session Timeout Script - Only add if user is logged in -->
+    <?php if ($isLoggedIn): ?>
+    <script src="scripts/session-manager.js"></script>
+<?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   </body>

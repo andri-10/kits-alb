@@ -1,4 +1,11 @@
 <?php
+include("backend/session-timeout.php");
+
+// Check if the user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
+?>
+
+<?php
 $servername = "localhost";
 $user_name = "root";
 $password = "";
@@ -121,5 +128,12 @@ $conn->close();
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
       </p>
     </footer>
+    
+    
+    <!-- Session Timeout Script - Only add if user is logged in -->
+ <?php if ($isLoggedIn): ?>
+    <script src="scripts/session-manager.js"></script>
+<?php endif; ?>
 </body>
+ 
 </html>

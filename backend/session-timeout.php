@@ -1,23 +1,43 @@
 <?php
-session_start(); // Start the session
+session_start();
 
 // Set the timeout duration (15 minutes)
 $timeout_duration = 900; // 15 minutes in seconds
 
-// Check if the session has started and whether the last activity time exists
-if (isset($_SESSION['last_activity'])) {
-    // Calculate the session's idle time
-    $inactive_time = time() - $_SESSION['last_activity'];
+// For AJAX checks
+if (isset($_GET['check_session'])) {
+    header('Content-Type: application/json');
+    
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(['status' => 'timeout']);
+        exit;
+    }
+    
+    if (isset($_SESSION['last_activity'])) {
+        $inactive_time = time() - $_SESSION['last_activity'];
+        if ($inactive_time > $timeout_duration) {
+            session_unset();
+            session_destroy();
+            echo json_encode(['status' => 'timeout']);
+            exit;
+        }
+    }
+    
+    echo json_encode(['status' => 'active']);
+    exit;
+}
 
-    // If inactive for more than 15 minutes, log out the user
+// Regular page load checks
+if (isset($_SESSION['last_activity'])) {
+    $inactive_time = time() - $_SESSION['last_activity'];
     if ($inactive_time > $timeout_duration) {
-        session_unset(); // Unset session variables
-        session_destroy(); // Destroy the session
-        header("Location: index.php"); // Redirect to homepage or login page
+        session_unset();
+        session_destroy();
+        header("Location: login.php");
         exit;
     }
 }
 
-// Update last activity time on every page load
+// Update last activity time
 $_SESSION['last_activity'] = time();
 ?>
