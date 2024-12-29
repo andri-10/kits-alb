@@ -100,12 +100,12 @@ $price = number_format($product['priceCents'] / 100, 2);
     <div id="related-products-list" class="related-products-list">
         <?php if (count($relatedProducts) > 0): ?>
             <?php foreach ($relatedProducts as $related): ?>
-                <div class="related-product">
-                    <a href="view-product.php?id=<?php echo htmlspecialchars($related['id']); ?>">
+                <div class="related-product" data-product-id="<?php echo htmlspecialchars($related['id']); ?>">
+                    <a href="view-product.php?id=<?php echo htmlspecialchars($related['id']); ?>" class="related-product-link">
                         <img src="<?php echo htmlspecialchars($related['image']); ?>" alt="<?php echo htmlspecialchars($related['name']); ?>">
-                        <p class="product-name"><?php echo htmlspecialchars($related['name']); ?></p>
-                        <p class="product-price">$<?php echo number_format($related['priceCents'] / 100, 2); ?></p>
                     </a>
+                    <p class="product-name"><?php echo htmlspecialchars($related['name']); ?></p>
+                    <p class="product-price">$<?php echo number_format($related['priceCents'] / 100, 2); ?></p>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
