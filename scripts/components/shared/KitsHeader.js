@@ -143,7 +143,7 @@ export class KitsHeader extends ComponentV2 {
   }
 
   async #getUserId() {
-    const basePath = window.location.origin + '/backend';
+    const basePath = window.location.origin + '/kits-alb/backend';
     try {
       const response = await fetch(`${basePath}/get-user-id.php`);
       const data = await response.json();
