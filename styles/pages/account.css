@@ -1,0 +1,113 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
+header.kits-header {
+  background-color: #333;
+  padding: 10px 20px;
+  color: #fff;
+}
+
+header .header-link {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+header .kits-logo,
+header .kits-mobile-logo {
+  height: 40px;
+  margin-right: 10px;
+}
+
+main.account-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.account-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 400px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #ddd;
+}
+
+.change-picture-label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.info-section label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+.info-section input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.save-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.save-button:hover {
+  background-color: #0056b3;
+}
+
+/* Footer */
+.kits-footer {
+  text-align: center;
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.kits-footer .footer-link {
+  color: #fff;
+  text-decoration: underline;
+}

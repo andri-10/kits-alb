@@ -17,14 +17,11 @@ export class KitsHeader extends ComponentV2 {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
 
-    // Wait for the total quantity to be fetched
     let totalCartQuantity = await cart.calculateTotalQuantity();
-    
-
-    // Check if the user is logged in
     const userId = await this.#getUserId();
-    const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
-    const orderLinkHref = userId ? 'orders.php': 'login.php'; 
+    const cartLinkHref = userId ? 'checkout.php' : 'login.php';
+    const orderLinkHref = userId ? 'orders.php': 'login.php';
+
     // Render the header HTML with the dynamic cart link
     this.element.innerHTML = `
       <section class="left-section">
@@ -46,8 +43,6 @@ export class KitsHeader extends ComponentV2 {
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
-
-        <!-- Cart link now dynamically redirects based on user login -->
         <a class="js-cart-link cart-link header-link" href="${cartLinkHref}">
           <img class="cart-icon" src="images/icons/cart-icon.png">
           <div class="js-cart-quantity cart-quantity" data-testid="cart-quantity">
@@ -69,59 +64,38 @@ export class KitsHeader extends ComponentV2 {
       </div>
     `;
 
-    // Ensure that cart quantity elements are available after render
-    this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
-    this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
+    // Ensure event listener is active for mobile hamburger toggle
+    this.#initializeHamburgerMenu();
 
-    // Update cart count after the render
-    this.updateCartCount();
+    // Continue with the rest of the code...
   }
 
-  // Add selectors for both normal and mobile cart quantities
-  getCartQuantityElement() {
-    return this.#cartQuantityElement;
+  #initializeHamburgerMenu() {
+    const hamburgerMenuToggle = this.element.querySelector('.js-hamburger-menu-toggle');
+    const hamburgerMenuDropdown = this.element.querySelector('.js-hamburger-menu-dropdown');
+  
+    hamburgerMenuToggle.addEventListener('click', () => this.#toggleDropdownMenu());
   }
+  
 
-  getCartQuantityMobileElement() {
-    return this.#cartQuantityMobileElement;
-  }
-
-  async updateCartCount() {
-    // Ensure that references to the elements are available
-    if (!this.#cartQuantityElement || !this.#cartQuantityMobileElement) {
-      console.error("Cart quantity elements are not available.");
-      return;
-    }
-
-    // Get the updated total cart quantity
-    try {
-      const totalCartQuantity = await cart.calculateTotalQuantity();
-
-      if (totalCartQuantity === undefined) {
-        console.error("Failed to retrieve the cart quantity.");
-        return;
-      }
-
-      // Update the cart count in the header directly for both normal and mobile
-      this.#cartQuantityElement.textContent = totalCartQuantity;
-      this.#cartQuantityMobileElement.textContent = totalCartQuantity;
-    } catch (error) {
-      console.error("Error updating cart count:", error);
-    }
-  }
-
-  #toggleDropdownMenu(event) {
+  #toggleDropdownMenu() {
     const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
     const isOpened = dropdownMenu.classList.contains('hamburger-menu-opened');
-
+  
     if (!isOpened) {
       dropdownMenu.classList.add('hamburger-menu-opened');
-      dropdownMenu.style.height = '88px'; // Set to the height of the menu
     } else {
       dropdownMenu.classList.remove('hamburger-menu-opened');
-      dropdownMenu.style.height = '0'; // Collapse the menu
     }
   }
+
+  #handleResize() {
+    if (window.innerWidth > 575) {
+      const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
+      dropdownMenu.classList.remove('hamburger-menu-opened');
+    }
+  }
+  
 
   #handleSearchBarInput(event) {
     if (event.key === 'Enter') {

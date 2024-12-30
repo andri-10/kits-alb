@@ -53,7 +53,7 @@ body {
 }
 
 .carousel-container {
-  margin-top:43px;
+  margin-top: 43px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -123,4 +123,50 @@ body {
 
 .footer-link:hover {
   text-decoration: underline;
+}
+
+
+/* Hamburger Menu Adjustments */
+@media (max-width: 575px) {
+  .kits-header-right-section {
+    display: none; /* Remove the right section links for mobile view */
+  }
+
+  .kits-header .right-section-mobile {
+    display: block;
+  }
+
+  .kits-header .hamburger-menu-toggle {
+    display: block;
+    cursor: pointer;
+  }
+
+  .kits-header .hamburger-menu-dropdown {
+    background-color: rgb(19, 25, 33);
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    text-align: center;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease-out;
+  }
+
+  .kits-header .hamburger-menu-opened {
+    max-height: 300px; /* Adjust this as needed */
+  }
+
+  .kits-header .hamburger-menu-link {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    font-weight: 500;
+  }
+
+  .kits-header .hamburger-menu-link:hover {
+    background-color: rgb(38, 50, 63);
+  }
 }
