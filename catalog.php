@@ -1,8 +1,8 @@
 <?php
-  @include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'session_timeout.php');
-  session_start();
+include("backend/session-timeout.php");
 
-
+// Check if the user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
 ?>
 
 <!DOCTYPE html>
@@ -33,5 +33,9 @@
 
     <!-- Our custom JavaScript for this page. -->
     <script type="module" src="scripts/pages/catalog.js"></script>
+     <!-- Session Timeout Script - Only add if user is logged in -->
+     <?php if ($isLoggedIn): ?>
+    <script src="scripts/session-manager.js"></script>
+<?php endif; ?>
   </body>
 </html>

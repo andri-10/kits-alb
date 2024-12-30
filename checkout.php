@@ -1,3 +1,10 @@
+<?php
+include("backend/session-timeout.php");
+
+// Check if the user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -35,5 +42,9 @@
 
     <!-- Our custom JavaScript for this page. -->
     <script type="module" src="scripts/pages/checkout.js"></script>
+     <!-- Session Timeout Script - Only add if user is logged in -->
+     <?php if ($isLoggedIn): ?>
+    <script src="scripts/session-manager.js"></script>
+<?php endif; ?>
   </body>
 </html>

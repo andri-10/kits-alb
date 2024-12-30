@@ -1,5 +1,5 @@
 <?php
-@include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'session_timeout.php');
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -162,5 +162,6 @@ $conn->close();
             password.type = password.type === "password" ? "text" : "password";
         }
     </script>
+     
 </body>
 </html>

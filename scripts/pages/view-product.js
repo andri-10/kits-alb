@@ -44,7 +44,7 @@ function renderRelatedProducts() {
     return;
   }
 
-  // Fetch related products data from the backend
+
   const relatedProductsData = JSON.parse(relatedProductsList.dataset.relatedProducts || "[]");
 
   if (relatedProductsData.length === 0) {
@@ -52,19 +52,28 @@ function renderRelatedProducts() {
     return;
   }
 
-  // Create HTML for related products
   const productHTML = relatedProductsData
     .map(product => `
-      <div class="related-product">
-        <a href="view-product.php?id=${product.id}">
-          <img src="${product.image}" alt="${product.name}">
-          <p class="product-name">${product.name}</p>
-          <p class="product-price">$${(product.priceCents / 100).toFixed(2)}</p>
-        </a>
+      <div class="related-product" data-product-id="${product.id}">
+        <img src="${product.image}" alt="${product.name}">
+        <p class="product-name">${product.name}</p>
+        <p class="product-price">$${(product.priceCents / 100).toFixed(2)}</p>
+        <button class="view-product-button" data-product-id="${product.id}">View Product</button>
       </div>
     `)
     .join("");
 
-  // Inject the HTML into the related products container
+
   relatedProductsList.innerHTML = productHTML;
+
+
+  relatedProductsList.querySelectorAll('.view-product-button').forEach((button) => {
+    button.addEventListener('click', function(event) {
+      const productId = event.target.getAttribute('data-product-id');
+      if (productId) {
+        console.log(`Navigating to product with ID: ${productId}`);
+        window.location.href = `view-product.php?id=${productId}`;
+      }
+    });
+  });
 }

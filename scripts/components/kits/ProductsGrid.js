@@ -8,6 +8,7 @@ export class ProductsGrid extends ComponentV2 {
   events = {
     'click .js-add-to-cart-button': (event) => this.#checkSessionAndAddToCart(event),
     'click .js-variation-option': (event) => this.#selectVariation(event),
+    'click .js-view-product-button': (event) => this.#viewProduct(event),
   };
 
   #kitsHeader;
@@ -16,8 +17,13 @@ export class ProductsGrid extends ComponentV2 {
   setKitsHeader(kitsHeader) {
     this.#kitsHeader = kitsHeader;
   }
-
-
+  
+  #viewProduct(event) {
+    event.preventDefault(); // Prevent default action
+    const button = event.currentTarget; 
+    const productId = button.getAttribute('data-product-id'); 
+    window.location.href = `view-product.php?id=${productId}`;
+}
   
   async render() {
     try {
@@ -87,8 +93,10 @@ export class ProductsGrid extends ComponentV2 {
               Added
             </div>
 
-            <button class="js-view-product-button view-product-button button-secondary" data-testid="view-product-button">
-              <a href="view-product.php?id=${product.id}">View Product</a>
+            <button 
+              class="js-view-product-button view-product-button button-secondary" 
+              data-product-id="${product.id}">
+              View Product
             </button>
 
             <button class="js-add-to-cart-button add-to-cart-button button-primary" data-testid="add-to-cart-button">
@@ -101,6 +109,9 @@ export class ProductsGrid extends ComponentV2 {
 
       // Manually attach event listeners
       this.attachEventListeners();
+      this.element.querySelectorAll('.js-view-product-button').forEach((button) => {
+        button.addEventListener('click', (event) => this.#viewProduct(event));
+    });
 
     } catch (error) {
       console.error('Error rendering products:', error);
