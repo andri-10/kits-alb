@@ -17,11 +17,14 @@ export class KitsHeader extends ComponentV2 {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
 
+    // Wait for the total quantity to be fetched
     let totalCartQuantity = await cart.calculateTotalQuantity();
-    const userId = await this.#getUserId();
-    const cartLinkHref = userId ? 'checkout.php' : 'login.php';
-    const orderLinkHref = userId ? 'orders.php': 'login.php';
+    
 
+    // Check if the user is logged in
+    const userId = await this.#getUserId();
+    const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
+    const orderLinkHref = userId ? 'orders.php': 'login.php'; 
     // Render the header HTML with the dynamic cart link
     this.element.innerHTML = `
       <section class="left-section">
@@ -43,6 +46,8 @@ export class KitsHeader extends ComponentV2 {
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
+
+        <!-- Cart link now dynamically redirects based on user login -->
         <a class="js-cart-link cart-link header-link" href="${cartLinkHref}">
           <img class="cart-icon" src="images/icons/cart-icon.png">
           <div class="js-cart-quantity cart-quantity" data-testid="cart-quantity">
@@ -64,10 +69,46 @@ export class KitsHeader extends ComponentV2 {
       </div>
     `;
 
-    // Ensure event listener is active for mobile hamburger toggle
-    this.#initializeHamburgerMenu();
+    // Ensure that cart quantity elements are available after render
+    this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
+    this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
 
-    // Continue with the rest of the code...
+    // Update cart count after the render
+    this.updateCartCount();
+    this.#initializeHamburgerMenu();
+  }
+
+  // Add selectors for both normal and mobile cart quantities
+  getCartQuantityElement() {
+    return this.#cartQuantityElement;
+  }
+
+  getCartQuantityMobileElement() {
+    return this.#cartQuantityMobileElement;
+  }
+
+  async updateCartCount() {
+    // Ensure that references to the elements are available
+    if (!this.#cartQuantityElement || !this.#cartQuantityMobileElement) {
+      console.error("Cart quantity elements are not available.");
+      return;
+    }
+
+    // Get the updated total cart quantity
+    try {
+      const totalCartQuantity = await cart.calculateTotalQuantity();
+
+      if (totalCartQuantity === undefined) {
+        console.error("Failed to retrieve the cart quantity.");
+        return;
+      }
+
+      // Update the cart count in the header directly for both normal and mobile
+      this.#cartQuantityElement.textContent = totalCartQuantity;
+      this.#cartQuantityMobileElement.textContent = totalCartQuantity;
+    } catch (error) {
+      console.error("Error updating cart count:", error);
+    }
   }
 
   #initializeHamburgerMenu() {
@@ -117,7 +158,7 @@ export class KitsHeader extends ComponentV2 {
   }
 
   async #getUserId() {
-    const basePath = window.location.origin + '/backend';
+    const basePath = window.location.origin + '/kits-alb/backend';
     try {
       const response = await fetch(`${basePath}/get-user-id.php`);
       const data = await response.json();
