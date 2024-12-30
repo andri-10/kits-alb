@@ -130,28 +130,27 @@
   left: 0;
   right: 0;
   top: 60px;
-
   z-index: 100;
   text-align: center;
-
-  max-height: 0; /* Start with collapsed state */
+  max-height: 0;
   overflow: hidden;
   transition: max-height 0.25s ease-out;
 }
 
 .kits-header .hamburger-menu-opened {
-  max-height: 88px; /* Expanded height */
+  max-height: 88px; /* Adjust height of dropdown */
 }
-
 
 @media (max-width: 575px) {
   .kits-header .hamburger-menu-dropdown {
-    display: block;
     max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease-out;
   }
 
   .kits-header .hamburger-menu-opened {
-    height: 88px;
+    max-height: 88px;
+    
   }
 
   .kits-header .hamburger-menu-link {
@@ -166,6 +165,7 @@
     background-color: rgb(38, 50, 63);
   }
 }
+
 
 .kits-header .orders-link {
   color: white;
