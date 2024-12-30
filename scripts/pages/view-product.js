@@ -1,79 +1,80 @@
 import { KitsHeader } from '../components/shared/KitsHeader.js';
 import { products } from '../data/products.js';
+import { WindowUtils } from '../utils/WindowUtils.js';
 
 products.loadFromBackend().then(() => {
-
   const kitsHeader = new KitsHeader('.js-kits-header').create();
 
-  setupProductPage();
+  setupProductPage(kitsHeader);
 });
 
-function setupProductPage() {
-  // Wait for the DOM to be fully loaded
-  document.addEventListener("DOMContentLoaded", function() {
+function setupProductPage(kitsHeader) {
+  document.addEventListener("DOMContentLoaded", () => {
     const addToCartButton = document.querySelector(".add-to-cart");
-    const returnButton = document.querySelector(".return-link");
-
 
     if (addToCartButton) {
-      addToCartButton.addEventListener("click", function() {
-        const productId = addToCartButton.getAttribute("data-product-id");
-        const size = document.getElementById("size").value;
-
-
-        console.log(`Product ID: ${productId}, Size: ${size}`);
-        alert("Product added to cart!");
+      addToCartButton.addEventListener("click", async (event) => {
+        await handleAddToCart(event, kitsHeader);
       });
     }
-
-    if (returnButton) {
-      returnButton.addEventListener("click", function() {
-        window.location.href = "catalog.php";
-      });
-    }
-
-    renderRelatedProducts();
   });
 }
 
-function renderRelatedProducts() {
-  const relatedProductsList = document.getElementById("related-products-list");
+async function handleAddToCart(event, kitsHeader) {
+  const basePath = `${window.location.origin}/kits-alb/backend/`;
 
-  if (!relatedProductsList) {
-    console.error("Related products container not found.");
+  // Step 1: Check if the user is logged in
+  const response = await fetch(`${basePath}/check-session.php`);
+  const session = await response.json();
+
+  if (!data.isLoggedIn) {
+    window.location.href = 'login.php';
     return;
   }
 
+  // Step 2: Perform add-to-cart logic
+  const addToCartButton = event.target;
+  const productId = addToCartButton.getAttribute("data-product-id");
+  const size = document.getElementById("size").value;
 
-  const relatedProductsData = JSON.parse(relatedProductsList.dataset.relatedProducts || "[]");
-
-  if (relatedProductsData.length === 0) {
-    relatedProductsList.innerHTML = "<p>No related products available.</p>";
-    return;
-  }
-
-  const productHTML = relatedProductsData
-    .map(product => `
-      <div class="related-product" data-product-id="${product.id}">
-        <img src="${product.image}" alt="${product.name}">
-        <p class="product-name">${product.name}</p>
-        <p class="product-price">$${(product.priceCents / 100).toFixed(2)}</p>
-        <button class="view-product-button" data-product-id="${product.id}">View Product</button>
-      </div>
-    `)
-    .join("");
-
-
-  relatedProductsList.innerHTML = productHTML;
-
-
-  relatedProductsList.querySelectorAll('.view-product-button').forEach((button) => {
-    button.addEventListener('click', function(event) {
-      const productId = event.target.getAttribute('data-product-id');
-      if (productId) {
-        console.log(`Navigating to product with ID: ${productId}`);
-        window.location.href = `view-product.php?id=${productId}`;
-      }
+  try {
+    // Make the POST request to add the product to the cart
+    const response = await fetch(`${basePath}/add-to-cart.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        product_id: productId,
+        size: size,
+      }),
     });
-  });
+
+    const data = await response.json();
+
+    if (data.status === 'Product added to cart' || data.status === 'Product quantity updated in cart') {
+      // Step 3: Update the cart count and show success message
+      kitsHeader.updateCartCount();
+      showSuccessMessage(addToCartButton.closest('.product-container'));
+    } else {
+      WindowUtils.showAlert('Failed to add the product to cart. Please try again.', 'error');
+    }
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    WindowUtils.showAlert('An error occurred while adding the product to the cart.', 'error');
+  }
+}
+
+function showSuccessMessage(productContainer) {
+  const successMessage = productContainer.querySelector('.js-added-to-cart-message');
+
+  if (successMessage) {
+    successMessage.classList.add('is-visible');
+
+    setTimeout(() => {
+      successMessage.classList.remove('is-visible');
+    }, 2000);
+  } else {
+    WindowUtils.showAlert('Product successfully added to cart!', 'success');
+  }
 }
