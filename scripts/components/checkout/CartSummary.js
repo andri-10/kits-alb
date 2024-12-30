@@ -11,11 +11,12 @@ export class CartSummary extends ComponentV2 {
   events = {
     'click .js-delivery-option':(event) => this.#selectDeliveryOption(event),
     'keyup .js-new-quantity-input': (event) => this.#handleQuantityInput(event),
+    'click .js-save-quantity-link': (event) => this.#handleSaveQuantityClick(event),  // Trigger save logic on click
     'click .js-cancel-quantity-update': (event) => this.#cancelUpdateQuantity(event),
     'click .js-delete-quantity-link': (event) => this.#handleDeleteLinkClick(event),
     'click .js-update-button': (event) => this.#toggleSizeSelector(event),
     'click .js-update-size': (event) => this.#handleSizeUpdate(event),
-    'click .js-collapse-button': (event) => this.#toggleSizeSelector(event), // Handle collapse
+    'click .js-collapse-button': (event) => this.#toggleSizeSelector(event),
   };
 
   #paymentSummary;
@@ -513,6 +514,12 @@ export class CartSummary extends ComponentV2 {
     }
   } 
 
+  #handleSaveQuantityClick(event) {
+    const inputElement = event.target.closest('.js-quantity-container').querySelector('.js-new-quantity-input');
+    this.#updatePrice(inputElement); // Update the price
+    this.#updateQuantity(inputElement);  // Update the quantity
+  }
+
   #updatePrice(inputElement) {
     const cartItemElement = inputElement.closest('.js-cart-item');  // Get the cart item element
     const productId = cartItemElement.getAttribute('data-cart-item-id');  // Get the product ID
@@ -520,7 +527,7 @@ export class CartSummary extends ComponentV2 {
   
     // Get the updated quantity from the input field, ensuring it's greater than or equal to 0
     let quantity = parseInt(inputElement.value);
-    if (quantity < 0 || isNaN(quantity)) {
+    if (quantity <= 0 || isNaN(quantity)) {
       console.log("Invalid quantity. Quantity cannot be less than 0.");
       quantity = previousCartQuantity;  // If quantity is invalid (less than 0), use the previous quantity
     }
