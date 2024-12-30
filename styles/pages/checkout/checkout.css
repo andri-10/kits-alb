@@ -91,6 +91,7 @@ flex-wrap:wrap;
 }
 
 .quantity-message {
+  padding-top: 10px;
   font-size: 14px;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
@@ -98,6 +99,20 @@ flex-wrap:wrap;
 
 .quantity-message.is-visible {
   opacity: 1;
+}
+
+.edit-quantity{
+  font-weight: bold;
+  margin: 8px 0px;
+}
+
+.delete-quantity{
+  margin-top: 8px;
+  text-align: auto;
+}
+
+.js-quantity-input{
+  padding: 2px;
 }
 
 .kit-product{

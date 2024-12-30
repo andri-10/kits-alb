@@ -117,14 +117,17 @@ export class CartSummary extends ComponentV2 {
                 </div>
                 <div class="quantity-container js-quantity-container">
                   Quantity: 
-                  <span class="js-quantity-label">${cartItem.quantity}</span>
+                  <span class="quanity-label js-quantity-label">${cartItem.quantity}</span>
+                  
+                  <p class = "edit-quantity"> Edit Quantity: </p>
                   <input 
                     class="js-quantity-input js-new-quantity-input" 
                     type="number" 
                     value="${cartItem.quantity}" 
                     min="1" 
                     data-cart-item-id="${cartItem.productId}" />
-                  <span class="js-delete-quantity-link link-primary">Delete</span>
+                  <span class="js-save-quantity-link link-primary">Save</span>
+                  <p class="delete-quantity js-delete-quantity-link link-primary">Delete Item</p>
                   <div class="quantity-message quantity-message-${cartItem.productId}"></div>
                 </div>
               </div>
@@ -527,7 +530,8 @@ export class CartSummary extends ComponentV2 {
 #updatePrice(inputElement) {
   const cartItemElement = inputElement.closest('.js-cart-item');  // Get the cart item element
   const productId = cartItemElement.getAttribute('data-cart-item-id');  // Get the product ID
-  const quantity = parseInt(inputElement.value);  // Get the updated quantity from the input field
+  const previousCartQuantity = Number(document.querySelector('.js-quantity-label').innerHTML);
+  let quantity = parseInt(inputElement.value > 0 ? inputElement.value : previousCartQuantity);  // Get the updated quantity from the input field
   const priceElement = cartItemElement.querySelector('.product-price');  // Get the price element to update
 
   if (!priceElement) {
@@ -540,8 +544,9 @@ export class CartSummary extends ComponentV2 {
   const unitPrice = product.priceCents;  // Assuming the price is in cents
 
   // Calculate the total price based on quantity and unit price
+  
   const totalPrice = unitPrice * quantity;
-
+  
   // Update the displayed price
   priceElement.textContent = MoneyUtils.formatMoney(totalPrice);  // Format and display the total price
 }
