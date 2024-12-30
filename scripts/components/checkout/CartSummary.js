@@ -274,7 +274,7 @@ export class CartSummary extends ComponentV2 {
     let sizeOptionsHTML = '';
 
     // Available sizes (can be fetched from the backend or set beforehand)
-    const availableSizes = ['S', 'M', 'L', 'XL', '2XL']; // Default sizes
+    const availableSizes = ['S', 'M', 'L', 'XL', 'XXL']; // Default sizes
 
     // Loop through all available sizes and create the radio buttons
     availableSizes.forEach(size => {
