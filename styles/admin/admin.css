@@ -167,3 +167,51 @@ body.popup-active {
 #create-product-form button[type="button"]:hover {
     opacity: 0.8;
 }
+
+/* Style for the table to expand the whole page */
+#product-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+/* Add borders to the table */
+#product-list-table th,
+#product-list-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+/* Add a background to the table header */
+#product-list-table thead {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Add hover effect for table rows */
+#product-list-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Button styles for Edit and Delete */
+button.edit-btn,
+button.delete-btn {
+    padding: 5px 10px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+button.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kits Alb - Admin Dashboard</title>
     <link rel="stylesheet" href="styles/shared/kits-header.css">
-    <link rel="stylesheet" href="styles/shared/footer-header.css">
+    <link rel="stylesheet" href="styles/shared/kits-footer.css">
     <link rel="stylesheet" href="styles/admin/admin.css">
 </head>
 <body>
@@ -34,13 +34,14 @@
             <div class="products-management">
                 <h2>Manage Products</h2>
                 <button id="create-product-btn">Create New Product</button>
-                <button id="update-product-btn">Update Product</button>
-                <button id="delete-product-btn">Delete Product</button>
                 <div id="product-list">
                     <h3>Product List</h3>
+                    <table id="product-list-table"> </table>
                 </div>
             </div>
         </section>
+
+        <div id="edit-product-container"> </div>
 
         <section class="users-management">
             <h2>Manage Users</h2>
@@ -53,6 +54,9 @@
                 <h3>All Users</h3>
             </div>
         </section>
+
+        <div id="edit-product-container"></div>
+
     </main>
 
     <footer class="kits-footer">
