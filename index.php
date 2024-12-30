@@ -33,15 +33,31 @@ $isLoggedIn = isset($_SESSION['user_id']);
         <div class="kits-header-right-section">
           <?php if ($isLoggedIn): ?>
             <!-- If logged in, show the logout button -->
-            <a href="logout.php" class="header-link">Log Out</a>
+            <a href="logout.php" class="header-link">Sign Out</a>
             <a href="account.php" class="header-link">Account</a>
           <?php else: ?>
             <!-- If not logged in, show the login button -->
-            <a href="login.php" class="header-link">Log In</a>
+            <a href="login.php" class="header-link">Sign In</a>
           <?php endif; ?>
           <a href="contact.php" class="header-link">Contact Us</a>
           <a href="catalog.php" class="header-link">Catalog</a>
         </div>
+
+        <section class="right-section-mobile">
+            <img class="js-hamburger-menu-toggle hamburger-menu-toggle" src="images/icons/hamburger-menu.png" data-testid="hamburger-menu-toggle">
+        </section>
+
+        <div class="js-hamburger-menu-dropdown hamburger-menu-dropdown" data-testid="hamburger-menu-dropdown">
+          <?php if ($isLoggedIn): ?>
+            <a class="hamburger-menu-link" href="logout.php">Sign Out</a>
+            <a class="hamburger-menu-link" href="account.php">Account</a>
+          <?php else: ?>
+            <a class="hamburger-menu-link" href="login.php">Sign In</a>
+          <?php endif; ?>
+          <a class="hamburger-menu-link" href="contact.php">Contact Us</a>
+          <a class="hamburger-menu-link" href="catalog.php">Catalog</a>
+        </div>    
+
       </header>
 
       <!-- Main Content -->
@@ -67,8 +83,22 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
     <script src="scripts/session-manager.js"></script>
-<?php endif; ?>
+    <?php endif; ?>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.querySelector(".hamburger-menu-toggle");
+        const menuDropdown = document.querySelector(".hamburger-menu-dropdown");
+
+        menuToggle.addEventListener("click", function () {
+          menuDropdown.classList.toggle("hamburger-menu-opened");
+        });
+      });
+    </script>
+
+    <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  </body>
+</html>
   </body>
 </html>
