@@ -9,13 +9,10 @@ export class KitsHeader extends ComponentV2 {
     'click .js-search-button': (event) => this.#handleSearchClick(event),
   };
 
-<<<<<<< HEAD
-=======
   // Store references to cart quantity elements
   #cartQuantityElement;
   #cartQuantityMobileElement;
 
->>>>>>> 31668712b17768f804beaea7b2b7a389036422fc
   async render() {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
@@ -25,14 +22,7 @@ export class KitsHeader extends ComponentV2 {
     const cartLinkHref = userId ? 'checkout.php' : 'login.php';
     const orderLinkHref = userId ? 'orders.php': 'login.php';
 
-<<<<<<< HEAD
-=======
-    // Check if the user is logged in
-    const userId = await this.#getUserId();
-    const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
-    const orderLinkHref = userId ? 'orders.php': 'login.php'; 
     // Render the header HTML with the dynamic cart link
->>>>>>> 31668712b17768f804beaea7b2b7a389036422fc
     this.element.innerHTML = `
       <section class="left-section">
         <a href="index.php" class="header-link">
