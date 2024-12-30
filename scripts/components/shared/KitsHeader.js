@@ -13,23 +13,16 @@ export class KitsHeader extends ComponentV2 {
   #cartQuantityElement;
   #cartQuantityMobileElement;
 
-  // Check if the user is logged in
-  async getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
-    const response = await fetch(`${basePath}/get-user-id.php`);
-    const data = await response.json();
-    return data.userId || null;  // Return userId if logged in, otherwise return null
-  }
-
   async render() {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
 
     // Wait for the total quantity to be fetched
-    const totalCartQuantity = await cart.calculateTotalQuantity();
+    let totalCartQuantity = await cart.calculateTotalQuantity();
+    
 
     // Check if the user is logged in
-    const userId = await this.getUserId();
+    const userId = await this.#getUserId();
     const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
     const orderLinkHref = userId ? 'orders.php': 'login.php'; 
     // Render the header HTML with the dynamic cart link
@@ -149,7 +142,18 @@ export class KitsHeader extends ComponentV2 {
     WindowUtils.setHref(`./?search=${searchText}`);
   }
 
-
+  async #getUserId() {
+    const basePath = window.location.origin + '/backend';
+    try {
+      const response = await fetch(`${basePath}/get-user-id.php`);
+      const data = await response.json();
+      console.log('User ID response:', data);  // Debugging line
+      return data.userId || null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  }
   
 
 }

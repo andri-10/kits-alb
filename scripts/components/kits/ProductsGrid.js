@@ -133,6 +133,7 @@ export class ProductsGrid extends ComponentV2 {
 
   createRatingStarsUrl(stars) {
     return `./images/ratings/rating-${stars * 10}.png`;
+    
   }
 
   #createVariationsSelectorHTML(product) {
@@ -194,7 +195,7 @@ export class ProductsGrid extends ComponentV2 {
   }
 
   async #checkSessionAndAddToCart(event) {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/check-session.php`);
     const data = await response.json();
     if (!data.isLoggedIn) {
@@ -237,8 +238,7 @@ async #sendAddToCartRequest(productId, size) {
       window.location.href = 'login.php';
       return;
     }
-
-    const basePath = window.location.origin + '/kits-alb/backend/';
+  const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/add-to-cart.php`, {
       method: 'POST',
       headers: {
@@ -275,9 +275,9 @@ async #sendAddToCartRequest(productId, size) {
     }
 } 
 
-// Function to retrieve the user ID from session or database
-async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+  // Function to retrieve the user ID from session or database
+  async #getUserId() {
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;

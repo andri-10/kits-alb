@@ -11,11 +11,12 @@ export class CartSummary extends ComponentV2 {
   events = {
     'click .js-delivery-option':(event) => this.#selectDeliveryOption(event),
     'keyup .js-new-quantity-input': (event) => this.#handleQuantityInput(event),
+    'click .js-save-quantity-link': (event) => this.#handleSaveQuantityClick(event),  // Trigger save logic on click
     'click .js-cancel-quantity-update': (event) => this.#cancelUpdateQuantity(event),
     'click .js-delete-quantity-link': (event) => this.#handleDeleteLinkClick(event),
     'click .js-update-button': (event) => this.#toggleSizeSelector(event),
     'click .js-update-size': (event) => this.#handleSizeUpdate(event),
-    'click .js-collapse-button': (event) => this.#toggleSizeSelector(event), // Handle collapse
+    'click .js-collapse-button': (event) => this.#toggleSizeSelector(event),
   };
 
   #paymentSummary;
@@ -67,7 +68,7 @@ export class CartSummary extends ComponentV2 {
   async fetchCartData() {
     try {
       console.log('Fetching cart data from backend...');
-      const response = await fetch('/kits-alb/backend/get-cart-products.php');
+      const response = await fetch('backend/get-cart-products.php');
 
       if (!response.ok) {
         throw new Error(`Failed to fetch cart data. Status: ${response.status}`);
@@ -117,14 +118,17 @@ export class CartSummary extends ComponentV2 {
                 </div>
                 <div class="quantity-container js-quantity-container">
                   Quantity: 
-                  <span class="js-quantity-label">${cartItem.quantity}</span>
+                  <span class="quanity-label js-quantity-label">${cartItem.quantity}</span>
+                  
+                  <p class = "edit-quantity"> Edit Quantity: </p>
                   <input 
                     class="js-quantity-input js-new-quantity-input" 
                     type="number" 
                     value="${cartItem.quantity}" 
                     min="1" 
                     data-cart-item-id="${cartItem.productId}" />
-                  <span class="js-delete-quantity-link link-primary">Delete</span>
+                  <span class="js-save-quantity-link link-primary">Save</span>
+                  <p class="delete-quantity js-delete-quantity-link link-primary">Delete Item</p>
                   <div class="quantity-message quantity-message-${cartItem.productId}"></div>
                 </div>
               </div>
@@ -137,10 +141,8 @@ export class CartSummary extends ComponentV2 {
           </div>
   
           <div class="update-container">
-            <button class="js-update-button">Update sizes</button>
-  
-            <!-- Hidden dropdown with size selectors -->
-            <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
+            <button class="button-primary update-size-button js-update-button">Update Sizes</button>
+              <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
               <div class="size-options">
                 <!-- The fetched product options will be injected here -->
               </div>
@@ -152,8 +154,6 @@ export class CartSummary extends ComponentV2 {
   
     this.element.innerHTML = cartSummaryHTML;
   }
-  
-
 
   #toggleSizeSelector(event) {
     const updateButton = event.target.closest('.js-update-button');
@@ -161,11 +161,12 @@ export class CartSummary extends ComponentV2 {
     const productId = cartItemElement.getAttribute('data-cart-item-id');
     const dropdown = cartItemElement.querySelector('.js-size-selector-dropdown');
     const quantityInput = cartItemElement.querySelector('.js-quantity-input'); // Select the quantity input
-  
+    
     if (dropdown.style.display === 'none' || !dropdown.style.display) {
       dropdown.style.display = 'block'; // Show the size selector
       updateButton.textContent = 'Collapse'; // Change button text
-  
+      updateButton.classList.add('collapse-button'); // Add class for "Collapse"
+      
       // Fetch products related to this kit (assuming the product belongs to a kit)
       this.#fetchKitProducts(productId).then(kitProducts => {
         this.#populateSizeSelector(dropdown, kitProducts);
@@ -175,7 +176,8 @@ export class CartSummary extends ComponentV2 {
       quantityInput.setAttribute('readonly', 'readonly'); // Prevent the user from modifying the quantity
     } else {
       dropdown.style.display = 'none'; // Hide the size selector
-      updateButton.textContent = 'Update sizes'; // Reset button text
+      updateButton.textContent = 'Update Sizes'; // Reset button text
+      updateButton.classList.remove('collapse-button'); // Remove class for "Collapse"
   
       // Revert the readonly state when the size selector is hidden (allow editing again)
       quantityInput.removeAttribute('readonly'); // Re-enable editing of the quantity
@@ -187,7 +189,7 @@ export class CartSummary extends ComponentV2 {
     try {
       console.log('Fetching products for kit...', productId); // Debugging line
   
-      const response = await fetch('/kits-alb/backend/get-individual-products.php', {
+      const response = await fetch('backend/get-individual-products.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: productId }) // Sending productId in the request body
@@ -251,7 +253,7 @@ export class CartSummary extends ComponentV2 {
         <div class="product-price">${MoneyUtils.formatMoney(product.product_pricecents)}</div>
         <div class="size-options-radio">${sizeOptionsHTML}</div>
         <div class="button-and-message">
-        <button class="js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
+        <button class="button-primary save-size-button js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
         <span class="update-size-message update-size-message-${product.cart_id}"></span>
         </div>
         </div>
@@ -295,7 +297,6 @@ export class CartSummary extends ComponentV2 {
     return sizeOptionsHTML;
 }
 
-
   /**
  * Handle size update when a size is selected.
  * @param {Event} event - The click event.
@@ -314,7 +315,7 @@ export class CartSummary extends ComponentV2 {
     console.log(`Saving size ${selectedSize} for cart ID ${cartId}`); // Debugging: Log cart ID and size
   
     try {
-      const response = await fetch('/kits-alb/backend/update-cart-size.php', {
+      const response = await fetch('backend/update-cart-size.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -369,50 +370,46 @@ export class CartSummary extends ComponentV2 {
       }, 2000);
     }
   }
-  
 
- 
+  #createDeliveryOptionsHTML(cartItem) {
+    let deliverOptionsHTML = '';
+    
+    // Loop through all delivery options for this cart item
+    deliveryOptions.all.forEach(deliveryOption => {
+      const id = deliveryOption.id;
+      const costCents = deliveryOption.costCents;
+      const deliveryDate = deliveryOption.calculateDeliveryDate();
 
+      const shippingText = costCents === 0
+        ? 'FREE Shipping'
+        : `${MoneyUtils.formatMoney(costCents)} - Shipping`;
 
-#createDeliveryOptionsHTML(cartItem) {
-  let deliverOptionsHTML = '';
-  
-  // Loop through all delivery options for this cart item
-  deliveryOptions.all.forEach(deliveryOption => {
-    const id = deliveryOption.id;
-    const costCents = deliveryOption.costCents;
-    const deliveryDate = deliveryOption.calculateDeliveryDate();
-
-    const shippingText = costCents === 0
-      ? 'FREE Shipping'
-      : `${MoneyUtils.formatMoney(costCents)} - Shipping`;
-
-    deliverOptionsHTML += `
-      <div class="js-delivery-option delivery-option"
-        data-delivery-option-id="${id}" data-testid="delivery-option-${id}">
-        
-        <input
-          class="js-delivery-option-input delivery-option-input"
-          name="delivery-option-${cartItem.productId}" 
-          type="radio"
-          data-testid="delivery-option-input"
-          ${deliveryOption.isDefault ? 'checked' : ''} 
-        >
-        
-        <div>
-          <div class="delivery-option-date">
-            ${DateUtils.formatDateWeekday(deliveryDate)}
-          </div>
-          <div class="delivery-option-price">
-            ${shippingText}
+      deliverOptionsHTML += `
+        <div class="js-delivery-option delivery-option"
+          data-delivery-option-id="${id}" data-testid="delivery-option-${id}">
+          
+          <input
+            class="js-delivery-option-input delivery-option-input"
+            name="delivery-option-${cartItem.productId}" 
+            type="radio"
+            data-testid="delivery-option-input"
+            ${deliveryOption.isDefault ? 'checked' : ''} 
+          >
+          
+          <div>
+            <div class="delivery-option-date">
+              ${DateUtils.formatDateWeekday(deliveryDate)}
+            </div>
+            <div class="delivery-option-price">
+              ${shippingText}
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    });
 
-  return deliverOptionsHTML;
-}
+    return deliverOptionsHTML;
+  }
 
   /**
    * Handles delivery option selection.
@@ -460,24 +457,17 @@ export class CartSummary extends ComponentV2 {
       console.error('Delivery date element not found!');
     }
   }
-  
-  
-  
-  
-  
-
-
 /**
  * Update the header with the selected delivery option details.
  * @param {Object} deliveryOption - The selected delivery option.
  */
-#updateHeaderWithDeliveryOption(deliveryOption) {
-    const shippingCost = MoneyUtils.formatMoney(deliveryOption.costCents);
-    const deliveryDate = DateUtils.formatDateWeekday(deliveryOption.calculateDeliveryDate());
+  #updateHeaderWithDeliveryOption(deliveryOption) {
+      const shippingCost = MoneyUtils.formatMoney(deliveryOption.costCents);
+      const deliveryDate = DateUtils.formatDateWeekday(deliveryOption.calculateDeliveryDate());
 
-    // Assuming you have a method on #checkoutHeader to update the delivery info:
-    this.#checkoutHeader.updateDeliveryInfo(shippingCost, deliveryDate);
-}
+      // Assuming you have a method on #checkoutHeader to update the delivery info:
+      this.#checkoutHeader.updateDeliveryInfo(shippingCost, deliveryDate);
+  }
 
 
   #renderEmptyCartMessage() {
@@ -522,31 +512,46 @@ export class CartSummary extends ComponentV2 {
         const digitsOnly = currentQuantity.replace(/\D/g, ''); // Removes all non-digit characters
         this.#cancelUpdateQuantity(inputElement, digitsOnly);  // Reset the quantity
     }
-}
+  } 
 
-#updatePrice(inputElement) {
-  const cartItemElement = inputElement.closest('.js-cart-item');  // Get the cart item element
-  const productId = cartItemElement.getAttribute('data-cart-item-id');  // Get the product ID
-  const quantity = parseInt(inputElement.value);  // Get the updated quantity from the input field
-  const priceElement = cartItemElement.querySelector('.product-price');  // Get the price element to update
-
-  if (!priceElement) {
-      console.error("Price element not found.");
-      return;
+  #handleSaveQuantityClick(event) {
+    const inputElement = event.target.closest('.js-quantity-container').querySelector('.js-new-quantity-input');
+    this.#updatePrice(inputElement); // Update the price
+    this.#updateQuantity(inputElement);  // Update the quantity
   }
 
-  // Find the product data using the productId (adjust according to your data structure)
-  const product = this.#getProductById(productId);  // Assuming this method fetches the correct product data
-  const unitPrice = product.priceCents;  // Assuming the price is in cents
+  #updatePrice(inputElement) {
+    const cartItemElement = inputElement.closest('.js-cart-item');  // Get the cart item element
+    const productId = cartItemElement.getAttribute('data-cart-item-id');  // Get the product ID
+    const previousCartQuantity = Number(cartItemElement.querySelector('.js-quantity-label').textContent);  // Get the previous quantity for this cart item
+  
+    // Get the updated quantity from the input field, ensuring it's greater than or equal to 0
+    let quantity = parseInt(inputElement.value);
+    if (quantity <= 0 || isNaN(quantity)) {
+      console.log("Invalid quantity. Quantity cannot be less than 0.");
+      quantity = previousCartQuantity;  // If quantity is invalid (less than 0), use the previous quantity
+    }
+  
+    const priceElement = cartItemElement.querySelector('.product-price');  // Get the price element to update
+  
+    if (!priceElement) {
+      console.error("Price element not found.");
+      return;
+    }
+  
+    // Find the product data using the productId (adjust according to your data structure)
+    const product = this.#getProductById(productId);  // Assuming this method fetches the correct product data
+    const unitPrice = product.priceCents;  // Assuming the price is in cents
+  
+    // Calculate the total price based on quantity and unit price
+    const totalPrice = unitPrice * quantity;
+    
+    // Update the displayed price
+    priceElement.textContent = MoneyUtils.formatMoney(totalPrice);  // Format and display the total price
+  }
+  
 
-  // Calculate the total price based on quantity and unit price
-  const totalPrice = unitPrice * quantity;
-
-  // Update the displayed price
-  priceElement.textContent = MoneyUtils.formatMoney(totalPrice);  // Format and display the total price
-}
-
-#getProductById(productId) {
+  #getProductById(productId) {
   // Search for the product in the stored cart data
   const product = this.cartData.find(item => item.productId === productId);
 
@@ -556,27 +561,24 @@ export class CartSummary extends ComponentV2 {
     console.error(`Product with ID ${productId} not found.`);
     return null; // Return null if the product isn't found
   }
-}
-  
-  #cancelUpdateQuantity(inputElement, currentQuantity) {
-    // Ensure the container and input element are valid
-    const quantityContainer = inputElement.closest('.js-quantity-container');
-    
-    if (!quantityContainer) {
-      console.error('Quantity container not found!');
-      return;
-    }
-  
-    // Hide the input element and show the label
-    quantityContainer.classList.remove('is-updating-quantity');
-    
-    // Set the input value to the passed current quantity
-    inputElement.value = currentQuantity;
   }
 
-  
+  #cancelUpdateQuantity(inputElement, currentQuantity) {
+  // Ensure the container and input element are valid
+  const quantityContainer = inputElement.closest('.js-quantity-container');
 
-  // Handle adding products to the cart (send the difference to backend)
+  if (!quantityContainer) {
+    console.error('Quantity container not found!');
+    return;
+  }
+
+  // Hide the input element and show the label
+  quantityContainer.classList.remove('is-updating-quantity');
+
+  // Set the input value to the passed current quantity
+  inputElement.value = currentQuantity;
+  }
+  
   async #addProductsToCart(productId, quantityToAdd) {
     console.log(`Adding ${quantityToAdd} products to cart with ID: ${productId}`);
     const userId = await this.#getUserId();
@@ -593,124 +595,123 @@ export class CartSummary extends ComponentV2 {
 
     await Promise.all(addToCartPromises);
     this.#checkoutHeader.updateCartCount();
-}
+  }
 
-async #sendAddToCartRequest(productId) {
-    const userId = await this.#getUserId();
+  async #sendAddToCartRequest(productId) {
+      const userId = await this.#getUserId();
 
-    if (!userId) {
-        console.error("User is not logged in");
-        window.location.href = 'login.php';  // Redirect to login if no user ID
-        return;
-    }
+      if (!userId) {
+          console.error("User is not logged in");
+          window.location.href = 'login.php';  // Redirect to login if no user ID
+          return;
+      }
 
-    const basePath = window.location.origin + '/kits-alb/backend/';
-    const response = await fetch(`${basePath}/add-to-cart.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, product_id: productId }),
-    });
+      const basePath = window.location.origin + '/backend';
+      const response = await fetch(`${basePath}/add-to-cart.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, product_id: productId }),
+      });
 
-    const data = await response.json();
-    console.log('Add to Cart Response:', data);
-    if (data.status === 'Product added to cart' || data.status === 'Product quantity updated in cart') {
-        console.log("Product added to cart successfully");
-    } else {
-        console.error(data.status);
-    }
-}
+      const data = await response.json();
+      console.log('Add to Cart Response:', data);
+      if (data.status === 'Product added to cart' || data.status === 'Product quantity updated in cart') {
+          console.log("Product added to cart successfully");
+      } else {
+          console.error(data.status);
+      }
+  }
 
 // Handle removing products from the cart (send the difference to backend)
-#removeSomeProductsFromCart(productId, quantityToRemove) {
-  fetch('/kits-alb/backend/remove-some-from-cart.php', {
-      method: 'POST',
-      body: JSON.stringify({
-          product_id: productId,
-          quantity: quantityToRemove  // Remove the excess quantity (N)
-      }),
-      headers: {
-          'Content-Type': 'application/json',
-      },
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.status === 'Product removed from cart') {
-          console.log(`Successfully removed ${quantityToRemove} items from the cart.`);
-          this.#checkoutHeader.updateCartCount();
-      } else {
-          console.error('Failed to remove products from cart:', data.message);
-      }
-  })
-  .catch(error => {
-      console.error('Error removing products from cart:', error);
-  });
-}
+  #removeSomeProductsFromCart(productId, quantityToRemove) {
+    fetch('backend/remove-some-from-cart.php', {
+        method: 'POST',
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: quantityToRemove  // Remove the excess quantity (N)
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'Product removed from cart') {
+            console.log(`Successfully removed ${quantityToRemove} items from the cart.`);
+            this.#checkoutHeader.updateCartCount();
+        } else {
+            console.error('Failed to remove products from cart:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error removing products from cart:', error);
+    });
+  }
   
-#updateQuantity(inputElement) {
-  const newQuantity = parseInt(inputElement.value, 10); // Get the new quantity from the input element
 
-  if (newQuantity < 1) {
-    alert('Quantity must be at least 1.');
-    return; // Exit if the quantity is invalid
+  #updateQuantity(inputElement) {
+    const newQuantity = parseInt(inputElement.value, 10); // Get the new quantity from the input element
+
+    if (newQuantity < 1) {
+      alert('Quantity must be at least 1.');
+      return; // Exit if the quantity is invalid
+    }
+
+    const cartItemContainer = inputElement.closest('.js-cart-item');
+    const cartItemId = cartItemContainer.getAttribute('data-cart-item-id');
+
+    const currentQuantityLabel = cartItemContainer.querySelector('.js-quantity-label');
+    const currentQuantity = parseInt(currentQuantityLabel.textContent, 10);
+
+    // If quantity hasn't changed, show a message and exit
+    if (newQuantity === currentQuantity) {
+      this.#showQuantityMessage(cartItemId, 'Quantity is the same', 'red');
+      console.log("No change in quantity. Exiting...");
+      return; // If the quantity hasn't changed, exit
+    }
+
+    const quantityDifference = newQuantity - currentQuantity;
+
+    // Handle adding/removing products based on the quantity change
+    if (quantityDifference > 0) {
+      console.log(`Adding ${quantityDifference} item(s) to cart for product ID: ${cartItemId}`);
+      this.#addProductsToCart(cartItemId, quantityDifference);
+      this.#showQuantityMessage(cartItemId, `Added ${quantityDifference} item(s)`, 'black');
+    } else if (quantityDifference < 0) {
+      console.log(`Removing ${Math.abs(quantityDifference)} item(s) from cart for product ID: ${cartItemId}`);
+      this.#removeSomeProductsFromCart(cartItemId, Math.abs(quantityDifference));
+      this.#showQuantityMessage(cartItemId, `Removed ${Math.abs(quantityDifference)} item(s)`, 'black');
+    }
+
+    // Update the current quantity label with the new quantity
+    currentQuantityLabel.textContent = newQuantity;
+
+    // Optionally, log or handle further UI updates here
+    console.log(`Updated quantity for product ID: ${cartItemId} to ${newQuantity}`);
   }
 
-  const cartItemContainer = inputElement.closest('.js-cart-item');
-  const cartItemId = cartItemContainer.getAttribute('data-cart-item-id');
+  #showQuantityMessage(cartItemId, message, color) {
+    const cartItemContainer = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
+    const messageContainer = cartItemContainer.querySelector(`.quantity-message-${cartItemId}`);
 
-  const currentQuantityLabel = cartItemContainer.querySelector('.js-quantity-label');
-  const currentQuantity = parseInt(currentQuantityLabel.textContent, 10);
+    // Set the message and apply color
+    messageContainer.textContent = message;
+    messageContainer.style.color = color;
 
-  // If quantity hasn't changed, show a message and exit
-  if (newQuantity === currentQuantity) {
-    this.#showQuantityMessage(cartItemId, 'Quantity is the same', 'red');
-    console.log("No change in quantity. Exiting...");
-    return; // If the quantity hasn't changed, exit
+    // Make the message visible by adding a class
+    messageContainer.classList.add('is-visible');
+
+    // After 2 seconds, fade out the message by removing the 'is-visible' class
+    setTimeout(() => {
+      messageContainer.classList.remove('is-visible');
+    }, 2000);
   }
-
-  const quantityDifference = newQuantity - currentQuantity;
-
-  // Handle adding/removing products based on the quantity change
-  if (quantityDifference > 0) {
-    console.log(`Adding ${quantityDifference} item(s) to cart for product ID: ${cartItemId}`);
-    this.#addProductsToCart(cartItemId, quantityDifference);
-    this.#showQuantityMessage(cartItemId, `Added ${quantityDifference} item(s)`, 'black');
-  } else if (quantityDifference < 0) {
-    console.log(`Removing ${Math.abs(quantityDifference)} item(s) from cart for product ID: ${cartItemId}`);
-    this.#removeSomeProductsFromCart(cartItemId, Math.abs(quantityDifference));
-    this.#showQuantityMessage(cartItemId, `Removed ${Math.abs(quantityDifference)} item(s)`, 'black');
-  }
-
-  // Update the current quantity label with the new quantity
-  currentQuantityLabel.textContent = newQuantity;
-
-  // Optionally, log or handle further UI updates here
-  console.log(`Updated quantity for product ID: ${cartItemId} to ${newQuantity}`);
-}
-
-#showQuantityMessage(cartItemId, message, color) {
-  const cartItemContainer = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
-  const messageContainer = cartItemContainer.querySelector(`.quantity-message-${cartItemId}`);
-
-  // Set the message and apply color
-  messageContainer.textContent = message;
-  messageContainer.style.color = color;
-
-  // Make the message visible by adding a class
-  messageContainer.classList.add('is-visible');
-
-  // After 2 seconds, fade out the message by removing the 'is-visible' class
-  setTimeout(() => {
-    messageContainer.classList.remove('is-visible');
-  }, 2000);
-}
-
-
-
 
   /**
    * Handle the deletion of an item when the "Delete" button is clicked.
    * @param {Event} event - The event from the "Delete" button click.
    */
+
   #handleDeleteLinkClick(event) {
     console.log("Boton clicked");
     // Ensure the event target is a delete link
@@ -746,7 +747,7 @@ async #sendAddToCartRequest(productId) {
    * @param {String} cartItemId - The ID of the item to remove from the cart.
    */
   #removeFromCart(cartItemId) {
-    fetch('/kits-alb/backend/remove-from-cart.php', {
+    fetch('backend/remove-from-cart.php', {
       method: 'POST',
       body: JSON.stringify({ product_id: cartItemId }),
       headers: {
@@ -771,7 +772,7 @@ async #sendAddToCartRequest(productId) {
     .catch(error => {
       console.error('Error with request or response:', error);
     });
-}
+  }
   
   #removeFromCartSummary(cartItemElement) {
     DomUtils.removeElement(cartItemElement);
@@ -782,7 +783,7 @@ async #sendAddToCartRequest(productId) {
   }
 
    async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;

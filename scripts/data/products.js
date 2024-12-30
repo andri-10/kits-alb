@@ -85,7 +85,7 @@ export class ProductList {
 
   async loadFromBackend() {
     try {
-      const response = await fetch('/kits-alb/backend/get-products.php');
+      const response = await fetch('backend/get-products.php');
       
       // Log the response body as text for debugging
       const responseText = await response.text();

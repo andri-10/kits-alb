@@ -14,7 +14,7 @@ export class Cart {
   // Fetch cart data from backend and load it
   async loadFromBackend() {
     try {
-      const response = await fetch('/kits-alb/backend/get-cart-products.php'); // Update the PHP endpoint
+      const response = await fetch('backend/get-cart-products.php'); // Update the PHP endpoint
       const data = await response.json();
       
       if (Array.isArray(data)) {
@@ -40,7 +40,7 @@ export class Cart {
     console.log('Adding to cart:', { productId, quantity });
   
     try {
-      const response = await fetch('/kits-alb/backend/add-to-cart.php', {
+      const response = await fetch('backend/add-to-cart.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export class Cart {
   // Fetch total cart quantity from the backend
   async calculateTotalQuantity() {
     try {
-      const response = await fetch('/kits-alb/backend/get-cart-count.php', {
+      const response = await fetch('backend/get-cart-count.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export class Cart {
   // Update the delivery option for a cart item
   async updateDeliveryOption(cartItemId, deliveryOptionId) {
     try {
-      const response = await fetch('/kits-alb/backend/update-delivery-option.php', {
+      const response = await fetch('backend/update-delivery-option.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ export class Cart {
   // Calculate the total costs (product, shipping, and taxes) by fetching from the backend
   async calculateCosts() {
     try {
-      const response = await fetch('/kits-alb/backend/get-cart-costs.php', {
+      const response = await fetch('backend/get-cart-costs.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,6 @@ export class Cart {
 
       return data.costs || { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     } catch (error) {
-      console.error('Error calculating costs:', error);
       return { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     }
   }
@@ -138,7 +137,7 @@ export class Cart {
   // Remove an item from the cart (call backend to remove)
   async removeFromCart(cartItemId) {
     try {
-      const response = await fetch('/kits-alb/backend/remove-from-cart.php', {
+      const response = await fetch('backend/remove-from-cart.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +158,7 @@ export class Cart {
   }
 
   async decreaseQuantity(productId) {
-    const response = await fetch('/kits-alb/backend/remove-from-cart.php', {
+    const response = await fetch('backend/remove-from-cart.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: productId })
