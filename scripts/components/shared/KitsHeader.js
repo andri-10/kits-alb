@@ -26,7 +26,8 @@ export class KitsHeader extends ComponentV2 {
     const searchText = searchParams.get('search') || '';
 
     // Wait for the total quantity to be fetched
-    const totalCartQuantity = await cart.calculateTotalQuantity();
+    let totalCartQuantity = await cart.calculateTotalQuantity();
+    
 
     // Check if the user is logged in
     const userId = await this.getUserId();
