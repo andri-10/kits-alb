@@ -15,7 +15,7 @@ export class KitsHeader extends ComponentV2 {
 
   // Check if the user is logged in
   async getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;  // Return userId if logged in, otherwise return null
@@ -150,7 +150,7 @@ export class KitsHeader extends ComponentV2 {
   }
 
   async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     try {
       const response = await fetch(`${basePath}/get-user-id.php`);
       const data = await response.json();

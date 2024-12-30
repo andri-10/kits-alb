@@ -67,7 +67,7 @@ export class CartSummary extends ComponentV2 {
   async fetchCartData() {
     try {
       console.log('Fetching cart data from backend...');
-      const response = await fetch('/kits-alb/backend/get-cart-products.php');
+      const response = await fetch('backend/get-cart-products.php');
 
       if (!response.ok) {
         throw new Error(`Failed to fetch cart data. Status: ${response.status}`);
@@ -137,10 +137,8 @@ export class CartSummary extends ComponentV2 {
           </div>
   
           <div class="update-container">
-            <button class="js-update-button">Update sizes</button>
-  
-            <!-- Hidden dropdown with size selectors -->
-            <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
+            <button class="button-primary update-size-button js-update-button">Update Sizes</button>
+              <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
               <div class="size-options">
                 <!-- The fetched product options will be injected here -->
               </div>
@@ -161,11 +159,12 @@ export class CartSummary extends ComponentV2 {
     const productId = cartItemElement.getAttribute('data-cart-item-id');
     const dropdown = cartItemElement.querySelector('.js-size-selector-dropdown');
     const quantityInput = cartItemElement.querySelector('.js-quantity-input'); // Select the quantity input
-  
+    
     if (dropdown.style.display === 'none' || !dropdown.style.display) {
       dropdown.style.display = 'block'; // Show the size selector
       updateButton.textContent = 'Collapse'; // Change button text
-  
+      updateButton.classList.add('collapse-button'); // Add class for "Collapse"
+      
       // Fetch products related to this kit (assuming the product belongs to a kit)
       this.#fetchKitProducts(productId).then(kitProducts => {
         this.#populateSizeSelector(dropdown, kitProducts);
@@ -175,7 +174,8 @@ export class CartSummary extends ComponentV2 {
       quantityInput.setAttribute('readonly', 'readonly'); // Prevent the user from modifying the quantity
     } else {
       dropdown.style.display = 'none'; // Hide the size selector
-      updateButton.textContent = 'Update sizes'; // Reset button text
+      updateButton.textContent = 'Update Sizes'; // Reset button text
+      updateButton.classList.remove('collapse-button'); // Remove class for "Collapse"
   
       // Revert the readonly state when the size selector is hidden (allow editing again)
       quantityInput.removeAttribute('readonly'); // Re-enable editing of the quantity
@@ -187,7 +187,7 @@ export class CartSummary extends ComponentV2 {
     try {
       console.log('Fetching products for kit...', productId); // Debugging line
   
-      const response = await fetch('/kits-alb/backend/get-individual-products.php', {
+      const response = await fetch('backend/get-individual-products.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: productId }) // Sending productId in the request body
@@ -251,7 +251,7 @@ export class CartSummary extends ComponentV2 {
         <div class="product-price">${MoneyUtils.formatMoney(product.product_pricecents)}</div>
         <div class="size-options-radio">${sizeOptionsHTML}</div>
         <div class="button-and-message">
-        <button class="js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
+        <button class="button-primary save-size-button js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
         <span class="update-size-message update-size-message-${product.cart_id}"></span>
         </div>
         </div>
@@ -314,7 +314,7 @@ export class CartSummary extends ComponentV2 {
     console.log(`Saving size ${selectedSize} for cart ID ${cartId}`); // Debugging: Log cart ID and size
   
     try {
-      const response = await fetch('/kits-alb/backend/update-cart-size.php', {
+      const response = await fetch('backend/update-cart-size.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -604,7 +604,7 @@ async #sendAddToCartRequest(productId) {
         return;
     }
 
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/add-to-cart.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -622,7 +622,7 @@ async #sendAddToCartRequest(productId) {
 
 // Handle removing products from the cart (send the difference to backend)
 #removeSomeProductsFromCart(productId, quantityToRemove) {
-  fetch('/kits-alb/backend/remove-some-from-cart.php', {
+  fetch('backend/remove-some-from-cart.php', {
       method: 'POST',
       body: JSON.stringify({
           product_id: productId,
@@ -746,7 +746,7 @@ async #sendAddToCartRequest(productId) {
    * @param {String} cartItemId - The ID of the item to remove from the cart.
    */
   #removeFromCart(cartItemId) {
-    fetch('/kits-alb/backend/remove-from-cart.php', {
+    fetch('backend/remove-from-cart.php', {
       method: 'POST',
       body: JSON.stringify({ product_id: cartItemId }),
       headers: {
@@ -782,7 +782,7 @@ async #sendAddToCartRequest(productId) {
   }
 
    async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;
