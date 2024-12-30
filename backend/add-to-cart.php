@@ -31,7 +31,7 @@ if (!isset($_SESSION['user_id'])) {
 // Get the logged-in user_id from the session
 $user_id = $_SESSION['user_id'];
 
-// Get the POST data (product_id)
+// Get the POST data (product_id and size)
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Log the incoming request data to check the input
@@ -45,8 +45,13 @@ if (!isset($data['product_id'])) {
 
 $product_id = $data['product_id'];
 
-// Set size to "L" for all quantity (hardcoded size)
-$size = 'L';
+// Check if size is provided in the request
+if (!isset($data['size'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Size not provided']);
+    exit;
+}
+
+$size = $data['size']; // Get size from the request
 
 // Prepare and execute query to check if the product exists in the database
 $query_check_product = "SELECT id FROM products WHERE id = ?";

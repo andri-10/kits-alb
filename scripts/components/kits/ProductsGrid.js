@@ -133,6 +133,7 @@ export class ProductsGrid extends ComponentV2 {
 
   createRatingStarsUrl(stars) {
     return `./images/ratings/rating-${stars * 10}.png`;
+    
   }
 
   #createVariationsSelectorHTML(product) {
@@ -202,18 +203,21 @@ export class ProductsGrid extends ComponentV2 {
       return;
     }
     this.#addToCartLogic(event);
-  }
+}
 
-  async #addToCartLogic(event) {
+async #addToCartLogic(event) {
     const productContainer = event.target.closest('.js-product-container');
     const productId = productContainer.getAttribute('data-product-id');
     const quantitySelector = productContainer.querySelector('.js-quantity-selector');
     const quantity = quantitySelector ? parseInt(quantitySelector.value, 10) : 1;
   
+    // Always send size 'L'
+    const size = 'L';  // Hardcoded size
+
     // Collect all add-to-cart requests into an array of promises
     const addToCartPromises = [];
     for (let i = 0; i < quantity; i++) {
-      addToCartPromises.push(this.#sendAddToCartRequest(productId));  // Push promises to the array
+      addToCartPromises.push(this.#sendAddToCartRequest(productId, size));  // Push 'L' size
     }
   
     // Wait for all promises to resolve
@@ -224,12 +228,10 @@ export class ProductsGrid extends ComponentV2 {
   
     // Show success message for each product added
     this.#showSuccessMessage(productContainer, productId);
-  }
-  
-  
+}
 
-  // Function to send the AJAX request to the PHP backend
-  async #sendAddToCartRequest(productId) {
+// Function to send the AJAX request to the PHP backend
+async #sendAddToCartRequest(productId, size) {
     const userId = await this.#getUserId();
   
     if (!userId) {
@@ -245,6 +247,7 @@ export class ProductsGrid extends ComponentV2 {
       body: JSON.stringify({
         user_id: userId,
         product_id: productId,
+        size: size,  // Always sending 'L'
       }),
     });
   
@@ -254,10 +257,10 @@ export class ProductsGrid extends ComponentV2 {
     } else {
       console.error(data.status);
     }
-  }
+}
 
-  // Function to display the success message
-  #showSuccessMessage(productContainer, productId) {
+// Function to display the success message
+#showSuccessMessage(productContainer, productId) {
     const successMessage = productContainer.querySelector('.js-added-to-cart-message');
     if (successMessage) {
       successMessage.classList.add('is-visible');
@@ -270,7 +273,7 @@ export class ProductsGrid extends ComponentV2 {
         successMessage.classList.remove('is-visible');
       }, 2000);
     }
-  }
+} 
 
   // Function to retrieve the user ID from session or database
   async #getUserId() {
@@ -278,5 +281,5 @@ export class ProductsGrid extends ComponentV2 {
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;
-  }
+}
 }

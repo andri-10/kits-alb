@@ -80,14 +80,12 @@ body {
     color: #555;
 }
 
-#size {
-    margin: 10px 0;
-    padding: 8px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 70px;
+.size-and-quantity{
+    display:flex;
+    justify-content: left;
+    gap: 14px
 }
+
 
 .product-price {
     font-size: 22px;
@@ -95,6 +93,29 @@ body {
     margin-top: 20px;
     font-weight: bold;
 }
+
+.added-to-cart-message {
+    color: rgb(6, 125, 98);
+    font-size: 16px;
+  
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+  
+    /* We will use JavaScript to change this opacity. */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .added-to-cart-message img {
+    height: 20px;
+    margin-right: 5px;
+  }
+  
+ .added-to-cart-message.is-visible {
+    opacity: 1;
+    transition: none;
+  }
 
 .add-to-cart {
     padding: 12px 20px;
@@ -109,7 +130,7 @@ body {
 }
 
 .add-to-cart:hover {
-    background-color: #218838;
+    background-color: rgb(221, 188, 18);
 }
 
 
@@ -132,6 +153,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(230px, 4fr));
     gap: 50px;
+    justify-content: center;
 }
 
 .related-product {
@@ -170,10 +192,50 @@ body {
     color: #007bff;
 }
 
+/* For screens larger than 1520px */
+/* For very large screens (e.g., larger than 1520px) */
+@media (min-width: 1521px) {
+    .related-products-list {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);  /* 6 items per row */
+        gap: 20px;
+    }
+}
+
+/* For screens between 1200px and 1520px */
+@media (max-width: 1520px) and (min-width: 900px) {
+    .related-products-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);  /* 3 items per row */
+        gap: 20px;
+    }
+}
+
+/* For screens between 600px and 900px */
+@media (max-width: 900px) and (min-width: 600px) {
+    .related-products-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);  /* 2 items per row */
+        gap: 20px;
+    }
+}
+
+/* For very small screens (less than 600px) */
+@media (max-width: 600px) {
+    .related-products-list {
+        display: grid;
+        grid-template-columns: 1fr;  /* 1 item per row */
+        gap: 20px;
+    }
+}
 
 @media (max-width: 768px) {
-    .related-products-list {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+    .added-to-cart-message{
+        justify-content:center
+    }
+
+    .size-and-quantity {
+        justify-content: space-around;
     }
 }
 
@@ -193,7 +255,5 @@ body {
         text-align: center;
     }
 
-    .related-products-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
+    
 }
