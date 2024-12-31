@@ -11,6 +11,8 @@ try {
 
     // SQL query to fetch product data including keywords
     $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
+    // SQL query to fetch product data including keywords
+    $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
     $stmt = $pdo->query($sql);
 
     // Fetch all products as an associative array
@@ -27,6 +29,14 @@ try {
             $keywords = [];
         }
 
+        // Decode the 'keywords' string into an array (JSON decode)
+        $keywords = json_decode($product['keywords'], true);  // true to get an associative array
+
+        // Check if decoding was successful; if not, set an empty array
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $keywords = [];
+        }
+
         $formattedProducts[] = [
             'id' => $product['id'],
             'name' => $product['name'],
@@ -35,6 +45,8 @@ try {
                 'stars' => $product['stars'], // Assuming rating is a number out of 5
                 'count' => $product['rating_count']
             ],
+            'priceCents' => $product['priceCents'],
+            'keywords' => $keywords // Include decoded keywords
             'priceCents' => $product['priceCents'],
             'keywords' => $keywords // Include decoded keywords
         ];
