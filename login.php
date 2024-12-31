@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 $servername = "localhost";
 $username = "root";
@@ -11,25 +12,44 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-session_start();
-
 $error = '';
 $email = '';
 $password = '';
 
-if (!isset($_SESSION['failed_attempts'])) {
-    $_SESSION['failed_attempts'] = 0;
-    $_SESSION['last_failed_attempt'] = null;
-}
-
+// Max failed attempts and block duration for brute force protection
 $max_failed_attempts = 7;
-$block_duration = 1800;
+$block_duration = 1800; // 30 minutes in seconds
+
+// Check if "Remember me" cookie is set and validate it
+if (isset($_COOKIE['remember_me_token'])) {
+    $token = $_COOKIE['remember_me_token'];
+    $stmt = $conn->prepare("SELECT id, email, role FROM Users WHERE remember_me_token = ?");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // User found, log them in
+        $user = $result->fetch_assoc();
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+
+        // Redirect to the appropriate page based on user role
+        if ($user['role'] === 'admin') {
+            header("Location: admin/dashboard.php");
+        } else {
+            header("Location: index.php");
+        }
+        exit;
+    }
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if ($_SESSION['failed_attempts'] >= $max_failed_attempts) {
+    // If the number of failed attempts exceeds max limit, block the login for a while
+    if (isset($_SESSION['failed_attempts']) && $_SESSION['failed_attempts'] >= $max_failed_attempts) {
         $last_failed_attempt = $_SESSION['last_failed_attempt'];
         $current_time = time();
         $time_diff = $current_time - $last_failed_attempt;
@@ -37,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($time_diff < $block_duration) {
             $error = "Too many failed attempts. Please try again in 30 minutes.";
         } else {
-            $_SESSION['failed_attempts'] = 0;
+            $_SESSION['failed_attempts'] = 0; // Reset failed attempts after block time has passed
         }
     }
 
@@ -51,22 +71,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
-                $_SESSION['failed_attempts'] = 0;
+                $_SESSION['failed_attempts'] = 0; // Reset failed attempts
+
+                // Create session for logged in user
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
 
+                // Handle "Remember Me" functionality
+                if (isset($_POST['keep-signed-in'])) {
+                    // Generate a unique token for "remember me"
+                    $remember_token = bin2hex(random_bytes(32)); // 64-character token
+
+                    // Set the "remember me" cookie for 30 days
+                    setcookie("remember_me_token", $remember_token, time() + (30 * 24 * 60 * 60), "/");
+
+                    // Save token to the database to associate with the user
+                    $stmt = $conn->prepare("UPDATE Users SET remember_me_token = ? WHERE id = ?");
+                    $stmt->bind_param("si", $remember_token, $user['id']);
+                    $stmt->execute();
+                }
+
+                // Redirect based on the user role
                 if ($user['role'] === 'admin') {
-                    header("Location: admin/dashboard.php");
+                    header("Location: admin.php");
                 } else {
                     header("Location: index.php");
                 }
                 exit;
             } else {
+                // Invalid password
                 $_SESSION['failed_attempts'] += 1;
                 $_SESSION['last_failed_attempt'] = time();
                 $error = "Invalid password. Please try again.";
             }
         } else {
+            // No account found
             $_SESSION['failed_attempts'] += 1;
             $_SESSION['last_failed_attempt'] = time();
             $error = "No account found with that email.";

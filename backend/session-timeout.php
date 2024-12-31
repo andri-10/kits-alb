@@ -13,7 +13,7 @@ if (isset($_GET['check_session'])) {
         exit;
     }
     
-    if (isset($_SESSION['last_activity'])) {
+    if (isset($_SESSION['last_activity'])  && $_SESSION['user_role']!=="admin" && !isset($_COOKIE['remember_me_token'])) {
         $inactive_time = time() - $_SESSION['last_activity'];
         if ($inactive_time > $timeout_duration) {
             session_unset();
@@ -28,7 +28,7 @@ if (isset($_GET['check_session'])) {
 }
 
 // Regular page load checks
-if (isset($_SESSION['last_activity'])) {
+if (isset($_SESSION['last_activity']) && $_SESSION['user_role']!=="admin" && !isset($_COOKIE['remember_me_token'])) {
     $inactive_time = time() - $_SESSION['last_activity'];
     if ($inactive_time > $timeout_duration) {
         session_unset();

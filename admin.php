@@ -52,6 +52,7 @@
             </div>
             <div id="user-list">
                 <h3>All Users</h3>
+                <table id="user-list-table"> </table>
             </div>
         </section>
 

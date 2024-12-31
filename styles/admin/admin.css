@@ -110,7 +110,7 @@ body.popup-active {
 }
 
 /* The form itself */
-#create-product-form {
+#create-product-form, #update-product-form{
     position: fixed;
     top: 50%;
     left: 50%;
@@ -126,7 +126,7 @@ body.popup-active {
 }
 
 /* Style for the form's input elements */
-#create-product-form input {
+#create-product-form input, #update-product-form input{
     width: 100%;
     padding: 8px;
     margin: 10px 0;
@@ -136,7 +136,7 @@ body.popup-active {
 }
 
 /* Image preview */
-#create-product-form #image-preview {
+#create-product-form #image-preview, #update-product-form #image-preview{
     margin-top: 10px;
     width: 100px;
     height: 100px;
@@ -144,7 +144,7 @@ body.popup-active {
 }
 
 /* Button styling */
-#create-product-form button {
+#create-product-form button, #update-product-form button{
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
@@ -154,22 +154,22 @@ body.popup-active {
     margin-top: 10px;
 }
 
-#create-product-form button[type="button"] {
+#create-product-form button[type="button"], #update-product-form button[type="button"] {
     background-color: #f44336; /* Red for cancel */
 }
 
 /* Hover effects for buttons */
-#create-product-form button:hover {
+#create-product-form button:hover, #update-product-form button:hover{
     opacity: 0.9;
 }
 
 /* Cancel button hover */
-#create-product-form button[type="button"]:hover {
+#create-product-form button[type="button"]:hover, #update-product-form button[type="button"]:hover  {
     opacity: 0.8;
 }
 
 /* Style for the table to expand the whole page */
-#product-list-table {
+#product-list-table, #user-list-table{
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
@@ -178,20 +178,20 @@ body.popup-active {
 }
 
 /* Add borders to the table */
-#product-list-table th,
-#product-list-table td {
+#product-list-table th, #user-list-table th,
+#product-list-table td, #user-list-table td {
     border: 1px solid #ddd;
     padding: 10px;
 }
 
 /* Add a background to the table header */
-#product-list-table thead {
+#product-list-table thead, #user-list-table thead  {
     background-color: #f4f4f4;
     font-weight: bold;
 }
 
 /* Add hover effect for table rows */
-#product-list-table tbody tr:hover {
+#product-list-table tbody tr:hover #user-list-table tbody tr:hover {
     background-color: #f9f9f9;
 }
 

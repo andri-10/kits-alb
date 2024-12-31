@@ -3,10 +3,10 @@ import { WindowUtils } from '../../utils/WindowUtils.js';
 import { ComponentV2 } from '../ComponentV2.js';
 
 export class KitsHeader extends ComponentV2 {
+  // Use a single event listener for delegation
   events = {
-    'click .js-hamburger-menu-toggle': (event) => this.#toggleDropdownMenu(event),
-    'keyup .js-search-bar': (event) => this.#handleSearchBarInput(event),
-    'click .js-search-button': (event) => this.#handleSearchClick(event),
+    'click': (event) => this.#handleEventClick(event),
+    'keyup': (event) => this.#handleEventKeyup(event),
   };
 
   // Store references to cart quantity elements
@@ -77,7 +77,6 @@ export class KitsHeader extends ComponentV2 {
     this.updateCartCount();
     this.#initializeHamburgerMenu();
   }
-
   // Add selectors for both normal and mobile cart quantities
   getCartQuantityElement() {
     return this.#cartQuantityElement;
@@ -117,7 +116,6 @@ export class KitsHeader extends ComponentV2 {
   
     hamburgerMenuToggle.addEventListener('click', () => this.#toggleDropdownMenu());
   }
-  
 
   #toggleDropdownMenu() {
     const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
@@ -130,45 +128,38 @@ export class KitsHeader extends ComponentV2 {
     }
   }
 
-  #handleResize() {
-    if (window.innerWidth > 575) {
-      const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
-      dropdownMenu.classList.remove('hamburger-menu-opened');
-    }
-  }
-  
-
-  #handleSearchBarInput(event) {
-    if (event.key === 'Enter') {
+  #handleEventClick(event) {
+    if (event.target.matches('.js-hamburger-menu-toggle')) {
+      this.#toggleDropdownMenu();
+    } else if (event.target.matches('.js-search-button')) {
       this.#searchProducts(this.element.querySelector('.js-search-bar').value);
     }
   }
 
-  #handleSearchClick() {
-    this.#searchProducts(this.element.querySelector('.js-search-bar').value);
+  #handleEventKeyup(event) {
+    if (event.target.matches('.js-search-bar') && event.key === 'Enter') {
+      this.#searchProducts(event.target.value);
+    }
   }
 
   #searchProducts(searchText) {
+    // Change the URL and reload products based on the search text
     if (!searchText) {
       WindowUtils.setHref('./catalog.php');
-      return;
+    } else {
+      WindowUtils.setHref(`./?search=${searchText}`);
     }
-
-    WindowUtils.setHref(`./?search=${searchText}`);
   }
 
   async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend';
+    const basePath = 'backend';
     try {
       const response = await fetch(`${basePath}/get-user-id.php`);
       const data = await response.json();
-      console.log('User ID response:', data);  // Debugging line
       return data.userId || null;
     } catch (error) {
       console.error('Error fetching user ID:', error);
       return null;
     }
   }
-  
-
 }

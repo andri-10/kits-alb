@@ -21,6 +21,7 @@ export class Product {
 
   get id() { return this.#id; }
   get name() { return this.#name; }
+  get stars() { return this.#rating.stars;}
   get ratingCount() { return this.#rating.count; }
   get priceCents() { return this.#priceCents; }
   get keywords() { return this.#keywords; }
