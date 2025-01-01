@@ -3,14 +3,18 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "web"; // Replace with your actual database name
+$dbname = "web";
+
+// Set JSON header
+header('Content-Type: application/json');
 
 // Create connection
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 
 // Check connection
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    echo json_encode(["success" => false, "error" => "Database connection failed."]);
+    exit;
 }
 
 // Query to fetch all users
@@ -21,7 +25,9 @@ $result = mysqli_query($conn, $query);
 
 // Check if query was successful
 if (!$result) {
-    echo json_encode(["error" => "Query failed: " . mysqli_error($conn)]);
+    // Log error to server logs and return a generic message
+    error_log("Query failed: " . mysqli_error($conn));
+    echo json_encode(["success" => false, "error" => "Failed to fetch users."]);
     exit;
 }
 
@@ -30,7 +36,7 @@ $users = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 // Check if there are any users
 if (empty($users)) {
-    echo json_encode(["message" => "No users found."]);
+    echo json_encode(["success" => false, "message" => "No users found."]);
 } else {
     // Return users as a JSON response
     echo json_encode(["success" => true, "users" => $users]);
