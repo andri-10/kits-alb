@@ -31,8 +31,8 @@ try {
                 WHEN keywords LIKE "%national%" THEN 1  -- National teams come first
                 ELSE 2  -- Clubs come after national teams
             END,
-            -- Sort by team name (excluding kit types "Home", "Away", "Third")
-            LEFT(name, LOCATE(" ", name) - 1), 
+            -- Sort by team name excluding "Home", "Away", "Third" (using REGEXP)
+            REGEXP_REPLACE(name, "(Home|Away|Third|Kit|kit)", "") ASC,
             -- Prioritize Home, then Away, then Third kit types
             CASE 
                 WHEN name LIKE "%Home%" THEN 1
