@@ -62,6 +62,9 @@ export class PaymentSummary extends Component {
       totalCents
     } = cart.calculateCosts();
 
+    const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
+    const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
+
     this.element.querySelector('.js-payment-info').innerHTML = `
       <div class="payment-summary-title">
         Order Summary
@@ -92,18 +95,18 @@ export class PaymentSummary extends Component {
       </div>
 
       <div class="payment-summary-row">
-        <div>Estimated tax (${MoneyUtils.taxRate * 100}%):</div>
+        <div>Estimated tax (10%):</div>
         <div class="payment-summary-money"
-          data-testid="tax-cost">
-          ${MoneyUtils.formatMoney(taxCents)}
+          data-testid="final-tax-cost">
+          ${MoneyUtils.formatMoney(finalTaxCents)}
         </div>
       </div>
 
       <div class="payment-summary-row total-row">
-        <div>Order total:</div>
+        <div>Final total:</div>
         <div class="payment-summary-money"
-          data-testid="total-cost">
-          ${MoneyUtils.formatMoney(totalCents)}
+          data-testid="final-total-cost">
+          ${MoneyUtils.formatMoney(finalTotalCents)}
         </div>
       </div>
     `;

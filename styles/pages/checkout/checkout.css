@@ -67,6 +67,7 @@ main {
 .cart-item-details-and-delivery{
 
 display:flex;
+justify-content: space-between;
 flex-wrap:wrap;
 
 }
