@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Create session for logged in user
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
-
+               
                 // Handle "Remember Me" functionality
                 if (isset($_POST['keep-signed-in'])) {
                     // Generate a unique token for "remember me"

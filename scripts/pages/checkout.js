@@ -8,4 +8,5 @@ products.loadFromBackend().then(() => {
   const paymentSummary = new PaymentSummary('.js-payment-summary').create();
   const cartSummary = new CartSummary('.js-cart-summary').create();
   cartSummary.setCheckoutHeader(checkoutHeader);
+  cartSummary.setPaymentSummary(paymentSummary);
 });
