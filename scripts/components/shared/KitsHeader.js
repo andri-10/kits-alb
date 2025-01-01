@@ -13,8 +13,7 @@ export class KitsHeader extends ComponentV2 {
 
   events = {
     'click .js-hamburger-menu-toggle': (event) => this.#toggleDropdownMenu(event),
-    'keyup .js-search-bar': (event) => this.#handleSearchBarInput(event),
-    'click .js-search-button': (event) => this.#handleSearchClick(event),
+  
   };
 
   // Store references to cart quantity elements
@@ -49,9 +48,11 @@ export class KitsHeader extends ComponentV2 {
       searchSection = `
         <section class="middle-section">
           <input class="js-search-bar search-bar" type="text" placeholder="Search" value="${searchText}" data-testid="search-input">
+
           <button class="js-clear-search search-clear-button" data-testid="clear-search-button" aria-label="Clear Search">
             <img class="clear-icon" src="images/icons/clear-icon.png">
           </button>
+          
           <button class="js-search-button search-button" data-testid="search-button">
             <img class="search-icon" src="images/icons/search-icon.png">
           </button>
@@ -99,6 +100,35 @@ export class KitsHeader extends ComponentV2 {
         </a>
       </div>
     `;
+    const searchBar = document.querySelector('.kits-header .search-bar');
+    const clearButton = document.querySelector('.kits-header .search-clear-button');
+
+
+    searchBar.addEventListener('input', function() {
+      if (searchBar.value.trim() !== '') {
+        clearButton.style.display = 'block';
+        searchBar.style.width = 'calc(100% - 40px)';
+      } else {
+        clearButton.style.display = 'none';
+      }
+    });
+
+
+    this.element.querySelector('.js-search-bar').addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        this.#performSearch();
+      }
+    });
+
+    this.element.querySelector('.js-search-button').addEventListener('click', () => {
+      this.#performSearch();
+    });
+
+    this.element.querySelector('.js-clear-search').addEventListener('click', () => {
+      this.element.querySelector('.js-search-bar').value = ''; 
+      clearButton.style.display = 'none';
+      this.#performSearch(); // Optional: perform search on clear (if needed)
+    });
 
     // Ensure that cart quantity elements are available after render
     this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
@@ -106,7 +136,11 @@ export class KitsHeader extends ComponentV2 {
 
     // Update cart count after the render
     this.updateCartCount();
+    this.#initializeHamburgerMenu();
   }
+
+
+
 
   // Add selectors for both normal and mobile cart quantities
   getCartQuantityElement() {
@@ -141,50 +175,41 @@ export class KitsHeader extends ComponentV2 {
     }
   }
 
-  #toggleDropdownMenu(event) {
+  #initializeHamburgerMenu() {
+    const hamburgerMenuToggle = this.element.querySelector('.js-hamburger-menu-toggle');
+    const hamburgerMenuDropdown = this.element.querySelector('.js-hamburger-menu-dropdown');
+  
+    hamburgerMenuToggle.addEventListener('click', () => this.#toggleDropdownMenu());
+  }
+
+  #toggleDropdownMenu() {
     const dropdownMenu = this.element.querySelector('.js-hamburger-menu-dropdown');
     const isOpened = dropdownMenu.classList.contains('hamburger-menu-opened');
-
+  
     if (!isOpened) {
       dropdownMenu.classList.add('hamburger-menu-opened');
-      dropdownMenu.style.height = '88px'; // Set to the height of the menu
     } else {
       dropdownMenu.classList.remove('hamburger-menu-opened');
-      dropdownMenu.style.height = '0'; // Collapse the menu
     }
   }
 
-  #handleSearchBarInput(event) {
-    if (event.key === 'Enter') {
-      this.#searchProducts(this.element.querySelector('.js-search-bar').value);
-    }
-  }
-
-  #handleSearchClick() {
-    this.#searchProducts(this.element.querySelector('.js-search-bar').value);
-  }
-
-  #searchProducts(searchText) {
-    if (!searchText) {
-      WindowUtils.setHref('./catalog.php');
-      return;
-    }
-
-    WindowUtils.setHref(`./?search=${searchText}`);
+  #performSearch() {
+    const searchText = this.element.querySelector('.js-search-bar').value;
+    // Update the URL with the search query
+    const searchParams = new URLSearchParams(WindowUtils.getSearch());
+    searchParams.set('search', searchText);
+    WindowUtils.setSearch(searchParams.toString()); // This updates the URL without reloading the page
   }
 
   async #getUserId() {
-    const basePath = window.location.origin + '/backend';
+    const basePath = 'backend';
     try {
       const response = await fetch(`${basePath}/get-user-id.php`);
       const data = await response.json();
-      console.log('User ID response:', data);  // Debugging line
       return data.userId || null;
     } catch (error) {
       console.error('Error fetching user ID:', error);
       return null;
     }
   }
-  
-
 }
