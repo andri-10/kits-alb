@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function handleAddToCart(event, kitsHeader) {
-  const basePath = 'backend'; // Change this to your actual backend path
+  const basePath = '/backend'; // Change this to your actual backend path
 
   // Step 1: Check if the user is logged in
   const response = await fetch(`${basePath}/check-session.php`);
@@ -59,7 +59,7 @@ async function sendAddToCartRequest(productId, size) {
     return;
   }
 
-  const basePath = window.location.origin + '/kits-alb/backend/';
+  const basePath = window.location.origin + '/backend';
   const response = await fetch(`${basePath}/add-to-cart.php`, {
     method: 'POST',
     headers: {
@@ -81,7 +81,7 @@ async function sendAddToCartRequest(productId, size) {
 }
 
 async function getUserId() {
-  const basePath = window.location.origin + '/kits-alb/backend/';
+  const basePath = window.location.origin + '/backend';
   const response = await fetch(`${basePath}/get-user-id.php`);
   const data = await response.json();
   return data.userId || null;
