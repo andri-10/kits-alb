@@ -2,7 +2,7 @@ import { KitsHeader } from '../components/shared/KitsHeader.js';
 import { WindowUtils } from '../utils/WindowUtils.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-  const kitsHeader = new KitsHeader('.js-kits-header').create();
+  const kitsHeader = new KitsHeader('.js-kits-header', true).create();
 
   // Setup the event listener for the "Add to Cart" button
   const addToCartButton = document.querySelector('.add-to-cart');
