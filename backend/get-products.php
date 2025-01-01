@@ -47,8 +47,6 @@ try {
             ],
             'priceCents' => $product['priceCents'],
             'keywords' => $keywords // Include decoded keywords
-            'priceCents' => $product['priceCents'],
-            'keywords' => $keywords // Include decoded keywords
         ];
     }
 

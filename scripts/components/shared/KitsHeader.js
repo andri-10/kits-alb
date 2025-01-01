@@ -6,7 +6,7 @@ export class KitsHeader extends ComponentV2 {
   // Use a single event listener for delegation
   events = {
     'click': (event) => this.#handleEventClick(event),
-    'keyup': (event) => this.#handleEventKeyup(event),
+  
   };
 
   // Store references to cart quantity elements
@@ -131,25 +131,11 @@ export class KitsHeader extends ComponentV2 {
   #handleEventClick(event) {
     if (event.target.matches('.js-hamburger-menu-toggle')) {
       this.#toggleDropdownMenu();
-    } else if (event.target.matches('.js-search-button')) {
-      this.#searchProducts(this.element.querySelector('.js-search-bar').value);
     }
   }
 
-  #handleEventKeyup(event) {
-    if (event.target.matches('.js-search-bar') && event.key === 'Enter') {
-      this.#searchProducts(event.target.value);
-    }
-  }
-
-  #searchProducts(searchText) {
-    // Change the URL and reload products based on the search text
-    if (!searchText) {
-      WindowUtils.setHref('./catalog.php');
-    } else {
-      WindowUtils.setHref(`./?search=${searchText}`);
-    }
-  }
+  
+ 
 
   async #getUserId() {
     const basePath = 'backend';
