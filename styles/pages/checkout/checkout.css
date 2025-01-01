@@ -160,7 +160,7 @@ flex-wrap:wrap;
   border: none;
 }
 
-.update-size-button:hover{
+.update-size-button:hover, .save-size-button:hover{
   background-color: rgb(56, 75, 99);
   border: none;
 }
@@ -170,13 +170,13 @@ flex-wrap:wrap;
 
   padding: 10px;
   font-weight: bold;
-  background-color: lightgreen;
+  background-color: rgb(221, 229, 239);
   border: none;
   color: rgb(19, 25, 33);
 }
 
 .collapse-button:hover{
-  background-color: greenyellow;
+  background-color: rgb(169, 181, 195);
   border-color: none;
 }
 
