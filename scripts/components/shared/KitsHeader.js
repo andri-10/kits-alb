@@ -17,15 +17,11 @@ export class KitsHeader extends ComponentV2 {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
 
-    // Wait for the total quantity to be fetched
     let totalCartQuantity = await cart.calculateTotalQuantity();
-    
-
-    // Check if the user is logged in
     const userId = await this.#getUserId();
-    const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
-    const orderLinkHref = userId ? 'orders.php': 'login.php'; 
-    // Render the header HTML with the dynamic cart link
+    const cartLinkHref = userId ? 'checkout.php' : 'login.php';
+    const orderLinkHref = userId ? 'orders.php' : 'login.php';
+
     this.element.innerHTML = `
       <section class="left-section">
         <a href="index.php" class="header-link">
@@ -36,9 +32,15 @@ export class KitsHeader extends ComponentV2 {
 
       <section class="middle-section">
         <input class="js-search-bar search-bar" type="text" placeholder="Search" value="${searchText}" data-testid="search-input">
+
+        <button class="js-clear-search search-clear-button" data-testid="clear-search-button" aria-label="Clear Search">
+          <img class="clear-icon" src="images/icons/clear-icon.png">
+        </button>
+
         <button class="js-search-button search-button" data-testid="search-button">
           <img class="search-icon" src="images/icons/search-icon.png">
         </button>
+        
       </section>
 
       <section class="right-section">
@@ -47,7 +49,6 @@ export class KitsHeader extends ComponentV2 {
           <span class="orders-text">& Orders</span>
         </a>
 
-        <!-- Cart link now dynamically redirects based on user login -->
         <a class="js-cart-link cart-link header-link" href="${cartLinkHref}">
           <img class="cart-icon" src="images/icons/cart-icon.png">
           <div class="js-cart-quantity cart-quantity" data-testid="cart-quantity">
@@ -69,6 +70,36 @@ export class KitsHeader extends ComponentV2 {
       </div>
     `;
 
+    const searchBar = document.querySelector('.kits-header .search-bar');
+    const clearButton = document.querySelector('.kits-header .search-clear-button');
+
+
+    searchBar.addEventListener('input', function() {
+      if (searchBar.value.trim() !== '') {
+        clearButton.style.display = 'block';
+        searchBar.style.width = 'calc(100% - 40px)';
+      } else {
+        clearButton.style.display = 'none';
+      }
+    });
+
+
+    this.element.querySelector('.js-search-bar').addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        this.#performSearch();
+      }
+    });
+
+    this.element.querySelector('.js-search-button').addEventListener('click', () => {
+      this.#performSearch();
+    });
+
+    this.element.querySelector('.js-clear-search').addEventListener('click', () => {
+      this.element.querySelector('.js-search-bar').value = ''; 
+      clearButton.style.display = 'none';
+      this.#performSearch(); // Optional: perform search on clear (if needed)
+    });
+
     // Ensure that cart quantity elements are available after render
     this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
     this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
@@ -77,6 +108,7 @@ export class KitsHeader extends ComponentV2 {
     this.updateCartCount();
     this.#initializeHamburgerMenu();
   }
+
   // Add selectors for both normal and mobile cart quantities
   getCartQuantityElement() {
     return this.#cartQuantityElement;
@@ -134,8 +166,13 @@ export class KitsHeader extends ComponentV2 {
     }
   }
 
-  
- 
+  #performSearch() {
+    const searchText = this.element.querySelector('.js-search-bar').value;
+    // Update the URL with the search query
+    const searchParams = new URLSearchParams(WindowUtils.getSearch());
+    searchParams.set('search', searchText);
+    WindowUtils.setSearch(searchParams.toString()); // This updates the URL without reloading the page
+  }
 
   async #getUserId() {
     const basePath = 'backend';

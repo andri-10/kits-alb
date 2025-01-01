@@ -9,11 +9,30 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // SQL query to fetch product data including keywords
-    $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
-    // SQL query to fetch product data including keywords
-    $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
-    $stmt = $pdo->query($sql);
+    // Check if a search term is provided
+    $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
+
+    // SQL query to fetch product data including keywords with search functionality
+    if ($searchTerm) {
+        $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords 
+                FROM products 
+                WHERE name LIKE :searchTerm OR keywords LIKE :searchTerm';
+    } else {
+        // If no search term is provided, fetch all products
+        $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
+    }
+
+    // Prepare the SQL statement
+    $stmt = $pdo->prepare($sql);
+
+    // Bind search term if provided
+    if ($searchTerm) {
+        $searchTerm = '%' . $searchTerm . '%'; // Add wildcards for partial matching
+        $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
+    }
+
+    // Execute the query
+    $stmt->execute();
 
     // Fetch all products as an associative array
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -21,14 +40,6 @@ try {
     // Format the products to the structure needed in the frontend
     $formattedProducts = [];
     foreach ($products as $product) {
-        // Decode the 'keywords' string into an array (JSON decode)
-        $keywords = json_decode($product['keywords'], true);  // true to get an associative array
-
-        // Check if decoding was successful; if not, set an empty array
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $keywords = [];
-        }
-
         // Decode the 'keywords' string into an array (JSON decode)
         $keywords = json_decode($product['keywords'], true);  // true to get an associative array
 

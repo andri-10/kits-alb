@@ -192,6 +192,10 @@ main {
   
 }
 
+.variation-name{
+  text-align: center;
+}
+
 
 @keyframes fadeIn {
   0% {
