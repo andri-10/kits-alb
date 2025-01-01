@@ -100,6 +100,8 @@ export class KitsHeader extends ComponentV2 {
         </a>
       </div>
     `;
+
+    if(!this.hideSearch){
     const searchBar = document.querySelector('.kits-header .search-bar');
     const clearButton = document.querySelector('.kits-header .search-clear-button');
 
@@ -112,7 +114,6 @@ export class KitsHeader extends ComponentV2 {
         clearButton.style.display = 'none';
       }
     });
-
 
     this.element.querySelector('.js-search-bar').addEventListener('keypress', (event) => {
       if (event.key === 'Enter') {
@@ -127,14 +128,13 @@ export class KitsHeader extends ComponentV2 {
     this.element.querySelector('.js-clear-search').addEventListener('click', () => {
       this.element.querySelector('.js-search-bar').value = ''; 
       clearButton.style.display = 'none';
-      this.#performSearch(); // Optional: perform search on clear (if needed)
+      this.#performSearch();
     });
+  }
 
-    // Ensure that cart quantity elements are available after render
     this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
     this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
 
-    // Update cart count after the render
     this.updateCartCount();
     this.#initializeHamburgerMenu();
   }
