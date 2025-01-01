@@ -39,6 +39,28 @@ body {
   color: rgb(233, 144, 11);
 }
 
+/* Style for error and success messages */
+.error-message, .success-message {
+  color: #ff0000; /* Red for error messages */
+  
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 100%; /* Prevents expanding beyond the container */
+  word-wrap: break-word; /* Break long words to wrap within the container */
+  overflow-wrap: break-word; /* Ensures proper wrapping of text */
+  box-sizing: border-box; /* Ensures padding doesn't overflow the box */
+  border-radius: 5px; /* Rounded edges */
+  text-align: left;
+}
+.success-message {
+  color: #006400; /* Green for success messages */
+  
+}
+
+
+
 .new_home_web .text-blk.subHeading {
   text-align: center;
   color: #939393;

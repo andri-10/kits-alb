@@ -20,36 +20,21 @@ $password = '';
 $max_failed_attempts = 7;
 $block_duration = 1800; // 30 minutes in seconds
 
-// Check if "Remember me" cookie is set and validate it
-if (isset($_COOKIE['remember_me_token'])) {
-    $token = $_COOKIE['remember_me_token'];
-    $stmt = $conn->prepare("SELECT id, email, role FROM Users WHERE remember_me_token = ?");
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // User found, log them in
-        $user = $result->fetch_assoc();
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_role'] = $user['role'];
-
-        // Redirect to the appropriate page based on user role
-        if ($user['role'] === 'admin') {
-            header("Location: admin/dashboard.php");
-        } else {
-            header("Location: index.php");
-        }
-        exit;
-    }
-}
-
+// Only initialize session variables for failed attempts if it's a login attempt (i.e., POST request)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Initialize failed_attempts session variable if not set
+    if (!isset($_SESSION['failed_attempts'])) {
+        $_SESSION['failed_attempts'] = 0;
+    }
+    if (!isset($_SESSION['last_failed_attempt'])) {
+        $_SESSION['last_failed_attempt'] = 0;
+    }
+
     $email = $_POST['email'];
     $password = $_POST['password'];
 
     // If the number of failed attempts exceeds max limit, block the login for a while
-    if (isset($_SESSION['failed_attempts']) && $_SESSION['failed_attempts'] >= $max_failed_attempts) {
+    if ($_SESSION['failed_attempts'] >= $max_failed_attempts) {
         $last_failed_attempt = $_SESSION['last_failed_attempt'];
         $current_time = time();
         $time_diff = $current_time - $last_failed_attempt;
@@ -62,12 +47,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (empty($error)) {
+        // Check if email exists in the database
         $stmt = $conn->prepare("SELECT id, password, role FROM Users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
+            // Email found, check the password
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
@@ -76,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Create session for logged in user
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
-               
+
                 // Handle "Remember Me" functionality
                 if (isset($_POST['keep-signed-in'])) {
                     // Generate a unique token for "remember me"
@@ -99,16 +86,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 exit;
             } else {
-                // Invalid password
+                // Password incorrect
                 $_SESSION['failed_attempts'] += 1;
                 $_SESSION['last_failed_attempt'] = time();
-                $error = "Invalid password. Please try again.";
+                $error = "The email or password you entered is incorrect.";
             }
         } else {
-            // No account found
+            // Email doesn't exist
             $_SESSION['failed_attempts'] += 1;
             $_SESSION['last_failed_attempt'] = time();
-            $error = "No account found with that email.";
+            $error = "The email you entered does not exist.";
         }
 
         $stmt->close();
@@ -117,6 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -178,12 +166,18 @@ $conn->close();
                                 <label for="keep-signed-in">Keep me signed in</label>
                             </div>
                             <input type="submit" name="submit" value = "Sign in" class="send">
+                            <?php if ($error): ?>
+                        <div class="error-message" style="color: red; font-size: 14px; text-align: center; margin-top: 25px">
+                            <?php echo $error; ?>
+                        </div>
+                    <?php endif; ?>
                         </div>
                     </form>
                     <div class="links">
                         <a class = "link" href="passwordreset.php">Forgot your password?</a>
                         <p>New to Kits Alb? <a class = "link" href="registration.php">Create your account.</a></p>
                     </div>
+                    
                 </div>
             </div>
         </div>
