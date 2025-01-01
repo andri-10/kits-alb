@@ -3,6 +3,14 @@ import { WindowUtils } from '../../utils/WindowUtils.js';
 import { ComponentV2 } from '../ComponentV2.js';
 
 export class KitsHeader extends ComponentV2 {
+
+
+  constructor(selector, hideSearch = false) {
+    super(selector);
+    this.hideSearch = hideSearch;
+  }
+
+
   events = {
     'click .js-hamburger-menu-toggle': (event) => this.#toggleDropdownMenu(event),
     'keyup .js-search-bar': (event) => this.#handleSearchBarInput(event),
@@ -34,6 +42,24 @@ export class KitsHeader extends ComponentV2 {
     const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
     const orderLinkHref = userId ? 'orders.php': 'login.php'; 
     // Render the header HTML with the dynamic cart linc
+
+    let searchSection = '';
+
+    if (!this.hideSearch) {
+      searchSection = `
+        <section class="middle-section">
+          <input class="js-search-bar search-bar" type="text" placeholder="Search" value="${searchText}" data-testid="search-input">
+          <button class="js-clear-search search-clear-button" data-testid="clear-search-button" aria-label="Clear Search">
+            <img class="clear-icon" src="images/icons/clear-icon.png">
+          </button>
+          <button class="js-search-button search-button" data-testid="search-button">
+            <img class="search-icon" src="images/icons/search-icon.png">
+          </button>
+        </section>
+      `;
+    }
+
+
     this.element.innerHTML = `
       <section class="left-section">
         <a href="index.php" class="header-link">
@@ -42,13 +68,7 @@ export class KitsHeader extends ComponentV2 {
         </a>
       </section>
 
-      <section class="middle-section">
-        <input class="js-search-bar search-bar" type="text" placeholder="Search" value="${searchText}" data-testid="search-input">
-        <button class="js-search-button search-button" data-testid="search-button">
-          <img class="search-icon" src="images/icons/search-icon.png">
-        </button>
-      </section>
-
+      ${searchSection}
 
       <section class="right-section">
         <a class="orders-link header-link" href="${orderLinkHref}">
