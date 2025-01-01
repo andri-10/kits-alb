@@ -1,25 +1,8 @@
-INSERT INTO kits (id, image, name, rating_stars, rating_count, price_cents, keywords, type, size_chart_link)
+INSERT INTO products (id, image, name, stars, rating_count, priceCents, keywords)
 VALUES
-  ('b0935f99-45f4-4ad0-8105-532d7e268eb9', './images/products/uruguay-home.png', 'Uruguay Home Kit 2024-2025', 4.5, 87, 3499, '["jersey", "national team", "uruguay"]', 'clothing', './images/clothing-size-chart.png'),
-  ('d634c4b1-cc5e-4c6b-98d8-8f350fd40455', './images/products/belgium-home.png', 'Belgium Home Kit 2024-2025', 4.5, 96, 3499, '["jersey", "national team", "belgium"]', 'clothing', './images/clothing-size-chart.png'),
-  ('a5c65e1d-59b4-406d-8214-3e2c3d4597fd', './images/products/brazil-home.png', 'Brazil Home Kit 2024-2025', 5, 58, 3499, '["jersey", "national team", "brazil"]', 'clothing', './images/clothing-size-chart.png'),
-  ('a28a5a8d-c15f-4cbf-b923-3e388b14bcdb', './images/products/croatia-home.png', 'Croatia Home Kit 2024-2025', 4.5, 78, 3499, '["jersey", "national team", "croatia"]', 'clothing', './images/clothing-size-chart.png'),
-  ('e183ab5d-c5fa-4a57-b3a1-e58a215f4a62', './images/products/spain-home.png', 'Spain Home Kit 2024-2025', 5, 60, 3499, '["jersey", "national team", "spain"]', 'clothing', './images/clothing-size-chart.png'),
-  ('602d8d50-b5e9-4b8e-bb9f-d4b3ccf4de63', './images/products/france-home.png', 'France Home Kit 2024-2025', 4.5, 86, 3499, '["jersey", "national team", "france"]', 'clothing', './images/clothing-size-chart.png'),
-  ('d8c697e5-35f9-4f94-b0cf-b615fa18e982', './images/products/england-home.png', 'England Home Kit 2024-2025', 4.5, 68, 3499, '["jersey", "national team", "england"]', 'clothing', './images/clothing-size-chart.png'),
-  ('4d0b3b8f-4217-4637-960f-ea465d43d784', './images/products/portugal-home.png', 'Portugal Home Kit 2024-2025', 4, 94, 3499, '["jersey", "national team", "portugal"]', 'clothing', './images/clothing-size-chart.png'),
-  ('ce4a6940-8282-42e7-a129-ff5a7e399ef8', './images/products/italy-home.png', 'Italy Home Kit 2024-2025', 4.5, 69, 3499, '["jersey", "national team", "italy"]', 'clothing', './images/clothing-size-chart.png'),
-  ('9ec8f97c-d742-4322-95c4-5b6c4a78d8c1', './images/products/argentina-home.png', 'Argentina Home Kit 2024-2025', 5, 50, 3499, '["jersey", "national team", "argentina"]', 'clothing', './images/clothing-size-chart.png'),
-  ('d03a75a4-27b4-46f2-b2e1-404e61ffcc71', './images/products/netherlands-home.png', 'Netherlands Home Kit 2024-2025', 4.5, 78, 3499, '["jersey", "national team", "netherlands"]', 'clothing', './images/clothing-size-chart.png'),
-  ('42b2e9c1-1d98-4a93-b72b-b6fa41201687', './images/products/germany-home.png', 'Germany Home Kit 2024-2025', 4.5, 87, 3499, '["jersey", "national team", "germany"]', 'clothing', './images/clothing-size-chart.png'),
-  ('b255d3be-f968-4c93-9c8b-d5ed0e7bc1fe', './images/products/barcelona-home.png', 'Barcelona Home Kit 2024-2025', 5, 66, 3099, '["jersey", "club", "spain", "barcelona"]', 'clothing', './images/clothing-size-chart.png'),
-  ('fcdfd7ae-b527-46da-bd1d-3f6a847d0c76', './images/products/chelsea-home.png', 'Chelsea Home Kit 2024-2025', 4.5, 88, 3099, '["jersey", "club", "england", "chelsea"]', 'clothing', './images/clothing-size-chart.png'),
-  ('e0b51939-5779-4e7b-a006-cc8f974f4730', './images/products/napoli-home.png', 'Napoli Home Kit 2024-2025', 4, 97, 3099, '["jersey", "club", "italy", "napoli"]', 'clothing', './images/clothing-size-chart.png'),
-  ('8a2271b0-1a3d-4c68-bbfe-f3d6782fd9d2', './images/products/newcastle-home.png', 'Newcastle Home Kit 2024-2025', 4.5, 76, 3099, '["jersey", "club", "england", "newcastle"]', 'clothing', './images/clothing-size-chart.png'),
-  ('aff0eab4-8f02-4879-bd50-e070903be28e', './images/products/bayernmunich-home.png', 'Bayern Munich Home Kit 2024-2025', 5, 56, 3099, '["jersey", "club", "germany", "bayern munich"]', 'clothing', './images/clothing-size-chart.png'),
-  ('5996a53f-c30f-49c0-9015-8f2db91c2184', './images/products/atalanta-home.png', 'Atalanta Home Kit 2024-2025', 4.5, 87, 3099, '["jersey", "club", "italy", "atalanta"]', 'clothing', './images/clothing-size-chart.png'),
-  ('1180d5f3-9fa5-47fd-8d32-baff401a0d70', './images/products/manutd-home.png', 'Manchester United Home Kit 2024-2025', 4.5, 70, 3099, '["jersey", "club", "england", "manchester united"]', 'clothing', './images/clothing-size-chart.png'),
-  ('20c392f4-c85e-4a0f-b68c-50075c8a9f32', './images/products/milan-home.png', 'AC Milan Home Kit 2024-2025', 4.5, 74, 3099, '["jersey", "club", "italy", "milan"]', 'clothing', './images/clothing-size-chart.png'),
-  ('57eeb05e-e53b-47f1-b9e4-0c3999dcbbe4', './images/products/liverpool-home.png', 'Liverpool Home Kit 2024-2025', 5, 45, 3099, '["jersey", "club", "england", "liverpool"]', 'clothing', './images/clothing-size-chart.png'),
-  ('7d7bb4e2-0fe0-4f9c-b56f-e60c1974cfac', './images/products/arsenal-home.png', 'Arsenal Home Kit 2024-2025', 5, 98, 3099, '["jersey", "club", "england", "arsenal"]', 'clothing', './images/clothing-size-chart.png'),
-  ('cd64cc9f-fc4b-47b7-b35f-7c8e0f5b6e70', './images/products/psg-home.png', 'PSG Home Kit 2024-2025', 4.5, 72, 3099, '["jersey", "club", "france", "psg"]', 'clothing', './images/clothing-size-chart.png');
+  
+  
+  
+  ('ij90kl12-mn34-op56-qr78-tuvwxyz567890', './images/products/japan-home.png', 'Japan Home Kit 2024-2025', 5, 78, 3499, '["jersey", "national team", "japan"]');
+  
+  

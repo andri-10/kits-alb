@@ -27,16 +27,6 @@ if (isset($_GET['check_session'])) {
     exit;
 }
 
-// Regular page load checks
-if (isset($_SESSION['last_activity']) && $_SESSION['user_role']!=="admin" && !isset($_COOKIE['remember_me_token'])) {
-    $inactive_time = time() - $_SESSION['last_activity'];
-    if ($inactive_time > $timeout_duration) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php");
-        exit;
-    }
-}
 
 // Update last activity time
 $_SESSION['last_activity'] = time();

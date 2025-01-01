@@ -12,15 +12,35 @@ try {
     // Check if a search term is provided
     $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
 
-    // SQL query to fetch product data including keywords with search functionality
+    // Base SQL query to fetch product data
+    $sql = '
+        SELECT id, name, image, stars, rating_count, priceCents, keywords
+        FROM products
+    ';
+
+    // If a search term is provided, add a WHERE clause
     if ($searchTerm) {
-        $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords 
-                FROM products 
-                WHERE name LIKE :searchTerm OR keywords LIKE :searchTerm';
-    } else {
-        // If no search term is provided, fetch all products
-        $sql = 'SELECT id, name, image, stars, rating_count, priceCents, keywords FROM products';
+        $sql .= ' WHERE name LIKE :searchTerm OR keywords LIKE :searchTerm';
     }
+
+    // Add ORDER BY clause for sorting logic
+    $sql .= '
+        ORDER BY 
+            -- Prioritize national teams over clubs based on the keywords
+            CASE 
+                WHEN keywords LIKE "%national%" THEN 1  -- National teams come first
+                ELSE 2  -- Clubs come after national teams
+            END,
+            -- Sort by team name (excluding kit types "Home", "Away", "Third")
+            LEFT(name, LOCATE(" ", name) - 1), 
+            -- Prioritize Home, then Away, then Third kit types
+            CASE 
+                WHEN name LIKE "%Home%" THEN 1
+                WHEN name LIKE "%Away%" THEN 2
+                WHEN name LIKE "%Third%" THEN 3
+                ELSE 4
+            END
+    ';
 
     // Prepare the SQL statement
     $stmt = $pdo->prepare($sql);
