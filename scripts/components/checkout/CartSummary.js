@@ -5,7 +5,6 @@ import { MoneyUtils } from '../../utils/MoneyUtils.js';
 import { DomUtils } from '../../utils/DomUtils.js';
 import { DateUtils } from '../../utils/DateUtils.js';
 import { ComponentV2 } from '../ComponentV2.js';
-import { VariationUtils } from '../../utils/VariationUtils.js';
 
 export class CartSummary extends ComponentV2 {
   events = {
