@@ -5,8 +5,6 @@ export class Product {
   #rating;
   #priceCents;
   #keywords;
-  #variations;
-  #variationImages;
 
   constructor(args) {
     this.#id = args.id;
@@ -15,8 +13,6 @@ export class Product {
     this.#rating = args.rating;
     this.#priceCents = args.priceCents;
     this.#keywords = args.keywords;
-    this.#variations = args.variations;
-    this.#variationImages = args.variationImages;
   }
 
   get id() { return this.#id; }
@@ -25,40 +21,9 @@ export class Product {
   get ratingCount() { return this.#rating.count; }
   get priceCents() { return this.#priceCents; }
   get keywords() { return this.#keywords; }
-  get variations() { return this.#variations; }
 
-  createImageUrl(selectedVariation) {
-    if (!this.#variations || !this.#variationImages) {
-      return ''+ this.#image;
-    }
-
-    // If there was no selected variation, just use the
-    // first option of every variation as the default.
-    if (!selectedVariation) {
-      selectedVariation = {};
-
-      Object.keys(this.#variations).forEach(name => {
-        selectedVariation[name] = this.#variations[name][0];
-      });
-    }
-
-    // Now find a key in variationImages that matches the
-    // selected variation (keys are JSON objects).
-    const matchedKey = Object.keys(this.#variationImages).find(jsonString => {
-      const matcherObject = JSON.parse(jsonString);
-
-      // As long as all properties of the matcher object are the
-      // same as the selected variation, then it's a match.
-      return Object.keys(matcherObject).every(key => {
-        return matcherObject[key] === selectedVariation[key];
-      });
-    });
-
-    if (matchedKey) {
-      return  this.#variationImages[matchedKey];
-    }
-
-    return this.#image;
+  createImageUrl() {
+    return this.#image || null;
   }
 
   createRatingStarsUrl() {
@@ -75,8 +40,6 @@ export class Product {
       rating: this.#rating,
       priceCents: this.#priceCents,
       keywords: this.#keywords,
-      variations: this.#variations,
-      variationImages: this.#variationImages
     };
   }
 }
