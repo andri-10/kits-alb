@@ -96,7 +96,8 @@ export class KitsHeader extends ComponentV2 {
         </a>
       </div>
     `;
-  
+
+    if(!this.hideSearch){
     const searchBar = document.querySelector('.kits-header .search-bar');
     const clearButton = document.querySelector('.kits-header .search-clear-button');
   
@@ -133,14 +134,13 @@ export class KitsHeader extends ComponentV2 {
     this.element.querySelector('.js-clear-search').addEventListener('click', () => {
       this.element.querySelector('.js-search-bar').value = ''; 
       clearButton.style.display = 'none';
-      this.#performSearch(); // Optional: perform search on clear (if needed)
+      this.#performSearch();
     });
-  
-    // Ensure that cart quantity elements are available after render
+  }
+
     this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
     this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
-  
-    // Update cart count after the render
+
     this.updateCartCount();
     this.#initializeHamburgerMenu();
   }
@@ -206,17 +206,5 @@ export class KitsHeader extends ComponentV2 {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     searchParams.set('search', searchText);
     WindowUtils.setSearch(searchParams.toString()); // This updates the URL without reloading the page
-  }
-
-  async #getUserId() {
-    const basePath = 'backend';
-    try {
-      const response = await fetch(`${basePath}/get-user-id.php`);
-      const data = await response.json();
-      return data.userId || null;
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      return null;
-    }
   }
 }
