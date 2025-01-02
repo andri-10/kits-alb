@@ -1,10 +1,5 @@
 <?php
-include("backend/session-timeout.php");
-
-// Check if the user is logged in
-$isLoggedIn = isset($_SESSION['user_id']);
-
-// Include PHPMailer files
+session_start();
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 require 'PHPMailer/src/Exception.php';
@@ -22,18 +17,10 @@ if ($conn->connect_error) {
 
 $error = '';
 $success = '';
-$tokenSent = false;
-$tokenValid = false;
+$step = 1;
 
-
-function generateToken() {
-    return str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-}
-
-// Function to send the token via email
 function sendTokenEmail($email, $token) {
     $mail = new PHPMailer\PHPMailer\PHPMailer();
-
     try {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
@@ -43,15 +30,6 @@ function sendTokenEmail($email, $token) {
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom('kits.albania@gmail.com', 'Kits Alb');
-        $mail->addAddress($email);
-
-        $mail->Subject = 'Your Password Reset Token';
-        $mail->Body = 'Your password reset token is: ' . $token;
-
-        //In case of errors uncomment below
-        //$mail->SMTPDebug = 3;
-
         $mail->SMTPOptions = array(
             'ssl' => array(
                 'verify_peer' => false,
@@ -59,78 +37,85 @@ function sendTokenEmail($email, $token) {
                 'allow_self_signed' => true
             )
         );
+
+        $mail->setFrom('kits.albania@gmail.com', 'Kits Alb');
+        $mail->addAddress($email);
+
+        $mail->Subject = 'Your Password Reset Token';
+        $mail->Body = 'Your password reset token is: ' . $token;
+
         $mail->send();
         return true;
     } catch (Exception $e) {
-        return 'Mailer Error: ' . $mail->ErrorInfo;
+        return false;
     }
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['email']) && isset($_POST['new_password']) && isset($_POST['confirm_password'])) {
-        $email = $_POST['email'];
-        $new_password = $_POST['new_password'];
-        $confirm_password = $_POST['confirm_password'];
+    if (isset($_POST['step']) && $_POST['step'] == 1) {
+        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
 
-        if ($new_password !== $confirm_password) {
-            $error = "Passwords do not match.";
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Invalid email format.";
         } else {
-            // Check if the user exists
-            $stmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
+            $stmt = $conn->prepare("SELECT email FROM Users WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
-                // Generate token
-                $token = generateToken();
-
-                // Store the token in session
-                $_SESSION['reset_token'] = $token;
+                $token = rand(100000, 999999);
                 $_SESSION['reset_email'] = $email;
+                $_SESSION['reset_token'] = $token;
+                $_SESSION['token_time'] = time();
 
-                // Send token email
-                $sendEmailResult = sendTokenEmail($email, $token);
-                if ($sendEmailResult === true) {
-                    $tokenSent = true;
+                if (sendTokenEmail($email, $token)) {
+                    $step = 2;
                 } else {
-                    $error = "Failed to send token email: " . $sendEmailResult;
+                    $error = "Failed to send token email.";
                 }
             } else {
-                $error = "No account found with this email.";
+                // Updated error message with Register link
+                $error = "This email is not registered. <a class = 'register-link' href='registration.php'>Register Here</a>";
             }
-            $stmt->close();
         }
-    } elseif (isset($_POST['token']) && isset($_POST['new_password'])) {
-        // Verify token and reset password
+    } elseif (isset($_POST['step']) && $_POST['step'] == 2) {
         $entered_token = $_POST['token'];
+
+        if ($_SESSION['reset_token'] == $entered_token && (time() - $_SESSION['token_time']) <= 60) {
+            $step = 3;
+        } else {
+            $error = "Invalid or expired token. Please try again.";
+        }
+    } elseif (isset($_POST['step']) && $_POST['step'] == 3) {
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
 
-        if ($_SESSION['reset_token'] === $entered_token) {
-            if ($new_password === $confirm_password) {
-                $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
-
-                $stmt = $conn->prepare("UPDATE Users SET password = ? WHERE email = ?");
-                $stmt->bind_param("ss", $hashed_password, $_SESSION['reset_email']);
-
-                if ($stmt->execute()) {
-                    $success = "Password reset successful.";
-                } else {
-                    $error = "Something went wrong. Please try again.";
-                }
-                $stmt->close();
-            } else {
-                $error = "Passwords do not match.";
-            }
+        if ($new_password !== $confirm_password) {
+            $error = "Passwords do not match.";
+        } elseif (!preg_match("/^(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/", $new_password)) {
+            $error = "Password must be at least 8 characters long and include a number and a special character.";
         } else {
-            $error = "Invalid token.";
+            $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+            $email = $_SESSION['reset_email'];
+
+            $stmt = $conn->prepare("UPDATE Users SET password = ? WHERE email = ?");
+            $stmt->bind_param("ss", $hashed_password, $email);
+
+            if ($stmt->execute()) {
+                $success = "Password reset successful.";
+                session_destroy();
+            } else {
+                $error = "Something went wrong. Please try again.";
+            }
         }
     }
 }
 
 $conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -164,47 +149,71 @@ $conn->close();
                     </p>
                     <div class="yellowLine" id="w-c-s-bgc_p-2-dm-id"></div>
                 </div>
-                <p class="text-blk subHeading">
-                    Enter your email and reset your password.
-                </p>
+
+                
             </div>
 
-            <?php if ($tokenSent): ?>
+            <?php if ($step == 1): ?>
                 <div class="responsive-container-block container">
-                    <p class="text-blk">
-                        A 6-digit code has been sent to your email. <br>
-                        Please write the code below.
-                    </p>
-                    <form class="form-box" action="" method="POST">
+                    <form class="form-box" method="POST" id="step1Form">
                         <div class="container-block form-wrapper">
                             <div class="responsive-container-block">
-                                <input class="input" id="token" name="token" placeholder="Enter the token" required type="text" maxlength="6">
-                                <input class="input" id="new_password" name="new_password" placeholder="Enter a new password" required type="password">
-                                <input class="input" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required type="password">
-                            </div>
-                            <input type="submit" name="submit" class="send" id="w-c-s-bgc_p-1-dm-id">
-                        </div>
-                    </form>
-                </div>
-            <?php elseif ($success): ?>
-                <div class="responsive-container-block container">
-                    <p class="text-blk"><?php echo $success; ?></p>
-                </div>
-            <?php else: ?>
-                <div class="responsive-container-block container">
-                    <form class="form-box" action="" method="POST">
-                        <div class="container-block form-wrapper">
-                            <div class="responsive-container-block">
-                                <div class="left4">
-                                    <input class="input" id="email" name="email" placeholder="Enter your email" required type="email">
-                                    <input class="input" id="new_password" name="new_password" placeholder="Enter a new password" required type="password">
-                                    <input class="input" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required type="password">
+                                <input class="input" type="email" name="email" id="email" placeholder="Enter your email" required>
+                                <button type="submit" class="send">Send Confirmation Code</button>
+                                <div class="error" id="error-message">
+                                    <?php if (!empty($error)): ?>
+                                        <p><?php echo $error; ?></p>
+                                    <?php endif; ?>
                                 </div>
+
+                                <input type="hidden" name="step" value="1">
                             </div>
-                            <input type="submit" name="submit" class="send" id="w-c-s-bgc_p-1-dm-id">
                         </div>
                     </form>
                 </div>
+
+            <?php elseif ($step == 2): ?>
+                <div class="responsive-container-block container">
+                    <form class="form-box" method="POST" id="step2Form">
+                        <div class="container-block form-wrapper">
+                            <div class="responsive-container-block">
+                                <input class="input" type="text" name="token" id="token" placeholder="Enter the code" required>
+
+                                    <p class= "code-sent">Please check your email.</span></p>
+                                <button type="submit" class="send">Verify </button>
+
+                                <button type="button" class="send resend">Resend Code in <span id="timer">60s</span></button>
+                                    
+                                <input type="hidden" name="step" value="2">
+                                
+                                
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            
+            <?php elseif ($step == 3): ?>
+                <div class="responsive-container-block container">
+                    <form class="form-box" method="POST" id="step3Form">
+                        <div class="container-block form-wrapper">
+                            <div class="responsive-container-block">
+                                <input class="input" type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
+                                <input class="input" type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
+                                <label for="toggle-password">
+                                    <input type="checkbox" id="toggle-password"> Show Password
+                                </label>
+                                <button type="submit" class="send">Reset Password</button>
+                                <input type="hidden" name="step" value="3">
+                            </div>
+                        </div>
+                    </form> 
+                </div>
+            <?php endif; ?>   
+
+            <div class="error" id="error-message"></div>
+
+            <?php if ($success): ?>
+                <div class="success"><?php echo $success; ?></div>
             <?php endif; ?>
         </div>
     </div>
@@ -214,5 +223,8 @@ $conn->close();
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
       </p>
     </footer>
+
+    <script src="./scripts/pages/passwordreset.js"></script>
 </body>
 </html>
+
