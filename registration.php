@@ -38,15 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($password !== $confirm_password) {
         $error = "Passwords do not match.";
         
-    } elseif (strlen($password) < 8) {
-        // Check for password length
-        $error = "Password must be at least 8 characters long.";
-    } elseif (!preg_match("/[A-Z]/", $password)) {
-        // Check for at least one uppercase letter
-        $error = "Password must contain at least 1 uppercase letter.";
-    } elseif (!preg_match("/[^a-zA-Z0-9]/", $password)) {
-        // Check for at least one special character (non-letter, non-number)
-        $error = "Password must contain at least 1 special character.";
+    } elseif (strlen($password) < 8 || !preg_match("/[A-Z]/", $password) || !preg_match("/[^a-zA-Z0-9]/", $password) ) {
+        // Check for password conditions
+        $error = "Password must be at least 8 characters long, must contain at least 1 uppercase letter, and at least 1 special character.";
     } else {
         // Hash the password before inserting into the database
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
@@ -60,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo '<script>
                     setTimeout(function() {
                         window.location.href = "login.php";
-                    }, 3000); // Redirect after 3 seconds
+                    }, 1200); 
                   </script>';
             $username = '';
             $email = '';

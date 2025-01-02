@@ -1,3 +1,7 @@
+*{
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
@@ -41,18 +45,16 @@ body {
 
 /* Style for error and success messages */
 .error-message, .success-message {
-  color: #ff0000; /* Red for error messages */
-  
+  color: #ff0000;
   padding: 10px;
   margin: 10px 0;
   font-size: 14px;
   line-height: 1.5;
-  max-width: 100%; /* Prevents expanding beyond the container */
-  word-wrap: break-word; /* Break long words to wrap within the container */
-  overflow-wrap: break-word; /* Ensures proper wrapping of text */
-  box-sizing: border-box; /* Ensures padding doesn't overflow the box */
-  border-radius: 5px; /* Rounded edges */
-  text-align: left;
+  max-width: 320px;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  border-radius: 5px;
+  text-align: center;
 }
 .success-message {
   color: #006400; /* Green for success messages */
@@ -150,7 +152,7 @@ body {
 @media (max-width: 768px) {
   .new_home_web .form-box {
       width: 100%;
-      padding: 0 20px;
+      padding: 0;
   }
 
   .new_home_web .text-blk.heading {

@@ -167,7 +167,7 @@ $conn->close();
                             </div>
                             <input type="submit" name="submit" value = "Sign in" class="send">
                             <?php if ($error): ?>
-                        <div class="error-message" style="color: red; font-size: 14px; text-align: center; margin-top: 25px">
+                        <div class="error-message">
                             <?php echo $error; ?>
                         </div>
                     <?php endif; ?>
