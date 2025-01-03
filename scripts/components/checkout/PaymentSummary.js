@@ -54,16 +54,17 @@ export class PaymentSummary extends Component {
       (event) => this.#performCheckout(event);
   }
 
-  refreshPaymentDetails() {
+  async refreshPaymentDetails() {
     const {
       productCostCents,
       shippingCostCents,
       taxCents,
       totalCents
-    } = cart.calculateCosts();
+    } = await cart.calculateCosts();
 
     const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
     const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
+    const quantity = await cart.calculateTotalQuantity();
 
     this.element.querySelector('.js-payment-info').innerHTML = `
       <div class="payment-summary-title">
@@ -71,7 +72,7 @@ export class PaymentSummary extends Component {
       </div>
 
       <div class="payment-summary-row">
-        <div>Items (${cart.calculateTotalQuantity()}):</div>
+        <div>Items (${quantity}):</div>
         <div class="payment-summary-money"
           data-testid="product-cost">
           ${MoneyUtils.formatMoney(productCostCents)}
