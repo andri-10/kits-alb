@@ -1,8 +1,6 @@
 <?php
 session_start();
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
-require 'PHPMailer/src/Exception.php';
+require __DIR__ . '/backend/utils.php';
 
 $servername = "localhost";
 $username = "root";
@@ -18,38 +16,6 @@ if ($conn->connect_error) {
 $error = '';
 $success = '';
 $step = 1;
-
-function sendTokenEmail($email, $token) {
-    $mail = new PHPMailer\PHPMailer\PHPMailer();
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'kits.albania@gmail.com';
-        $mail->Password = 'wutt otga hnez fyfx';
-        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
-
-        $mail->setFrom('kits.albania@gmail.com', 'Kits Alb');
-        $mail->addAddress($email);
-
-        $mail->Subject = 'Your Password Reset Token';
-        $mail->Body = 'Your password reset token is: ' . $token;
-
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        return false;
-    }
-}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['step']) && $_POST['step'] == 1) {
@@ -75,8 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $error = "Failed to send token email.";
                 }
             } else {
-                // Updated error message with Register link
-                $error = "This email is not registered. <a class = 'register-link' href='registration.php'>Register Here</a>";
+                $error = "This email is not registered. <a class='register-link' href='registration.php'>Register Here</a>";
             }
         }
     } elseif (isset($_POST['step']) && $_POST['step'] == 2) {
@@ -114,6 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $conn->close();
 ?>
+
 
 
 
@@ -170,6 +136,7 @@ $conn->close();
                             </div>
                         </div>
                     </form>
+                    <p class ="return">Return to <a class ="link" href = "login.php">Sign In</a></p>
                 </div>
 
             <?php elseif ($step == 2): ?>
@@ -182,7 +149,10 @@ $conn->close();
                                     <p class= "code-sent">Please check your email.</span></p>
                                 <button type="submit" class="send">Verify </button>
 
-                                <button type="button" class="send resend">Resend Code in <span id="timer">60s</span></button>
+                                <button type="button" id="resend-btn" class="send resend" disabled>
+                                Resend Code in <span id="timer">60s</span>
+                                </button>
+
                                     
                                 <input type="hidden" name="step" value="2">
                                 
@@ -200,7 +170,7 @@ $conn->close();
                                 <input class="input" type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
                                 <input class="input" type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
                                 <label for="toggle-password">
-                                    <input type="checkbox" id="toggle-password"> Show Password
+                                    <input class = "input" type="checkbox" id="toggle-password"> Show Password
                                 </label>
                                 <button type="submit" class="send">Reset Password</button>
                                 <input type="hidden" name="step" value="3">
