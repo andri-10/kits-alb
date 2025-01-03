@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (formContainer) formContainer.appendChild(errorMessageDiv);
 
   if (timerDisplay) {
-    let remainingTime = 5;
+    let remainingTime = 30;
 
     // Disable the resend button initially
     resendButton.disabled = true;
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resendButton.textContent = "Resend in 60s"; // Reset the button text
 
             // Restart the timer
-            let remainingTime = 60;
+            let remainingTime = 30;
             let timer = setInterval(function () {
               remainingTime--;
               if (timerText) timerText.textContent = remainingTime + "s";

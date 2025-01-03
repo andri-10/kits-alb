@@ -51,6 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $step = 3;
         } else {
             $error = "Invalid or expired token. Please try again.";
+            $step = 2;
         }
     } elseif (isset($_POST['step']) && $_POST['step'] == 3) {
         $new_password = $_POST['new_password'];
@@ -58,8 +59,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($new_password !== $confirm_password) {
             $error = "Passwords do not match.";
+            $step = 3;
         } elseif (!preg_match("/^(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/", $new_password)) {
             $error = "Password must be at least 8 characters long and include a number and a special character.";
+            $step = 3;
+
         } else {
             $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
             $email = $_SESSION['reset_email'];
@@ -72,7 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 session_destroy();
             } else {
                 $error = "Something went wrong. Please try again.";
-            }
+                $step = 3;
+             }
         }
     }
 }
@@ -126,16 +131,18 @@ $conn->close();
                             <div class="responsive-container-block">
                                 <input class="input" type="email" name="email" id="email" placeholder="Enter your email" required>
                                 <button type="submit" class="send">Send Confirmation Code</button>
-                                <div class="error" id="error-message">
-                                    <?php if (!empty($error)): ?>
-                                        <p><?php echo $error; ?></p>
-                                    <?php endif; ?>
-                                </div>
-
                                 <input type="hidden" name="step" value="1">
                             </div>
                         </div>
                     </form>
+                    <?php if (!empty($error)): ?>
+                        <p><?php echo $error; ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($success): ?>
+                        <p class="success"><?php echo $success; ?></p>
+                    <?php endif; ?>
+
                     <p class ="return">Return to <a class ="link" href = "login.php">Sign In</a></p>
                 </div>
 
@@ -152,39 +159,38 @@ $conn->close();
                                 <button type="button" id="resend-btn" class="send resend" disabled>
                                 Resend Code in <span id="timer">60s</span>
                                 </button>
-
-                                    
                                 <input type="hidden" name="step" value="2">
-                                
-                                
                             </div>
                         </div>
                     </form>
+                    
+                    <?php if (!empty($error)): ?>
+                        <p class = "error" ><?php echo $error; ?></p>
+                    <?php endif; ?>
                 </div>
             
-            <?php elseif ($step == 3): ?>
-                <div class="responsive-container-block container">
-                    <form class="form-box" method="POST" id="step3Form">
-                        <div class="container-block form-wrapper">
-                            <div class="responsive-container-block">
-                                <input class="input" type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
-                                <input class="input" type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
-                                <label for="toggle-password">
-                                    <input class = "input" type="checkbox" id="toggle-password"> Show Password
-                                </label>
-                                <button type="submit" class="send">Reset Password</button>
-                                <input type="hidden" name="step" value="3">
+                <?php elseif ($step == 3): ?>
+                    <div class="responsive-container-block container">
+                        <form class="form-box" method="POST" id="step3Form">
+                            <div class="container-block form-wrapper">
+                                <div class="responsive-container-block">
+                                    <input class="input" type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
+                                    <input class="input" type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
+                                    <label for="toggle-password">
+                                        <input class="input" type="checkbox" id="toggle-password"> Show Password
+                                    </label>
+                                    <button type="submit" class="send">Reset Password</button>
+                                    <input type="hidden" name="step" value="3">
+                                </div>
                             </div>
-                        </div>
-                    </form> 
-                </div>
-            <?php endif; ?>   
+                        </form>
+                        <?php if (!empty($error)): ?>
+                            <p class = "error" ><?php echo $error; ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
             <div class="error" id="error-message"></div>
-
-            <?php if ($success): ?>
-                <div class="success"><?php echo $success; ?></div>
-            <?php endif; ?>
         </div>
     </div>
 
