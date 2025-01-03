@@ -144,7 +144,7 @@ $conn->close();
                     <form class="form-box" method="POST" id="step2Form">
                         <div class="container-block form-wrapper">
                             <div class="responsive-container-block">
-                                <input class="input" type="text" name="token" id="token" placeholder="Enter the code" required>
+                                <input class="input" type="text" name="token" id="token" placeholder="Enter the code" required autocomplete='off'>
 
                                     <p class= "code-sent">Please check your email.</span></p>
                                 <button type="submit" class="send">Verify </button>

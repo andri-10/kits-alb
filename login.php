@@ -18,7 +18,7 @@ $password = '';
 
 // Max failed attempts and block duration for brute force protection
 $max_failed_attempts = 7;
-$block_duration = 1800; // 30 minutes in seconds
+$block_duration = 18; // 30 minutes in seconds
 
 // Only initialize session variables for failed attempts if it's a login attempt (i.e., POST request)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

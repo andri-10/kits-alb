@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Optional: Toggle password visibility functionality (if needed)
+  // Toggle password visibility functionality
   let togglePassword = document.getElementById('toggle-password');
   let passwordFields = document.querySelectorAll('input[type=password]');
   
