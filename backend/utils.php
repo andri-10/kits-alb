@@ -37,6 +37,38 @@ function sendTokenEmail($email, $token) {
     }
 }
 
+function sendEmail($recipient, $subject, $body) {
+    $mail = new PHPMailer\PHPMailer\PHPMailer();
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'electroman784@gmail.com';
+        $mail->Password = 'phwz nqal qeoq czbq';
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true,
+            ],
+        ];
+
+        $mail->setFrom('electroman784@gmail.com', 'Football Kits Albania');
+        $mail->addAddress($recipient);
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+
 function sendRegistrationTokenEmail($email, $token) {
     $mail = new PHPMailer\PHPMailer\PHPMailer();
     try {
@@ -58,8 +90,8 @@ function sendRegistrationTokenEmail($email, $token) {
 
         $mail->setFrom('electroman784@gmail.com', 'Football Kits Albania');
         $mail->addAddress($email);
-        $mail->Subject = 'Password Reset';
-        $mail->Body = 'Your password reset confirmation code is: ' . $token;
+        $mail->Subject = 'Email verification';
+        $mail->Body = 'Your email verification code is: ' . $token;
 
         //If it is not working uncomment this for debug
         //$mail->SMTPDebug = 3;
