@@ -1,5 +1,5 @@
 <?php
-session_start();
+include("backend/session-timeout.php");
 
 $servername = "localhost";
 $username = "root";

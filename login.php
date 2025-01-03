@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+require __DIR__ . '/backend/utils.php';
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -15,6 +15,7 @@ if ($conn->connect_error) {
 $error = '';
 $email = '';
 $password = '';
+$step = 1;
 
 // Max failed attempts and block duration for brute force protection
 $max_failed_attempts = 7;

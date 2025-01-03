@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let timerDisplay = document.getElementById("timer");
   let formContainer = document.querySelector("#step2Form");
   let timerText = resendButton?.querySelector("span");
-  let errorMessageDiv = document.createElement('div'); // To hold error or success messages
+  let errorMessageDiv = document.getElementById('div'); // To hold error or success messages
 
   // Ensure the error message div is only appended once
   errorMessageDiv.classList.add('message-container');

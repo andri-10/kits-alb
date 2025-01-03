@@ -605,11 +605,10 @@ export class CartSummary extends ComponentV2 {
           return;
       }
 
-      const basePath = window.location.origin + '/backend';
-      const response = await fetch(`${basePath}/add-to-cart.php`, {
+      const response = await fetch(`backend/add-to-cart.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: userId, product_id: productId }),
+          body: JSON.stringify({ user_id: userId, product_id: productId, size: "L" }),
       });
 
       const data = await response.json();
