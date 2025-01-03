@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let timerDisplay = document.getElementById("timer");
   let formContainer = document.querySelector("#step2Form");
   let timerText = resendButton?.querySelector("span");
-  let errorMessageDiv = document.getElementById('div'); // To hold error or success messages
+  let errorMessageDiv = document.createElement('div'); // To hold error or success messages
 
   // Ensure the error message div is only appended once
   errorMessageDiv.classList.add('message-container');
@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
           if (data.success) {
             // Display a success message inside the form
+            phpError = document.getElementById("phpError2")
+            phpError.textContent="";
             errorMessageDiv.textContent = 'Token resent successfully!';
             errorMessageDiv.classList.add('success-message');
             errorMessageDiv.classList.remove('error-message');
@@ -69,6 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 1000);
           } else {
             // Display an error message if token resend fails
+            phpError = document.getElementById("phpError2")
+            phpError.textContent="";
             errorMessageDiv.textContent = 'Failed to resend the token. Please try again.';
             errorMessageDiv.classList.add('error-message');
             errorMessageDiv.classList.remove('success-message');

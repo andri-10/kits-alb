@@ -165,7 +165,7 @@ $conn->close();
                     </form>
                     
                     <?php if (!empty($error)): ?>
-                        <p class = "error" ><?php echo $error; ?></p>
+                        <p class = "error" id="phpError2" ><?php echo $error; ?></p>
                     <?php endif; ?>
                 </div>
             
@@ -203,4 +203,3 @@ $conn->close();
     <script src="./scripts/pages/passwordreset.js"></script>
 </body>
 </html>
-

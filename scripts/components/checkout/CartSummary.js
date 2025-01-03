@@ -34,9 +34,9 @@ export class CartSummary extends ComponentV2 {
    */
   async render() {
     try {
-      console.log('Rendering CartSummary component...');
+      
       await this.fetchCartData();
-      this.#attachEventListeners();  // Ensure event listeners are attached after render
+      this.#attachEventListeners();
     } catch (error) {
       console.error('Error rendering cart:', error);
       this.#renderErrorMessage('Unable to load cart. Please try again later.');
@@ -47,23 +47,39 @@ export class CartSummary extends ComponentV2 {
     Object.keys(this.events).forEach((selector) => {
       const [eventType, targetSelector] = selector.split(' ');
   
-      // Log to check if the event listeners are being attached
-      console.log(`Attaching listener for ${eventType} on ${targetSelector}`);
-  
       this.element.addEventListener(eventType, (event) => {
-        const targetElem = event.target.closest(targetSelector); // Use closest for delegation
+        const targetElem = event.target.closest(targetSelector);
   
         if (targetElem) {
-          console.log('Event triggered on:', targetElem);
           this.events[selector](event);
         }
       });
     });
+  
+    // Attach change event listener for all radio buttons (e.g., delivery options)
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', (event) => {
+        this.#handleRadioChange(event);  // You can replace this with your desired logic
+      });
+    });
+  }
+  
+  #handleRadioChange(event) {
+    const selectedRadio = event.target;
+    const productId = selectedRadio.getAttribute("name").slice(16);
+    const val = selectedRadio.getAttribute("value");
+    // If it's a delivery option radio button (assuming your radio buttons have data attributes for identification)
+    if (selectedRadio.classList.contains('js-delivery-option')) {
+      this.#selectDeliveryOption(event);
+    }
+    
+    // If it's another type of radio button, you can handle other logic here
+    console.log('Radio button changed:', selectedRadio);
+    console.log(productId);
+    this.#handleDeliveryUpdate(productId, val);
   }
 
-  /**
-   * Fetch cart data from the backend.
-   */
+
   async fetchCartData() {
     try {
       console.log('Fetching cart data from backend...');
@@ -296,11 +312,7 @@ export class CartSummary extends ComponentV2 {
     return sizeOptionsHTML;
 }
 
-  /**
- * Handle size update when a size is selected.
- * @param {Event} event - The click event.
- * @param {String} cartId - The cart ID.
- */
+ 
   async #handleSizeUpdate(event, cartId) {
     const productElement = event.target.closest('.kit-product');
     const selectedSize = productElement.querySelector('input[type="radio"]:checked')?.value;
@@ -311,7 +323,7 @@ export class CartSummary extends ComponentV2 {
       return;
     }
   
-    console.log(`Saving size ${selectedSize} for cart ID ${cartId}`); // Debugging: Log cart ID and size
+    console.log(`Saving size ${selectedSize} for cart ID ${cartId}`);
   
     try {
       const response = await fetch('backend/update-cart-size.php', {
@@ -320,8 +332,8 @@ export class CartSummary extends ComponentV2 {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          cart_id: cartId, // Ensure cartId is passed here
-          size: selectedSize, // Pass selectedSize correctly
+          cart_id: cartId, 
+          size: selectedSize, 
         }),
       });
   
@@ -355,25 +367,65 @@ export class CartSummary extends ComponentV2 {
     } catch (error) {
       console.error('Error updating size:', error);
   
-      // Show error message in red
       const messageContainer = productElement.querySelector(`.update-size-message-${cartId}`);
       messageContainer.textContent = 'An error occurred while updating size.';
-      messageContainer.style.color = 'red'; // Optional: Red text for error
+      messageContainer.style.color = 'red'; 
   
-      // Show the message by adding the 'is-visible' class
+      
       messageContainer.classList.add('is-visible');
   
-      // After 2 seconds, fade out the message by removing the 'is-visible' class
+      
       setTimeout(() => {
         messageContainer.classList.remove('is-visible');
       }, 2000);
     }
   }
 
+  async #handleDeliveryUpdate(productId, value) {
+    try {
+      // Fetch the user ID (you might want to get this from the user's session)
+      const userId = await this.#getUserId();
+      if (!userId) {
+        console.error('User is not logged in');
+        window.location.href = 'login.php'; // Redirect to login if not logged in
+        return;
+      }
+  
+      // Make the request to update the delivery option for all cart items with the same product ID and user ID
+      const response = await fetch('backend/update-cart-delivery.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,  // Pass user ID here
+          product_id: productId,  // Pass the product ID
+          delivery_option: value,  // Pass the selected delivery option
+        }),
+      });
+  
+      const result = await response.json();
+  
+  
+  
+      if (result.success) {
+        console.log(`Delivery option updated successfully for product ID ${productId}`);
+     
+      } else {
+        console.error('Failed to update delivery option:', result.message);
+     
+      }
+  
+  
+    } catch (error) {
+      console.error('Error updating delivery option:', error);
+    }
+  }
+  
+  
   #createDeliveryOptionsHTML(cartItem) {
     let deliverOptionsHTML = '';
-    
-    // Loop through all delivery options for this cart item
+    let val = 1;
     deliveryOptions.all.forEach(deliveryOption => {
       const id = deliveryOption.id;
       const costCents = deliveryOption.costCents;
@@ -392,6 +444,7 @@ export class CartSummary extends ComponentV2 {
             name="delivery-option-${cartItem.productId}" 
             type="radio"
             data-testid="delivery-option-input"
+            value=${val}
             ${deliveryOption.isDefault ? 'checked' : ''} 
           >
           
@@ -405,49 +458,42 @@ export class CartSummary extends ComponentV2 {
           </div>
         </div>
       `;
+
+      val+=1;
     });
 
     return deliverOptionsHTML;
   }
 
-  /**
-   * Handles delivery option selection.
-   * @param {Event} event - The click event on the delivery option.
-   */
   #selectDeliveryOption(event) {
     const deliveryOptionElem = event.target.closest('.js-delivery-option');
   
-    // If deliveryOptionElem is null, it means the click did not happen on a .js-delivery-option
+   
     if (!deliveryOptionElem) {
       console.error('Clicked element is not a .js-delivery-option');
       return;
     }
   
-    // Get the delivery option ID from the clicked element
+    
     const deliveryOptionId = deliveryOptionElem.getAttribute('data-delivery-option-id');
   
-    console.log('Selected delivery option ID:', deliveryOptionId); // Debugging log
+    console.log('Selected delivery option ID:', deliveryOptionId); 
     
     if (!deliveryOptionId) {
       console.error('Delivery option ID is not valid or missing');
       return;
     }
   
-    // Log all delivery options to check if IDs match
-    console.log('Available Delivery Options:', deliveryOptions.all);
-  
-    // Find the selected delivery option using the string ID
+
     const selectedDeliveryOption = deliveryOptions.all.find(option => option.id === deliveryOptionId);
   
     if (!selectedDeliveryOption) {
       console.error('Selected delivery option not found!');
       return;
     }
-  
-    // Calculate the new delivery date based on the selected delivery option
+
     const newDeliveryDate = selectedDeliveryOption.calculateDeliveryDate();
-  
-    // Update the delivery date display for this cart item in the UI
+
     const cartItemElem = deliveryOptionElem.closest('.js-cart-item');
     const deliveryDateElem = cartItemElem.querySelector('.js-delivery-date');
     if (deliveryDateElem) {
@@ -456,10 +502,7 @@ export class CartSummary extends ComponentV2 {
       console.error('Delivery date element not found!');
     }
   }
-/**
- * Update the header with the selected delivery option details.
- * @param {Object} deliveryOption - The selected delivery option.
- */
+
   #updateHeaderWithDeliveryOption(deliveryOption) {
       const shippingCost = MoneyUtils.formatMoney(deliveryOption.costCents);
       const deliveryDate = DateUtils.formatDateWeekday(deliveryOption.calculateDeliveryDate());
@@ -486,18 +529,17 @@ export class CartSummary extends ComponentV2 {
   
 
   #handleQuantityInput(event) {
-    const inputElement = event.target; // Get the input element that triggered the event
+    const inputElement = event.target;
 
     if (!inputElement.classList.contains('js-new-quantity-input')) {
-        return; // Exit early if the event wasn't triggered by the correct input element
+        return; 
     }
 
-    // If the user presses "Enter", update the price
     if (event.key === 'Enter') {
-        this.#updatePrice(inputElement); // Call the function to update the price
-        this.#updateQuantity(inputElement);  // Proceed with updating the quantity as well
+        this.#updatePrice(inputElement);
+        this.#updateQuantity(inputElement);
     } 
-    // For escape key, cancel the update
+
     else if (event.key === 'Escape') {
         const currentQuantity = inputElement.closest('.js-quantity-container')
                                             ?.querySelector('.js-quantity-label')
@@ -505,65 +547,63 @@ export class CartSummary extends ComponentV2 {
   
         if (!currentQuantity) {
             console.error("Current quantity not found. Can't cancel.");
-            return; // Exit early if current quantity is not found
+            return; 
         }
   
-        const digitsOnly = currentQuantity.replace(/\D/g, ''); // Removes all non-digit characters
-        this.#cancelUpdateQuantity(inputElement, digitsOnly);  // Reset the quantity
+        const digitsOnly = currentQuantity.replace(/\D/g, ''); 
+        this.#cancelUpdateQuantity(inputElement, digitsOnly);  
     }
   } 
 
   #handleSaveQuantityClick(event) {
     const inputElement = event.target.closest('.js-quantity-container').querySelector('.js-new-quantity-input');
-    this.#updatePrice(inputElement); // Update the price
-    this.#updateQuantity(inputElement);  // Update the quantity
+    this.#updatePrice(inputElement); 
+    this.#updateQuantity(inputElement);  
   }
 
   #updatePrice(inputElement) {
-    const cartItemElement = inputElement.closest('.js-cart-item');  // Get the cart item element
-    const productId = cartItemElement.getAttribute('data-cart-item-id');  // Get the product ID
-    const previousCartQuantity = Number(cartItemElement.querySelector('.js-quantity-label').textContent);  // Get the previous quantity for this cart item
+    const cartItemElement = inputElement.closest('.js-cart-item'); 
+    const productId = cartItemElement.getAttribute('data-cart-item-id'); 
+    const previousCartQuantity = Number(cartItemElement.querySelector('.js-quantity-label').textContent);  
   
-    // Get the updated quantity from the input field, ensuring it's greater than or equal to 0
+    
     let quantity = parseInt(inputElement.value);
     if (quantity <= 0 || isNaN(quantity)) {
-      console.log("Invalid quantity. Quantity cannot be less than 0.");
-      quantity = previousCartQuantity;  // If quantity is invalid (less than 0), use the previous quantity
+
+      quantity = previousCartQuantity;  
     }
   
-    const priceElement = cartItemElement.querySelector('.product-price');  // Get the price element to update
+    const priceElement = cartItemElement.querySelector('.product-price');  
   
     if (!priceElement) {
       console.error("Price element not found.");
       return;
     }
   
-    // Find the product data using the productId (adjust according to your data structure)
-    const product = this.#getProductById(productId);  // Assuming this method fetches the correct product data
-    const unitPrice = product.priceCents;  // Assuming the price is in cents
-  
-    // Calculate the total price based on quantity and unit price
+    const product = this.#getProductById(productId); 
+    const unitPrice = product.priceCents;  
+    
     const totalPrice = unitPrice * quantity;
     
-    // Update the displayed price
-    priceElement.textContent = MoneyUtils.formatMoney(totalPrice);  // Format and display the total price
+    
+    priceElement.textContent = MoneyUtils.formatMoney(totalPrice); 
   }
   
 
   #getProductById(productId) {
-  // Search for the product in the stored cart data
+
   const product = this.cartData.find(item => item.productId === productId);
 
   if (product) {
     return product;
   } else {
     console.error(`Product with ID ${productId} not found.`);
-    return null; // Return null if the product isn't found
+    return null;
   }
   }
 
   #cancelUpdateQuantity(inputElement, currentQuantity) {
-  // Ensure the container and input element are valid
+ 
   const quantityContainer = inputElement.closest('.js-quantity-container');
 
   if (!quantityContainer) {
@@ -571,44 +611,50 @@ export class CartSummary extends ComponentV2 {
     return;
   }
 
-  // Hide the input element and show the label
+  
   quantityContainer.classList.remove('is-updating-quantity');
 
-  // Set the input value to the passed current quantity
+
   inputElement.value = currentQuantity;
   }
   
   async #addProductsToCart(productId, quantityToAdd) {
     console.log(`Adding ${quantityToAdd} products to cart with ID: ${productId}`);
     const userId = await this.#getUserId();
+    
 
     if (!userId) {
-        window.location.href = 'login.php';  // Redirect to login if no user ID
+        window.location.href = 'login.php';  
         return;
     }
 
     const addToCartPromises = [];
     for (let i = 0; i < quantityToAdd; i++) {
-        addToCartPromises.push(this.#sendAddToCartRequest(productId));  // Push promises to the array
+        addToCartPromises.push(this.#sendAddToCartRequest(productId)); 
     }
 
     await Promise.all(addToCartPromises);
     this.#checkoutHeader.updateCartCount();
+    const selectedOptionElement = document.querySelector(`input[name="delivery-option-${productId}"]:checked`);
+const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
+    if(selectedOption>0){
+    this.#handleDeliveryUpdate(productId,selectedOption);
+    }
   }
 
   async #sendAddToCartRequest(productId) {
       const userId = await this.#getUserId();
-
+      
       if (!userId) {
           console.error("User is not logged in");
-          window.location.href = 'login.php';  // Redirect to login if no user ID
+          window.location.href = 'login.php';  
           return;
       }
 
       const response = await fetch(`backend/add-to-cart.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: userId, product_id: productId, size: "L" }),
+          body: JSON.stringify({ user_id: userId, product_id: productId, size: "L"}),
       });
 
       const data = await response.json();
@@ -620,13 +666,13 @@ export class CartSummary extends ComponentV2 {
       }
   }
 
-// Handle removing products from the cart (send the difference to backend)
+
   #removeSomeProductsFromCart(productId, quantityToRemove) {
     fetch('backend/remove-some-from-cart.php', {
         method: 'POST',
         body: JSON.stringify({
             product_id: productId,
-            quantity: quantityToRemove  // Remove the excess quantity (N)
+            quantity: quantityToRemove  
         }),
         headers: {
             'Content-Type': 'application/json',
@@ -648,11 +694,11 @@ export class CartSummary extends ComponentV2 {
   
 
   #updateQuantity(inputElement) {
-    const newQuantity = parseInt(inputElement.value, 10); // Get the new quantity from the input element
+    const newQuantity = parseInt(inputElement.value, 10); 
 
     if (newQuantity < 1) {
       alert('Quantity must be at least 1.');
-      return; // Exit if the quantity is invalid
+      return;
     }
 
     const cartItemContainer = inputElement.closest('.js-cart-item');
@@ -661,16 +707,16 @@ export class CartSummary extends ComponentV2 {
     const currentQuantityLabel = cartItemContainer.querySelector('.js-quantity-label');
     const currentQuantity = parseInt(currentQuantityLabel.textContent, 10);
 
-    // If quantity hasn't changed, show a message and exit
+   
     if (newQuantity === currentQuantity) {
       this.#showQuantityMessage(cartItemId, 'Quantity is the same', 'red');
       console.log("No change in quantity. Exiting...");
-      return; // If the quantity hasn't changed, exit
+      return; 
     }
 
     const quantityDifference = newQuantity - currentQuantity;
 
-    // Handle adding/removing products based on the quantity change
+    
     if (quantityDifference > 0) {
       console.log(`Adding ${quantityDifference} item(s) to cart for product ID: ${cartItemId}`);
       this.#addProductsToCart(cartItemId, quantityDifference);
@@ -681,69 +727,56 @@ export class CartSummary extends ComponentV2 {
       this.#showQuantityMessage(cartItemId, `Removed ${Math.abs(quantityDifference)} item(s)`, 'black');
     }
 
-    // Update the current quantity label with the new quantity
+    
     currentQuantityLabel.textContent = newQuantity;
 
-    // Optionally, log or handle further UI updates here
-    console.log(`Updated quantity for product ID: ${cartItemId} to ${newQuantity}`);
   }
 
   #showQuantityMessage(cartItemId, message, color) {
     const cartItemContainer = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
     const messageContainer = cartItemContainer.querySelector(`.quantity-message-${cartItemId}`);
 
-    // Set the message and apply color
+   
     messageContainer.textContent = message;
     messageContainer.style.color = color;
 
-    // Make the message visible by adding a class
+  
     messageContainer.classList.add('is-visible');
 
-    // After 2 seconds, fade out the message by removing the 'is-visible' class
     setTimeout(() => {
       messageContainer.classList.remove('is-visible');
     }, 2000);
   }
 
-  /**
-   * Handle the deletion of an item when the "Delete" button is clicked.
-   * @param {Event} event - The event from the "Delete" button click.
-   */
-
   #handleDeleteLinkClick(event) {
     console.log("Boton clicked");
-    // Ensure the event target is a delete link
+
     const deleteLink = event.target.closest('.js-delete-quantity-link');
     
     if (!deleteLink) {
       console.error('Delete link not found');
-      return;  // Prevent further processing if the target is not the delete link
+      return; 
     }
   
     const cartItemContainer = deleteLink.closest('.js-cart-item');
     
     if (!cartItemContainer) {
       console.error('Cart item container not found');
-      return;  // Prevent further processing if the cart item container is not found
+      return;  
     }
   
     const cartItemId = cartItemContainer.getAttribute('data-cart-item-id');
     
     if (!cartItemId) {
       console.error('Cart item ID not found');
-      return;  // Prevent further processing if no cart item ID is found
+      return; 
     }
-  
-    // Proceed with backend removal and UI update
+ 
     this.#removeFromCart(cartItemId);
-  
-    // Remove the item from the UI
+
     this.#removeFromCartSummary(cartItemContainer);
   }
-  /**
-   * Remove an item from the cart on the backend.
-   * @param {String} cartItemId - The ID of the item to remove from the cart.
-   */
+
   #removeFromCart(cartItemId) {
     fetch('backend/remove-from-cart.php', {
       method: 'POST',
@@ -786,5 +819,46 @@ export class CartSummary extends ComponentV2 {
     const data = await response.json();
     return data.userId || null;
   }
+
+  #getSelectedRadioOption(groupName){
+  
+    const selectedRadio = document.querySelector(`input[name="${groupName}"]:checked`);
+    
+    if (selectedRadio) {
+ 
+      return selectedRadio.value;
+    } else {
+   
+      console.warn(`No option selected for radio group: ${groupName}`);
+      return null;  
+    }
+  }
+
+  #getAllSelectedRadioOptions() {
+ 
+    const radioGroups = document.querySelectorAll('input[type="radio"]');
+    
+    const selectedOptions = {};
+  
+    radioGroups.forEach(radio => {
+      const groupName = radio.name;
+  
+      if (!selectedOptions[groupName]) {
+        const selectedValue = this.#getSelectedRadioOption(groupName);
+        
+        if (selectedValue) {
+          selectedOptions[groupName] = selectedValue;
+        } else {
+    
+          selectedOptions[groupName] = "none"; 
+        }
+      }
+    });
+  
+   
+    console.log(selectedOptions);
+    return selectedOptions;
+  }
+  
 }
 
