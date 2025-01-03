@@ -27,7 +27,7 @@ function sendTokenEmail($email, $token) {
         $mail->Subject = 'Your Password Reset Token';
         $mail->Body = 'Your password reset token is: ' . $token;
 
-
+        $mail->SMTPDebug = 2;
 
         $mail->send();
         return true;
