@@ -9,8 +9,8 @@ function sendTokenEmail($email, $token) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'kits.albania@gmail.com';
-        $mail->Password = 'wutt otga hnez fyfx';
+        $mail->Username = 'electroman784@gmail.com';
+        $mail->Password = 'phwz nqal qeoq czbq';
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
@@ -22,12 +22,13 @@ function sendTokenEmail($email, $token) {
           ],
       ];
 
-        $mail->setFrom('kits.albania@gmail.com', 'Kits Alb');
+        $mail->setFrom('electroman784@gmail.com', 'Football Kits Albania');
         $mail->addAddress($email);
-        $mail->Subject = 'Your Password Reset Token';
-        $mail->Body = 'Your password reset token is: ' . $token;
+        $mail->Subject = 'Password Reset';
+        $mail->Body = 'Your password reset confirmation code is: ' . $token;
 
-        $mail->SMTPDebug = 2;
+        //If it is not working uncomment this for debug
+        //$mail->SMTPDebug = 3;
 
         $mail->send();
         return true;
