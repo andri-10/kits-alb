@@ -1,113 +1,139 @@
-/* General Styles */
+/* Base styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f9f9f9;
-}
-
-header.kits-header {
-  background-color: #333;
-  padding: 10px 20px;
-  color: #fff;
-}
-
-header .header-link {
-  text-decoration: none;
-  color: white;
-  display: flex;
-  align-items: center;
-}
-
-header .kits-logo,
-header .kits-mobile-logo {
-  height: 40px;
-  margin-right: 10px;
-}
-
-main.account-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  background-color: #f4f7fc;
+  color: #333;
 }
 
 .account-container {
-  background: #fff;
+  max-width: 900px;
+  margin: 100px auto;
+  padding: 30px;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
-  text-align: center;
+  font-size: 2.5rem;
   margin-bottom: 20px;
 }
 
-.profile-section {
-  text-align: center;
+.profile-info {
+  display: flex;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
-.profile-picture {
-  width: 100px;
-  height: 100px;
+.profile-info img {
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 10px;
-  border: 2px solid #ddd;
+  border: 4px solid #ddd;
+  margin-bottom: 20px;
 }
 
-.change-picture-label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
+.profile-info form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.info-section label {
-  display: block;
-  margin: 10px 0 5px;
-  font-weight: bold;
+.profile-info .choose-image-btn {
+  margin-top: 10px;
+  background-color: #ff9900;
+  padding: 10px 20px;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.info-section input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+.profile-info .choose-image-btn input[type="file"] {
+  display: none;
 }
 
-.save-button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
+.profile-info .change-picture-btn {
+  margin-top: 10px;
+  background-color: #4CAF50;
+  padding: 10px 20px;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
 }
 
-.save-button:hover {
-  background-color: #0056b3;
+.profile-info .change-picture-btn:hover {
+  background-color: #45a049;
 }
 
-/* Footer */
-.kits-footer {
-  text-align: center;
+.reset-password-btn {
+  display: inline-block;
+  background-color: #febd69;
   padding: 10px 20px;
-  background-color: #333;
-  color: #fff;
-  font-size: 14px;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.reset-password-btn:hover {
+  background-color: #e68a00;
+}
+
+.reset-password-form {
+  display: none;
   margin-top: 20px;
 }
 
-.kits-footer .footer-link {
-  color: #fff;
-  text-decoration: underline;
+.reset-password-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.reset-password-form label {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.reset-password-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #febd69;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.reset-password-form button:hover {
+  background-color: #e68a00;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .account-container {
+    padding: 15px;
+  }
+
+  .profile-info {
+    flex-direction: column;
+    align-items: center;
+  }
 }
