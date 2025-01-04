@@ -116,7 +116,7 @@
 }
 
 .kits-header .right-section {
-  width: 180px;
+  width: 240px;
   flex-shrink: 0;
   display: flex;
   justify-content: end;
@@ -184,6 +184,9 @@
   }
 }
 
+.order-section{
+  width: 20px;
+}
 
 .kits-header .orders-link {
   color: white;
@@ -191,16 +194,18 @@
 
 .kits-header .returns-text {
   display: block;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .kits-header .orders-text {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
-.kits-header .cart-link {
+.kits-header .cart-link,
+.kits-header .pfp-link
+ {
   color: white;
   display: flex;
   align-items: center;
@@ -209,6 +214,12 @@
 
 .kits-header .cart-icon {
   width: 50px;
+}
+
+.kits-header .pfp-icon {
+  width: 40px;
+  height: 40px;
+
 }
 
 .kits-header .cart-text {

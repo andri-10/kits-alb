@@ -58,6 +58,16 @@ export class KitsHeader extends ComponentV2 {
         </section>
       `;
     }
+
+    let accountSection = '';
+
+    if(userId){
+      accountSection = `
+        <a class="js-pfp-link pfp-link header-link" href="account.php">
+          <img class="pfp-icon" src="images/default-profile.png">
+        </a>
+      `
+    }
   
     this.element.innerHTML = `
       <section class="left-section">
@@ -74,7 +84,9 @@ export class KitsHeader extends ComponentV2 {
           <span class="returns-text">Returns</span>
           <span class="orders-text">& Orders</span>
         </a>
-  
+      
+        
+
         <!-- Cart link now dynamically redirects based on user login -->
         <a class="js-cart-link cart-link header-link" href="${cartLinkHref}">
           <img class="cart-icon" src="images/icons/cart-icon.png">
@@ -83,6 +95,9 @@ export class KitsHeader extends ComponentV2 {
           </div>
           <div class="cart-text">Cart</div>
         </a>
+
+        ${accountSection}
+
       </section>
   
       <section class="right-section-mobile">
@@ -94,6 +109,7 @@ export class KitsHeader extends ComponentV2 {
         <a class="hamburger-menu-link" href="${cartLinkHref}">
           Cart (<span class="js-cart-quantity-mobile cart-quantity-mobile" data-testid="cart-quantity-mobile">${totalCartQuantity}</span>)
         </a>
+        
       </div>
     `;
 
