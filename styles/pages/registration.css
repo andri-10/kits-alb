@@ -21,6 +21,79 @@ body {
   animation: dropdown 1s ease-in-out;
 }
 
+.new_home_web .send:hover, .new_home_web #resend-btn:hover  {
+  background-color: rgb(233, 144, 11);
+  border: none;
+}
+
+
+.new_home_web .send {
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+  background-color: rgb(19, 25, 33);
+  width: 100%;
+  text-align: center;
+  padding: 15px 0;
+  border: none;
+}
+
+.new_home_web .resend{
+  
+  margin-top: 10px;
+  background-color: rgb(86, 99, 116);
+}
+
+.new_home_web .code-sent{
+  margin-top: 0;
+  text-align: center;
+  color: green;
+  font-weight: bold;
+}
+
+
+.message-container {
+  margin-top: 10px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease-out; 
+}
+
+.message-container.fade-out {
+  opacity: 0;
+}
+.success-message-box {
+  color: green;
+  background-color: #e0f7e0;
+  padding: 10px;
+  border-radius: 5px;
+  opacity: 1;
+  transition: opacity 1s ease-out; 
+}
+
+.success-message.fade-out {
+  opacity: 0;
+}
+.error-message-box {
+  width: 100%;
+  color: red;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease-out;
+}
+
+.error-message.fade-out {
+  opacity: 0;
+}
+.success{
+  color: green;
+  font-weight: bold;
+  text-align: center;
+}
+
 @keyframes dropdown {
   from {
       opacity: 0;
@@ -96,16 +169,6 @@ body {
   border: none;
 }
 
-.new_home_web .send {
-  font-size: 18px;
-  color: white;
-  font-weight: 600;
-  background-color: rgb(19, 25, 33);
-  width: 100%;
-  text-align: center;
-  padding: 15px 0;
-  border: none;
-}
 
 .new_home_web .input,
 .new_home_web .textinput {

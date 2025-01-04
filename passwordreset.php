@@ -56,28 +56,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (isset($_POST['step']) && $_POST['step'] == 3) {
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
-
+    
         if ($new_password !== $confirm_password) {
             $error = "Passwords do not match.";
             $step = 3;
         } elseif (!preg_match("/^(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/", $new_password)) {
             $error = "Password must be at least 8 characters long and include a number and a special character.";
             $step = 3;
-
         } else {
-            $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
             $email = $_SESSION['reset_email'];
-
-            $stmt = $conn->prepare("UPDATE Users SET password = ? WHERE email = ?");
-            $stmt->bind_param("ss", $hashed_password, $email);
-
-            if ($stmt->execute()) {
-                $success = "Password reset successful.";
-                session_destroy();
+            
+    
+            // Fetch the current password hash from the database
+            $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+    
+            if ($result->num_rows === 1) {
+                $row = $result->fetch_assoc();
+                $current_hashed_password = $row['password'];
+    
+                // Verify if the new password matches the current password
+                if (password_verify($new_password, $current_hashed_password)) {
+                    $error = "Error changing password.";
+                    $step = 3;
+                } else {
+                    // Hash the new password and update it in the database
+                    $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+    
+                    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+                    $stmt->bind_param("ss", $hashed_password, $email);
+    
+                    if ($stmt->execute()) {
+                        $success = "Password reset successful.";
+                        session_destroy();
+                    } else {
+                        $error = "Something went wrong. Please try again.";
+                        $step = 3;
+                    }
+                }
             } else {
-                $error = "Something went wrong. Please try again.";
+                $error = "User not found. Please restart the process.";
                 $step = 3;
-             }
+            }
         }
     }
 }
@@ -136,11 +158,11 @@ $conn->close();
                         </div>
                     </form>
                     <?php if (!empty($error)): ?>
-                        <p><?php echo $error; ?></p>
+                        <p style="text-align:center"><?php echo $error; ?></p>
                     <?php endif; ?>
 
                     <?php if ($success): ?>
-                        <p class="success"><?php echo $success; ?></p>
+                        <p style="text-align:center" class="success"><?php echo $success; ?></p>
                     <?php endif; ?>
 
                     <p class ="return">Return to <a class ="link" href = "login.php">Sign In</a></p>
@@ -157,7 +179,7 @@ $conn->close();
                                 <button type="submit" class="send">Verify </button>
 
                                 <button type="button" id="resend-btn" class="send resend" disabled>
-                                Resend Code in <span id="timer">60s</span>
+                                Resend Code in <span id="timer">20s</span>
                                 </button>
                                 <input type="hidden" name="step" value="2">
                             </div>
@@ -200,6 +222,6 @@ $conn->close();
       </p>
     </footer>
 
-    <script src="./scripts/pages/passwordreset.js"></script>
+    <script src="scripts/pages/passwordreset.js"></script>
 </body>
 </html>

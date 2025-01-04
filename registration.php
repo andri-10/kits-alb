@@ -87,14 +87,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 echo '<script>
                         setTimeout(function() {
                             window.location.href = "login.php";
-                        }, 2000);
+                        }, 3000);
                       </script>';
                 exit; // Prevent further script execution
             } else {
                 $error = "Failed to update email verification status. Please try again.";
+                $step=2;
             }
         } else {
             $error = "Invalid or expired token. Please try again.";
+            $step=2;
         }
     }
 }
@@ -186,13 +188,15 @@ $conn->close();
                                 <p class="code-sent">Please check your email.</p>
                                 <button type="submit" class="send">Verify</button>
                                 <button type="button" id="resend-btn" class="send resend" disabled>
-                                    Resend Code in <span id="timer">60s</span>
+                                    Resend Code in <span id="timer">20s</span>
                                 </button>
                                 <input type="hidden" name="step" value="2">
                             </div>
                         </div>
                     </form>
-
+                    <?php if (!empty($error)): ?>
+                        <p class = "error" id="phpError2" ><?php echo $error; ?></p>
+                    <?php endif; ?>
                     <!-- Error/Success Messages -->
                     <?php if ($error != ''): ?>
                         <p class="error-message"><?= $error; ?></p>
@@ -211,28 +215,12 @@ $conn->close();
             <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
         </p>
     </footer>
-
+    <script src="scripts/pages/emailVerify.js"></script>
     <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
 
-    <script>
-        // Countdown Timer for Resend Button
-        let timerElement = document.getElementById("timer");
-        let resendBtn = document.getElementById("resend-btn");
-        let countdown = 60;
-
-        const interval = setInterval(() => {
-            countdown--;
-            timerElement.textContent = `${countdown}s`;
-
-            if (countdown <= 0) {
-                clearInterval(interval);
-                resendBtn.disabled = false;
-                resendBtn.textContent = "Resend Code";
-            }
-        }, 1000);
-    </script>
+    
 </body>
 </html>
