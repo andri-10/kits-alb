@@ -77,6 +77,7 @@ export class CartSummary extends ComponentV2 {
     console.log('Radio button changed:', selectedRadio);
     console.log(productId);
     this.#handleDeliveryUpdate(productId, val);
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
 
@@ -345,6 +346,7 @@ export class CartSummary extends ComponentV2 {
       if (result.success) {
         console.log(`Size updated successfully for cart ID ${cartId}`);
         
+        
         // Show success message in green
         messageContainer.textContent = 'Size updated successfully.';
         messageContainer.style.color = 'green'; // Optional: Green text for success
@@ -379,6 +381,8 @@ export class CartSummary extends ComponentV2 {
         messageContainer.classList.remove('is-visible');
       }, 2000);
     }
+
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   async #handleDeliveryUpdate(productId, value) {
@@ -420,6 +424,8 @@ export class CartSummary extends ComponentV2 {
     } catch (error) {
       console.error('Error updating delivery option:', error);
     }
+
+    this.#paymentSummary.refreshPaymentDetails();
   }
   
   
@@ -501,6 +507,8 @@ export class CartSummary extends ComponentV2 {
     } else {
       console.error('Delivery date element not found!');
     }
+
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   #updateHeaderWithDeliveryOption(deliveryOption) {
@@ -559,6 +567,7 @@ export class CartSummary extends ComponentV2 {
     const inputElement = event.target.closest('.js-quantity-container').querySelector('.js-new-quantity-input');
     this.#updatePrice(inputElement); 
     this.#updateQuantity(inputElement);  
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   #updatePrice(inputElement) {
@@ -616,6 +625,7 @@ export class CartSummary extends ComponentV2 {
 
 
   inputElement.value = currentQuantity;
+  this.#paymentSummary.refreshPaymentDetails();
   }
   
   async #addProductsToCart(productId, quantityToAdd) {
@@ -640,6 +650,7 @@ const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
     if(selectedOption>0){
     this.#handleDeliveryUpdate(productId,selectedOption);
     }
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   async #sendAddToCartRequest(productId) {
@@ -729,7 +740,7 @@ const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
 
     
     currentQuantityLabel.textContent = newQuantity;
-
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   #showQuantityMessage(cartItemId, message, color) {
@@ -775,6 +786,7 @@ const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
     this.#removeFromCart(cartItemId);
 
     this.#removeFromCartSummary(cartItemContainer);
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
   #removeFromCart(cartItemId) {

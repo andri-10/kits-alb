@@ -115,24 +115,34 @@ export class Cart {
   }
 
   // Calculate the total costs (product, shipping, and taxes) by fetching from the backend
-  async calculateCosts() {
+  async calculateCosts(userId) {
     try {
       const response = await fetch('backend/get-cart-costs.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cart_items: this.#items }) // Send current cart items to backend
+        body: JSON.stringify({ user_id: userId }) // Send user ID to backend
       });
-
+  
+      // Log the response status and response body
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to fetch cart costs:', errorText);
+        throw new Error('Failed to fetch cart costs');
+      }
+  
       const data = await response.json();
       console.log('Cart costs data:', data);
-
+  
       return data.costs || { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     } catch (error) {
+      console.error('Error calculating cart costs:', error);
       return { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     }
   }
+  
+  
 
   // Remove an item from the cart (call backend to remove)
   async removeFromCart(cartItemId) {

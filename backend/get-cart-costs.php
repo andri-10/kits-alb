@@ -1,74 +1,79 @@
 <?php
-// Database connection
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Set the content type to JSON
+header('Content-Type: application/json');
+
+// Start the session to retrieve the user_id from the session
+session_start();
+
+// Get the user ID from the session
+$userId = $_SESSION['user_id'] ?? null;
+
+// Check if user ID is not available
+if (!$userId) {
+    echo json_encode(['error' => 'No user ID provided or user not logged in']);
+    exit;
+}
+
+// Connect to the database
 $host = 'localhost';
 $user = 'root';
 $password = '';
 $database = 'web';
-
 $conn = new mysqli($host, $user, $password, $database);
 
+// Check if the connection was successful
 if ($conn->connect_error) {
-    die(json_encode(['error' => 'Database connection failed']));
-}
-
-// Get the cart items from the request
-$cartItems = json_decode(file_get_contents('php://input'), true);
-
-// Make sure cart_items is an array and is not empty
-if (empty($cartItems['cart_items'])) {
-    echo json_encode(['error' => 'No cart items provided']);
+    echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
 
-$cartItems = $cartItems['cart_items'];  // Extract cart items array
+// Prepare the SQL query to get cart details for the user
+$sql = "
+    SELECT 
+        p.priceCents,
+        COUNT(sc.product_id) AS quantity,
+        sc.delivery_option,
+        (p.priceCents * COUNT(sc.product_id)) AS product_cost_cents,
+        CASE 
+            WHEN sc.delivery_option = 1 THEN 0 
+            WHEN sc.delivery_option = 2 THEN 499 
+            WHEN sc.delivery_option = 3 THEN 999 
+            ELSE 0 
+        END AS shipping_cost_cents
+    FROM products p
+    JOIN shopping_cart sc ON p.id = sc.product_id
+    WHERE sc.user_id = ?  -- Select cart items for the current user
+    GROUP BY sc.product_id, sc.delivery_option
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $userId);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Initialize total costs
 $productCostCents = 0;
 $shippingCostCents = 0;
-$taxRate = 0.1; // Example tax rate, adjust as necessary
-
-// Prepare the SQL query to fetch product and shipping costs for each item in the cart
-$productIds = array_map(function ($item) {
-    return "'" . $item['productId'] . "'";
-}, $cartItems);
-$productIdsStr = implode(',', $productIds);
-
-// Query the database for the product details
-$sql = "
-    SELECT 
-        p.id AS product_id,
-        p.priceCents,
-        d.costCents AS shipping_cost
-    FROM products p
-    JOIN cart c ON p.id = c.product_id
-    JOIN delivery_options d ON c.delivery_option_id = d.id
-    WHERE p.id IN ($productIdsStr)
-";
-
-$result = $conn->query($sql);
-
-if (!$result) {
-    echo json_encode(['error' => 'Database query failed']);
-    exit;
-}
 
 while ($row = $result->fetch_assoc()) {
-    // Find the corresponding cart item in the request and calculate product and shipping costs
-    foreach ($cartItems as $cartItem) {
-        if ($cartItem['productId'] === $row['product_id']) {
-            $productCostCents += $row['priceCents'] * $cartItem['quantity'];
-            $shippingCostCents += $row['shipping_cost'] * $cartItem['quantity'];
-        }
-    }
+    // Add the product cost for the current product to the total
+    $productCostCents += $row['product_cost_cents'];
+
+    // Add the shipping cost for the current product to the total
+    $shippingCostCents += $row['shipping_cost_cents'];
 }
 
-// Calculate tax
-$taxCents = ($productCostCents + $shippingCostCents) * $taxRate;
+// Calculate tax (10% of the total product and shipping costs)
+$taxCents = ($productCostCents + $shippingCostCents) * 0.10;
 
-// Calculate total cost
-$totalCents = round($productCostCents + $shippingCostCents + $taxCents);
+// Calculate the total cost (product + shipping + tax)
+$totalCents = $productCostCents + $shippingCostCents + $taxCents;
 
-// Return the calculated costs
+// Return the calculated costs as JSON
 echo json_encode([
     'costs' => [
         'productCostCents' => $productCostCents,

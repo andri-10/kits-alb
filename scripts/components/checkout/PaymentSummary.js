@@ -21,7 +21,18 @@ export class PaymentSummary extends Component {
     this.#usePaypal = localStorage.getItem('exercises-kits-use-paypal') === 'true';
   }
 
-  render() {
+  async #getUserId() {
+    const basePath = '/backend';
+    const response = await fetch(`${basePath}/get-user-id.php`);
+    const data = await response.json();
+
+    console.log(data.userId);
+    return data.userId || null;  // Return userId if logged in, otherwise return null
+    
+  }
+
+  async render() {
+    
     this.element.innerHTML = `
       <div class="js-payment-info"></div>
 
@@ -55,12 +66,13 @@ export class PaymentSummary extends Component {
   }
 
   async refreshPaymentDetails() {
+    const userId = this.#getUserId();
     const {
       productCostCents,
       shippingCostCents,
       taxCents,
       totalCents
-    } = await cart.calculateCosts();
+    } = await cart.calculateCosts(userId);
 
     const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
     const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
