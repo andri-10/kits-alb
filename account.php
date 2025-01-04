@@ -66,6 +66,11 @@ $orderResult = $orderStmt->get_result();
             <?php } else { ?>
                 <img src="images/default-profile.png" alt="Default Profile Picture">
             <?php } ?>
+
+        <div class='name-and-email'>
+        <p class="profile-name"><?php echo htmlspecialchars($user['name']); ?></p>
+        <p class="profile-email"><?php echo htmlspecialchars($user['email']); ?></p>   
+        </div>
             <form action="backend/update-profile-image.php" method="POST" enctype="multipart/form-data">
                 <label class="choose-image-btn">
                     Choose New Picture
@@ -75,10 +80,7 @@ $orderResult = $orderStmt->get_result();
             </form>
         </div>
     </div>
-    <div class="user-details">
-        <p><strong>Name:</strong> <?php echo htmlspecialchars($user['name']); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-    </div>
+    
 
     <a href="#" id="reset-password-btn" class="reset-password-btn">Reset Password</a>
 
