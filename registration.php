@@ -155,10 +155,14 @@ $conn->close();
                                             <input class="input" id="email" name="email" placeholder="Email" value="<?= htmlspecialchars($email); ?>" required type="email">
                                         </div>
                                         <div class="responsive-cell-block">
-                                            <input class="input" id="password" name="password" placeholder="Password" required type="password">
+                                            <input class="input password" id="password" name="password" placeholder="Password" required type="password">
                                         </div>
                                         <div class="responsive-cell-block">
-                                            <input class="input" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required type="password">
+                                            <input class="input password" id="confirm-password" name="confirm_password" placeholder="Confirm Password" required type="password">
+                                        </div>
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" id="show-password" onclick="togglePassword()">
+                                            <label for="show-password">Show Password</label>
                                         </div>
                                     </div>
                                 </div>
@@ -215,12 +219,22 @@ $conn->close();
             <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
         </p>
     </footer>
+
+    <script>
+        function togglePassword() {
+            const passwords = document.querySelectorAll(".password");
+            passwords.forEach((password) => {
+                password.type = password.type === "password" ? "text" : "password";
+            });
+        }
+    </script>
     <script src="scripts/pages/emailVerify.js"></script>
+    
+        
+    
     <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
-
-    
 </body>
 </html>

@@ -51,6 +51,10 @@ body {
   font-weight: bold;
 }
 
+.new_home_web .checkbox-container{
+  margin-bottom: 20px;
+}
+
 
 .message-container {
   margin-top: 10px;
