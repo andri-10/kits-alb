@@ -5,6 +5,7 @@ body {
   padding: 0;
   background-color: #f4f7fc;
   color: #333;
+
 }
 
 .account-container {
@@ -15,6 +16,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   justify-content: center;
+  margin-bottom: 126px;
 }
 
 h1 {
@@ -44,15 +46,13 @@ h1 {
 .profile-image{
   width: 60%;
   justify-content: center;
-  display: flex
-;
+
   flex-direction: column;
 }
 .profile-info {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-  
     flex-direction: column;
     align-items: center;
   
@@ -125,6 +125,100 @@ h1 {
 }
 
 
+/* Popup backdrop */
+.popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: none;
+}
+
+/* Popup form */
+.popup-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  z-index: 1100;
+  display: none;
+}
+
+/* Form heading */
+.popup-form h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Input field styling */
+.popup-form input[type="text"],
+.popup-form input[type="email"],
+.popup-form input[type="password"],
+.popup-form input[type="file"] {
+    width: 80%; /* Smaller width */
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Button styling (match account.php) */
+.popup-form button {
+    background-color: #4CAF50; /* Match Edit Profile button color */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-form button:hover {
+    background-color: #45a049;
+}
+
+.popup-form button.submit-btn {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.popup-form button.cancel-btn {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.popup-form button:hover {
+  opacity: 0.9;
+}
+
+/* Success message */
+.success-message {
+  color: green;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Error message */
+.error-message {
+  color: red;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
@@ -147,7 +241,7 @@ h1 {
     justify-content: center;
   }
 
-  .profile-info .edit-profile-btn,
+.profile-info .edit-profile-btn,
 .profile-info .reset-password-btn {
  margin-left:auto;
  margin-right:auto;
