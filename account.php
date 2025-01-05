@@ -18,6 +18,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
+
 $sql = "SELECT name, email, email_verified, profile_photo FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userId);
@@ -71,31 +72,17 @@ $orderResult = $orderStmt->get_result();
         <p class="profile-name"><?php echo htmlspecialchars($user['name']); ?></p>
         <p class="profile-email"><?php echo htmlspecialchars($user['email']); ?></p>   
         </div>
-            <form action="backend/update-profile-image.php" method="POST" enctype="multipart/form-data">
-                <label class="choose-image-btn">
-                    Choose New Picture
-                    <input type="file" name="profile_image" accept="image/*" required>
-                </label>
-                <button type="submit" class="change-picture-btn">Change Profile Picture</button>
-            </form>
+        <div class='profile-buttons'>
+                <div class='two-main-buttons'>
+                    <button class="edit-profile-btn">Edit profile</button>
+                    <a href = passwordreset.php?from=account><button class="reset-password-btn">Reset password</button></a>
+                </div>
+            </div>
         </div>
     </div>
     
 
-    <a href="#" id="reset-password-btn" class="reset-password-btn">Reset Password</a>
-
-    <!-- Reset Password Form -->
-    <div id="reset-password-form" class="reset-password-form">
-        <form action="backend/reset-password.php" method="POST">
-            <input type="password" name="new_password" id="new-password" placeholder="Enter new password" required>
-            <input type="password" name="confirm_password" id="confirm-password" placeholder="Confirm password" required>
-            <label>
-                <input type="checkbox" id="show-password"> Show password
-            </label>
-            <span id="password-error" class="error-message"></span>
-            <button type="submit">Reset Password</button>
-        </form>
-    </div>
+    
 </div>
 
 <footer class="kits-footer">

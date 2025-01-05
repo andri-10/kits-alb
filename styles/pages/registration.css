@@ -53,6 +53,7 @@ body {
 
 .new_home_web .checkbox-container{
   margin-bottom: 20px;
+  text-align: left;
 }
 
 
@@ -215,6 +216,8 @@ body {
 .new_home_web .link:hover{
   text-decoration: underline;
 }
+
+
 
 @media (max-width: 768px) {
   .new_home_web .form-box {

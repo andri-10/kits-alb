@@ -5,13 +5,13 @@ document.addEventListener("DOMContentLoaded", function () {
     let formContainer = document.querySelector("#step2Form");
     let timerText = resendButton?.querySelector("span");
     let errorMessageDiv = document.createElement('div'); // To hold error or success messages
-  
+    
     // Ensure the error message div is only appended once
     errorMessageDiv.classList.add('message-container');
     if (formContainer) formContainer.appendChild(errorMessageDiv);
   
     if (timerDisplay) {
-      let remainingTime = 20;
+      let remainingTime = 10;
   
       // Disable the resend button initially
       resendButton.disabled = true;
@@ -49,6 +49,11 @@ document.addEventListener("DOMContentLoaded", function () {
   
     if (resendButton) {
       resendButton.addEventListener("click", function () {
+        // Disable the button immediately after clicking
+        resendButton.disabled = true;
+        resendButton.classList.add('disabled');
+        resendButton.textContent = "Resending..."; // Change the text to "Resending..."
+  
         // Make an AJAX request to resend the token
         fetch('backend/resend-token.php', {
           method: 'POST',
@@ -61,10 +66,13 @@ document.addEventListener("DOMContentLoaded", function () {
           .then(data => {
             if (data.success) {
               // Display a success message inside the form
-              
+              smallErrorMessage=document.getElementById("phpError2");
+              smallSuccessMessage=document.getElementById("phpSuccess2");
               errorMessageDiv.textContent = 'Token resent successfully!';
               errorMessageDiv.classList.add('success-message-box');
               errorMessageDiv.classList.remove('error-message-box');
+              if(smallErrorMessage) smallErrorMessage.textContent="";
+              if(smallSuccessMessage) smallSuccessMessage.textContent="";
               errorMessageDiv.classList.remove('fade-out');
               setTimeout(function() {
                 errorMessageDiv.classList.add('fade-out');
@@ -80,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
               // Reset the timer and button states
               resendButton.disabled = true;
               resendButton.classList.add('disabled');
-              resendButton.innerHTML = `Resend Code in <span id="timer">20s</span>`; // Reset the button text
+              resendButton.innerHTML = `Resend Code in <span id="timer">10s</span>`; // Reset the button text
               timerText = resendButton?.querySelector("span");
               resendButton.style.backgroundColor='rgb(86, 99, 116)';
               
@@ -98,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
               }
               // Restart the timer
-              let remainingTime = 20;
+              let remainingTime = 10;
               let timer = setInterval(function () {
                 remainingTime--;
                 if (timerText) timerText.textContent = remainingTime + "s"; // Update the timer inside the button
@@ -129,11 +137,14 @@ document.addEventListener("DOMContentLoaded", function () {
               }, 1000);
             } else {
               // Display an error message if token resend fails
-            
+              smallErrorMessage=document.getElementById("phpError2");
+              smallSuccessMessage=document.getElementById("phpSuccess2");
               errorMessageDiv.textContent = 'Failed to resend the token. Please try again.';
               errorMessageDiv.classList.add('error-message-box');
               errorMessageDiv.classList.remove('fade-out');
               errorMessageDiv.classList.remove('success-message-box');
+              if(smallErrorMessage) smallErrorMessage.textContent="";
+              if(smallSuccessMessage) smallSuccessMessage.textContent="";
   
               // Fade out the error message after 2 seconds
             setTimeout(function() {
@@ -148,10 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
           })
           .catch(() => {
             // Handle any fetch errors (network issues, etc.)
+            smallErrorMessage=document.getElementById("phpError2");
+            smallSuccessMessage=document.getElementById("phpSuccess2");
             errorMessageDiv.textContent = 'An error occurred. Please try again later.';
             errorMessageDiv.classList.add('error-message-box');
             errorMessageDiv.classList.remove('success-message-box');
             errorMessageDiv.classList.remove('fade-out');
+            if(smallErrorMessage) smallErrorMessage.textContent="";
+            if(smallSuccessMessage) smallSuccessMessage.textContent="";
   
             // Fade out the error message after 2 seconds
             setTimeout(function() {

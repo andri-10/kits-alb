@@ -42,18 +42,25 @@ h1 {
 }
 
 .profile-image{
-  display:flex;
+  width: 60%;
+  justify-content: center;
+  display: flex
+;
   flex-direction: column;
 }
 .profile-info {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  
+    flex-direction: column;
+    align-items: center;
+  
 }
 
 .profile-info img {
-  width: 150px;
-  height: 150px;
+  width: 40%;
+  height: 40%;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #ddd;
@@ -68,99 +75,86 @@ h1 {
   align-items: center;
 }
 
-.profile-info .choose-image-btn {
+.profile-info .profile-buttons {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin: 0px auto;
+  align-content: space-between;
+  justify-content: space-between;
+}
+
+.profile-info .two-main-buttons {
+  display: flex;
+  justify-content: center;
+  gap:20px;
+  width:100%
+}
+
+.profile-info .edit-profile-btn,
+.profile-info .reset-password-btn {
   margin-top: 10px;
-  background-color: #ff9900;
+ 
+  width: 200px;
+  min-width:180px;
   padding: 10px 20px;
   color: white;
   font-size: 1rem;
   text-align: center;
   border-radius: 6px;
   cursor: pointer;
+  border:0;
+  text-wrap: nowrap
 }
 
+.edit-profile-btn{
+  background-color: #ff9900;
+}
+.reset-password-btn{
+  background-color: #1e1e29;
+}
+
+.edit-profile-btn:hover{
+  background-color: #df8600;
+}
+.reset-password-btn:hover{
+  background-color: #3b3b51;
+}
 .profile-info .choose-image-btn input[type="file"] {
   display: none;
 }
 
-.profile-info .change-picture-btn {
-  margin-top: 10px;
-  background-color: #4CAF50;
-  padding: 10px 20px;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
 
-.profile-info .change-picture-btn:hover {
-  background-color: #45a049;
-}
-
-.reset-password-btn {
-  display: inline-block;
-  background-color: #febd69;
-  padding: 10px 20px;
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-
-}
-
-.reset-password-btn:hover {
-  background-color: #e68a00;
-}
-
-.reset-password-form {
-  display: none;
-  margin-top: 20px;
-}
-
-.reset-password-form input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-}
-
-.reset-password-form label {
-  display: inline-block;
-  margin-bottom: 10px;
-}
-
-.reset-password-form button {
-  width: 100%;
-  padding: 10px;
-  background-color: #febd69;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.reset-password-form button:hover {
-  background-color: #e68a00;
-}
-
-.error-message {
-  color: red;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-}
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .account-container {
     padding: 15px;
+    box-sizing: border-box;
   }
 
-  .profile-info {
-    flex-direction: column;
-    align-items: center;
+  .profile-info img {
+   min-width: 100px;
+   min-height: 100px;
   }
+
+}
+
+@media (max-width:401px){
+  .profile-info .two-main-buttons{
+    flex-direction: column;
+    gap:0;
+    justify-content: center;
+  }
+
+  .profile-info .edit-profile-btn,
+.profile-info .reset-password-btn {
+ margin-left:auto;
+ margin-right:auto;
+ width:100%;
+ min-width:80px;
+ padding-left:5px;
+ padding-right: 5px;
+}
+  
 }

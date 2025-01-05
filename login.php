@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($error)) {
         // Check if email exists in the database
-        $stmt = $conn->prepare("SELECT id, password, role, email_verified, name FROM Users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, email, password, role, email_verified, name FROM Users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -91,6 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Create session for logged-in user
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
+                $_SESSION['email']= $user['email'];
 
                 // Handle "Remember Me" functionality
                 if (isset($_POST['keep-signed-in'])) {
@@ -133,6 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
     }
 }
+
 
 $conn->close();
 

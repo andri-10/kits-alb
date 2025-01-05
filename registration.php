@@ -75,21 +75,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }elseif (isset($_POST['step']) && $_POST['step'] == 2) {
         $entered_token = $_POST['token'];
     
-        if ($_SESSION['reset_token'] == $entered_token && (time() - $_SESSION['token_time']) <= 600) { // 10 minutes
-            // Update the email_verified field to 1
+        if ($_SESSION['reset_token'] == $entered_token && (time() - $_SESSION['token_time']) <= 600) { 
+            
             $email = $_SESSION['reset_email'];
             $stmt = $conn->prepare("UPDATE Users SET email_verified = 1 WHERE email = ?");
             $stmt->bind_param("s", $email);
     
             if ($stmt->execute()) {
-                $_SESSION['email_verified'] = true; // Mark as verified in the session
-                $success = "Email verified successfully! Redirecting to login.";
-                echo '<script>
-                        setTimeout(function() {
-                            window.location.href = "login.php";
-                        }, 3000);
-                      </script>';
-                exit; // Prevent further script execution
+                $_SESSION['email_verified'] = true; 
+                $step=1;
+                $success = "Email verified successfully! Redirecting to login...";
+                echo "<script>
+                setTimeout(function() {
+                    
+                    
+                    window.location.href = 'login.php';  
+                }, 2000); 
+            </script>";
+              
+                unset($_SESSION['reset_email'], $_SESSION['reset_token'], $_SESSION['token_time']);
+            
             } else {
                 $error = "Failed to update email verification status. Please try again.";
                 $step=2;
@@ -172,11 +177,11 @@ $conn->close();
                             </div>
 
                             <!-- Error/Success Messages -->
-                            <?php if ($error != ''): ?>
-                                <p class="error-message"><?= $error; ?></p>
+                            <?php if (!empty($error)): ?>
+                                <p class="error-message" id="phpError2"><?= $error; ?></p>
                             <?php endif; ?>
-                            <?php if ($success != ''): ?>
-                                <p class="success-message"><?= $success; ?></p>
+                            <?php if (!empty($success)): ?>
+                                <p class="success-message" id="phpSuccess2"><?= $success; ?></p>
                             <?php endif; ?>
                         </form>
                     </div>
@@ -192,22 +197,20 @@ $conn->close();
                                 <p class="code-sent">Please check your email.</p>
                                 <button type="submit" class="send">Verify</button>
                                 <button type="button" id="resend-btn" class="send resend" disabled>
-                                    Resend Code in <span id="timer">20s</span>
+                                    Resend Code in <span id="timer">10s</span>
                                 </button>
                                 <input type="hidden" name="step" value="2">
                             </div>
                         </div>
                     </form>
-                    <?php if (!empty($error)): ?>
-                        <p class = "error" id="phpError2" ><?php echo $error; ?></p>
-                    <?php endif; ?>
+                    
                     <!-- Error/Success Messages -->
-                    <?php if ($error != ''): ?>
-                        <p class="error-message"><?= $error; ?></p>
-                    <?php endif; ?>
-                    <?php if ($success != ''): ?>
-                        <p class="success-message"><?= $success; ?></p>
-                    <?php endif; ?>
+                    <?php if (!empty($error)): ?>
+                                <p class="error-message" id="phpError2"><?= $error; ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($success)): ?>
+                                <p class="success-message" id="phpSuccess2"><?= $success; ?></p>
+                            <?php endif; ?>
                 </div>
                 <?php endif; ?>
             </div>
@@ -219,7 +222,6 @@ $conn->close();
             <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
         </p>
     </footer>
-
     <script>
         function togglePassword() {
             const passwords = document.querySelectorAll(".password");
@@ -229,12 +231,11 @@ $conn->close();
         }
     </script>
     <script src="scripts/pages/emailVerify.js"></script>
-    
-        
-    
     <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
+
+    
 </body>
 </html>

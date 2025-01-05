@@ -35,8 +35,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['email_verified'] = true;
                 
                 $success = "Email verified successfully! Redirecting to login.";
-                echo '<script>setTimeout(() => window.location.href = "login.php", 2000);</script>';
-                // Clear session variables related to verification
+                echo "<script>
+    setTimeout(function() {
+     
+        
+        window.location.href = 'login.php';  
+    }, 2000); 
+</script>";
+                
                 unset($_SESSION['reset_email'], $_SESSION['reset_token'], $_SESSION['token_time']);
             } else {
                 $error = "Failed to update email verification status. Please try again.";
@@ -94,7 +100,7 @@ $conn->close();
                                 <p class="code-sent">Please check your email.</p>
                                 <button type="submit" class="send">Verify</button>
                                 <button type="button" id="resend-btn" class="send resend" disabled>
-                                    Resend Code in <span id="timer">20s</span>
+                                    Resend Code in <span id="timer">10s</span>
                                 </button>
                                 <input type="hidden" name="step" value="2">
                             </div>
@@ -102,11 +108,11 @@ $conn->close();
                     </form>
 
                     <!-- Error/Success Messages -->
-                    <?php if ($error != ''): ?>
-                        <p class="error-message"><?= $error; ?></p>
+                    <?php if (!empty($error)): ?>
+                        <p class="error-message" id="phpError2"><?= $error; ?></p>
                     <?php endif; ?>
-                    <?php if ($success != ''): ?>
-                        <p class="success-message"><?= $success; ?></p>
+                    <?php if (!empty($success)): ?>
+                        <p class="success-message" id="phpSuccess2"><?= $success; ?></p>
                     <?php endif; ?>
                 </div>
                
