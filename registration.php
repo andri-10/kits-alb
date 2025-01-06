@@ -28,8 +28,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
 
-        // Validate sanitized email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        if ((strlen($username) < 5 || strlen($username) > 25) && strlen($username) != 0 ) {
+            $error = "Username should be between 5 and 25 characters long";
+        } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email format.";
         } else {
             // Check if email already exists

@@ -36,6 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+     // Validation: Check if username is empty
+    
+
+    // Validation: Check if username length is between 5 and 25 characters
+    if ((strlen($newUsername) < 5 || strlen($newUsername) > 25) && strlen($newUsername) != 0 ) {
+        echo json_encode(["success" => false, "message" => "Username should be between 5 and 25 characters long"]);
+        exit();
+    } 
+    
+    if (strlen($newUsername) == 0) {
+        echo json_encode(["success" => false, "message" => "Username cannot be empty"]);
+        exit();
+    }
+
     // IMAGE UPLOAD LOGIC
     if ($image && $image['error'] === UPLOAD_ERR_OK) {
         $imageTmpName = $image['tmp_name'];
@@ -95,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // If there are no updates, show "No changes made"
-    if (empty($updates)) {
+    if (empty($updates) && strlen($newUsername) != 0) {
         echo json_encode(["success" => false, "message" => "No changes provided."]);
         exit();
     }
