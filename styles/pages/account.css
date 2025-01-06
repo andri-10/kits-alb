@@ -1,4 +1,4 @@
-/* Base styles */
+
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -44,10 +44,12 @@ h1 {
 }
 
 .profile-image{
+  display:flex;
   width: 60%;
   justify-content: center;
 
   flex-direction: column;
+  box-sizing: border-box;
 }
 .profile-info {
   display: flex;
@@ -58,13 +60,13 @@ h1 {
   
 }
 
-.profile-info img {
-  width: 40%;
-  height: 40%;
+.profile-info img, #imgPreview {
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #ddd;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   margin-left:auto;
   margin-right:auto
 }
@@ -115,7 +117,7 @@ h1 {
 }
 
 .edit-profile-btn:hover{
-  background-color: #df8600;
+  background-color: #ffb13b;
 }
 .reset-password-btn:hover{
   background-color: #3b3b51;
@@ -161,44 +163,88 @@ h1 {
   text-align: center;
 }
 
+.popup-form .username-section{
+display:inline-block;
+margin: 0 auto;
+text-align: center;
+
+}
+
+.popup-form .image-section{
+  box-sizing: border-box;
+  display:flex;
+  margin: 0 auto;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  }
+
 /* Input field styling */
 .popup-form input[type="text"],
 .popup-form input[type="email"],
-.popup-form input[type="password"],
-.popup-form input[type="file"] {
-    width: 80%; /* Smaller width */
-    padding: 10px;
+.popup-form input[type="password"] {
+    width: 40%; 
+    min-width:40%;
+    padding: 6px 10px;
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
-/* Button styling (match account.php) */
+.popup-form input[type="file"]{
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 76%;
+  margin-top:2px
+
+}
+
+.popup-form #username-field{
+  margin-left:10px;
+}
+
+.popup-form .form-buttons{
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap:15px;
+  flex-wrap:wrap
+}
+
+.popup-form .form-buttons button{
+  width:120px
+}
+
 .popup-form button {
-    background-color: #4CAF50; /* Match Edit Profile button color */
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
-}
-
-.popup-form button:hover {
-    background-color: #45a049;
+    cursor: pointer; 
 }
 
 .popup-form button.submit-btn {
-  background-color: #007bff;
+  background-color: #45a049;
   color: #ffffff;
 }
 
+.popup-form button.remove-picture-btn {
+  background-color: #df8600;
+  width:84%;
+  color: #ffffff;
+  padding: 6px 9px;
+  margin-top:-30px
+}
+
 .popup-form button.cancel-btn {
-  background-color: #dc3545;
+  background-color: #c00013;
   color: #ffffff;
 }
 
 .popup-form button:hover {
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 /* Success message */
@@ -228,8 +274,8 @@ h1 {
   }
 
   .profile-info img {
-   min-width: 100px;
-   min-height: 100px;
+   width: 130px;
+   height: 130px;
   }
 
 }
@@ -241,6 +287,13 @@ h1 {
     justify-content: center;
   }
 
+  .profile-info .profile-name{
+    font-size:1rem;
+  }
+
+  .profile-info .profile-email{
+    font-size:0.7rem;
+  }
 .profile-info .edit-profile-btn,
 .profile-info .reset-password-btn {
  margin-left:auto;

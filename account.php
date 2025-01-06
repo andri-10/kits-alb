@@ -63,9 +63,9 @@ $orderResult = $orderStmt->get_result();
     <div class="profile-info">
         <div class="profile-image">
             <?php if ($user['profile_photo']) { ?>
-                <img src="images/users-pfp/<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="Profile Picture">
+                <img id="currentImg" src="<?php echo htmlspecialchars($user['profile_photo']); ?>".slice(2) alt="Profile Picture">
             <?php } else { ?>
-                <img src="images/default-profile.png" alt="Default Profile Picture">
+                <img id="currentImg" src="images/default-profile.png" alt="Default Profile Picture">
             <?php } ?>
 
         <div class='name-and-email'>

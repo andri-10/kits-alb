@@ -9,11 +9,13 @@ $database = "web";
 $conn = new mysqli($servername, $username, $password, $database);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    echo json_encode(["success" => false, "message" => "Connection failed: " . $conn->connect_error]);
+    exit();
 }
 
 if (!isset($_SESSION['user_id'])) {
-    die("User not authenticated. Please log in.");
+    echo json_encode(["success" => false, "message" => "User not authenticated. Please log in."]);
+    exit();
 }
 
 $userId = $_SESSION['user_id'];
@@ -24,64 +26,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image = isset($_FILES['profile_image']) ? $_FILES['profile_image'] : null;
     $profilePicturePath = null;
 
-    if ($image && $image['error'] === 0) {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (in_array($image['type'], $allowedTypes)) {
-            $imageName = time() . '_' . basename($image['name']);
-            $targetDir = "images/users-pfp/";
-            $targetFile = $targetDir . $imageName;
+    // Fetch the current username from the database to compare with the new username
+    $result = $conn->query("SELECT name FROM users WHERE id = $userId");
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $currentUsername = $row['name'];
+    } else {
+        echo json_encode(["success" => false, "message" => "User not found."]);
+        exit();
+    }
 
-            if (move_uploaded_file($image['tmp_name'], $targetFile)) {
-                $profilePicturePath = $imageName;
-            } else {
-                die("Error: Failed to upload image.");
-            }
-        } else {
-            die("Error: Invalid image type. Only JPG, PNG, and GIF are allowed.");
+    // IMAGE UPLOAD LOGIC
+    if ($image && $image['error'] === UPLOAD_ERR_OK) {
+        $imageTmpName = $image['tmp_name'];
+        $imageName = $image['name'];
+        $imageExtension = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+        // Validate the image extension
+        if (!in_array($imageExtension, $allowedExtensions)) {
+            echo json_encode(["success" => false, "message" => "Error: Invalid image type. Only JPG, JPEG, PNG, and GIF are allowed."]);
+            exit();
         }
+
+        // Define the target directory
+        $targetDir = "C:/xampp/htdocs/kits-alb/images/users-pfp";
+
+        // Ensure the target directory exists
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        // Set the new image path
+        $uniqueImageName = time() . "_" . $imageName; // Add a timestamp to avoid duplicates
+        $relativeImagePath = "./images/users-pfp/" . $uniqueImageName;
+
+        // Move the uploaded image
+        if (!move_uploaded_file($imageTmpName, $targetDir . "/" . $uniqueImageName)) {
+            echo json_encode(["success" => false, "message" => "Error: Failed to upload the image."]);
+            exit();
+        }
+
+        // Set the path for the database
+        $profilePicturePath = $relativeImagePath;
     }
 
     if ($removeProfilePicture) {
-        $profilePicturePath = "default-profile.png";
+        $profilePicturePath = "";
     }
 
-    $sql = "UPDATE users SET ";
+    // Check if any changes were made
     $updates = [];
     $params = [];
     $types = "";
 
-    if ($newUsername) {
+    // If the username has changed, add it to the updates
+    if ($newUsername && $newUsername !== $currentUsername) {
         $updates[] = "name = ?";
         $params[] = $newUsername;
         $types .= "s";
     }
 
+    // If the profile picture has changed, add it to the updates
     if ($profilePicturePath !== null) {
         $updates[] = "profile_photo = ?";
         $params[] = $profilePicturePath;
         $types .= "s";
     }
 
-    if (!empty($updates)) {
-        $sql .= implode(", ", $updates) . " WHERE id = ?";
-        $params[] = $userId;
-        $types .= "i";
+    // If there are no updates, show "No changes made"
+    if (empty($updates)) {
+        echo json_encode(["success" => false, "message" => "No changes provided."]);
+        exit();
+    }
 
-        $stmt = $conn->prepare($sql);
+    // BUILD THE SQL QUERY
+    $sql = "UPDATE users SET " . implode(", ", $updates) . " WHERE id = ?";
+    $params[] = $userId;
+    $types .= "i";
 
-        if ($stmt) {
-            $stmt->bind_param($types, ...$params);
-            if ($stmt->execute()) {
-                header("Location: account.php?status=success");
-                exit();
-            } else {
-                die("Error updating profile: " . $stmt->error);
-            }
+    $stmt = $conn->prepare($sql);
+
+    if ($stmt) {
+        $stmt->bind_param($types, ...$params);
+        if ($stmt->execute()) {
+            echo json_encode(["success" => true, "message" => "Profile updated successfully"]);
+            exit();
         } else {
-            die("Error preparing statement: " . $conn->error);
+            echo json_encode(["success" => false, "message" => "Error updating profile: " . $stmt->error]);
+            exit();
         }
     } else {
-        die("No changes provided.");
+        echo json_encode(["success" => false, "message" => "Error preparing statement: " . $conn->error]);
+        exit();
     }
 }
 ?>
