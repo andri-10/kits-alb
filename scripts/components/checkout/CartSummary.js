@@ -29,9 +29,8 @@ export class CartSummary extends ComponentV2 {
     this.#checkoutHeader = checkoutHeader;
   }
   cartData = [];
-  /**
-   * Render the cart, including fetching data and rendering cart items.
-   */
+  
+  
   async render() {
     try {
       
