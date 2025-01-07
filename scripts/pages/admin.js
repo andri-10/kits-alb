@@ -5,6 +5,12 @@ document.addEventListener("DOMContentLoaded", async function() {
   loadProductsToTable();
   loadUsersToTable();
 });
+
+document.getElementById('create-product-btn').addEventListener('click', function() {
+  console.log("Create Product button clicked");
+  openForm('create-product');
+});
+
 function loadProductsToTable() {
   const table = document.getElementById('product-list-table');
   table.innerHTML = "";
@@ -36,6 +42,7 @@ function loadProductsToTable() {
     `;
     const editButton = row.querySelector('.edit-product-btn');
     const deleteButton = row.querySelector('.delete-product-btn');
+    
 
     editButton.addEventListener('click', function() {
       editProduct(product.id);
@@ -46,102 +53,6 @@ function loadProductsToTable() {
     });
   });
 }
-
-
-function loadUsersToTable() {
-  const table = document.getElementById('user-list-table');
-  table.innerHTML = "";
-
-  const headerRow = table.insertRow();
-  headerRow.innerHTML = `
-    <th>User ID</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Profile Photo</th>
-    <th>Role</th>
-    <th>Email Verified</th>
-    <th>Created At</th>
-    <th>Updated At</th>
-    <th>Actions</th>
-  `;
-
-  fetch('backend/get-all-users.php')
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        data.users.forEach(user => {
-          const row = table.insertRow();
-          row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td><img src="${user.profilePhoto || 'images/default-profile.png'}" alt="Profile Photo" width="50"></td>
-            <td>${user.role}</td>
-            <td>${user.email_verified ? 'Yes' : 'No'}</td>
-            <td>${user.created_at}</td>
-            <td>${user.updated_at}</td>
-            <td>
-              <button class="edit-user-btn" data-user-id="${user.id}">Edit</button>
-              <button class="delete-user-btn" data-user-id="${user.id}">Delete</button>
-              ${user.role === 'admin' ? `
-                <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
-              ` : ''}
-              ${user.role === 'user' ? `
-                <button class="promote-user-btn" data-user-id="${user.id}">Promote</button>
-              ` : ''}
-            </td>
-          `;
-
-          const promoteButton = row.querySelector('.promote-user-btn');
-          const demoteButton = row.querySelector('.demote-user-btn');
-
-          
-          if (promoteButton) {
-            promoteButton.addEventListener('click', () => {
-              updateUserRole(user.id, 'admin');
-            });
-          }
-
-          if (demoteButton) {
-            demoteButton.addEventListener('click', () => {
-              updateUserRole(user.id, 'user');
-            });
-          }
-        });
-      } else {
-        const row = table.insertRow();
-        row.innerHTML = `<td colspan="9">No users found.</td>`;
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching users:', error);
-    });
-}
-
-function updateUserRole(userId, newRole) {
-  fetch('backend/update-role.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: `user_id=${userId}&role=${newRole}`,
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(data.message);
-        loadUsersToTable();
-      } else {
-        alert(`Error: ${data.error || "Failed to update role."}`);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('An unexpected error occurred.');
-    });
-}
-
-
 
 function editProduct(productId) {
   const product = products.findById(productId);
@@ -174,12 +85,6 @@ function deleteProduct(productId) {
     });
   }
 }
-
-
-document.getElementById('create-product-btn').addEventListener('click', function() {
-  console.log("Create Product button clicked");
-  openForm('create-product');
-});
 function openForm(formType, product = null) {
   console.log("openForm called with type:", formType);
   if (document.getElementById('create-product-form')) {
@@ -309,4 +214,214 @@ function cancelForm() {
     backdrop.remove();
   }
   document.body.classList.remove('popup-active');
+}
+
+
+
+function loadUsersToTable() {
+  const table = document.getElementById('user-list-table');
+  table.innerHTML = "";
+
+  const headerRow = table.insertRow();
+  headerRow.innerHTML = `
+    <th>User ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Profile Photo</th>
+    <th>Role</th>
+    <th>Email Verified</th>
+    <th>Created At</th>
+    <th>Updated At</th>
+    <th>Actions</th>
+  `;
+
+  fetch('backend/get-all-users.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        data.users.forEach(user => {
+          const row = table.insertRow();
+          row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td><img src="${user.profilePhoto || 'images/default-profile.png'}" alt="Profile Photo" width="50"></td>
+            <td>${user.role}</td>
+            <td>${user.email_verified ? 'Yes' : 'No'}</td>
+            <td>${user.created_at}</td>
+            <td>${user.updated_at}</td>
+            <td>
+              <button class="edit-user-btn" data-user-id="${user.id}">Edit</button>
+              <button class="delete-user-btn" data-user-id="${user.id}">Delete</button>
+              ${user.role === 'admin' ? `
+                <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
+              ` : ''}
+              ${user.role === 'user' ? `
+                <button class="promote-user-btn" data-user-id="${user.id}">Promote</button>
+              ` : ''}
+            </td>
+          `;
+
+          const promoteButton = row.querySelector('.promote-user-btn');
+          const demoteButton = row.querySelector('.demote-user-btn');
+          const editButton = row.querySelector('.edit-user-btn');
+          const deleteButton = row.querySelector('.delete-user-btn');
+          
+          if(editButton){
+            editButton.addEventListener('click', function() {
+              editUser(user);
+            });
+          }
+
+          if(deleteButton){
+            deleteButton.addEventListener('click', function() {
+              deleteUser(user);
+            });
+          }
+
+          if (promoteButton) {
+            promoteButton.addEventListener('click', () => {
+              updateUserRole(user.id, 'admin');
+            });
+          }
+
+          if (demoteButton) {
+            demoteButton.addEventListener('click', () => {
+              updateUserRole(user.id, 'user');
+            });
+          }
+        });
+      } else {
+        const row = table.insertRow();
+        row.innerHTML = `<td colspan="9">No users found.</td>`;
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching users:', error);
+    });
+}
+function updateUserRole(userId, newRole) {
+  fetch('backend/update-role.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `user_id=${userId}&role=${newRole}`,
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        loadUsersToTable();
+      } else {
+        alert(`Error: ${data.error || "Failed to update role."}`);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An unexpected error occurred.');
+    });
+}
+function editUser(user) {
+  const popupBackdrop = document.createElement("div");
+  popupBackdrop.className = "popup-backdrop";
+  document.body.appendChild(popupBackdrop);
+
+  const popupForm = document.createElement("div");
+  popupForm.className = "popup-form";
+  popupForm.innerHTML = 
+    `<h3>Edit Profile</h3>
+     <img id="imgPreview" src="${user.profilePhoto || 'images/default-profile.png'}" alt="Image Preview" style="width: 200px; height: 200px; margin-bottom: 10px;"><br>
+     <div class="username-section">
+       <label for="username-field">Username:</label>
+       <input type="text" id="username-field" value="${user.name}" required><br>
+     </div>
+     <div class="image-section">
+       <label for="profile-image">Profile Picture:</label>
+       <input type="file" id="profile-image" accept="image/*"><br>
+     </div>
+     <button type="button" id="submit-profile">Save Changes</button>
+     <button type="button" id="cancel-profile">Cancel</button>`;
+
+  document.body.appendChild(popupForm);
+
+  // Show the popup form
+  document.body.classList.add('popup-active');
+
+  // Cancel button
+  document.getElementById('cancel-profile').addEventListener('click', function() {
+    popupBackdrop.remove();
+    popupForm.remove();
+    document.body.classList.remove('popup-active');
+  });
+
+  // Profile image preview
+  document.getElementById('profile-image').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('imgPreview');
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Submit the updated user information
+  document.getElementById('submit-profile').addEventListener('click', function() {
+    const username = document.getElementById('username-field').value;
+    const imageInput = document.getElementById('profile-image');
+    const formData = new FormData();
+    formData.append('userId', user.id);
+    formData.append('username', username);
+
+    if (imageInput.files.length > 0) {
+      formData.append('profileImage', imageInput.files[0]);
+    }
+
+    fetch('backend/update-user-profile.php', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Profile updated successfully!');
+          location.reload();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('There was an error processing the request.');
+      });
+
+    popupBackdrop.remove();
+    popupForm.remove();
+    document.body.classList.remove('popup-active');
+  });
+}
+
+function deleteUser(userId) {
+  fetch("backend/delete-user.php", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: userId }),
+  })
+      .then((response) => response.json())
+      .then((data) => {
+          console.log(data);
+          if (data.success) {
+              alert("User deleted successfully.");
+              loadUsersToTable(); 
+          } else {
+              alert("Error deleting user.");
+          }
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          alert('An unexpected error occurred.');
+      });
 }
