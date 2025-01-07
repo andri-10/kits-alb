@@ -51,6 +51,7 @@ function loadProductsToTable() {
 function loadUsersToTable() {
   const table = document.getElementById('user-list-table');
   table.innerHTML = "";
+
   const headerRow = table.insertRow();
   headerRow.innerHTML = `
     <th>User ID</th>
@@ -63,6 +64,7 @@ function loadUsersToTable() {
     <th>Updated At</th>
     <th>Actions</th>
   `;
+
   fetch('backend/get-all-users.php')
     .then(response => response.json())
     .then(data => {
@@ -81,30 +83,30 @@ function loadUsersToTable() {
             <td>
               <button class="edit-user-btn" data-user-id="${user.id}">Edit</button>
               <button class="delete-user-btn" data-user-id="${user.id}">Delete</button>
-              <button class="promote-user-btn" data-user-id="${user.id}">Promote</button>
-              <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
+              ${user.role === 'admin' ? `
+                <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
+              ` : ''}
+              ${user.role === 'user' ? `
+                <button class="promote-user-btn" data-user-id="${user.id}">Promote</button>
+              ` : ''}
             </td>
           `;
-          const editButton = row.querySelector('.edit-user-btn');
-          const deleteButton = row.querySelector('.delete-user-btn');
+
           const promoteButton = row.querySelector('.promote-user-btn');
           const demoteButton = row.querySelector('.demote-user-btn');
 
-          editButton.addEventListener('click', function() {
-            editUser(user.id);
-          });
+          
+          if (promoteButton) {
+            promoteButton.addEventListener('click', () => {
+              updateUserRole(user.id, 'admin');
+            });
+          }
 
-          deleteButton.addEventListener('click', function() {
-            deleteUser(user.id);
-          });
-
-          promoteButton.addEventListener('click', function() {
-            promoteUser(user.id);
-          });
-
-          demoteButton.addEventListener('click', function() {
-            demoteUser(user.id);
-          });
+          if (demoteButton) {
+            demoteButton.addEventListener('click', () => {
+              updateUserRole(user.id, 'user');
+            });
+          }
         });
       } else {
         const row = table.insertRow();
@@ -115,6 +117,32 @@ function loadUsersToTable() {
       console.error('Error fetching users:', error);
     });
 }
+
+function updateUserRole(userId, newRole) {
+  fetch('backend/update-role.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `user_id=${userId}&role=${newRole}`,
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        loadUsersToTable();
+      } else {
+        alert(`Error: ${data.error || "Failed to update role."}`);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An unexpected error occurred.');
+    });
+}
+
+
+
 function editProduct(productId) {
   const product = products.findById(productId);
   console.log('Editing product:', product);
