@@ -75,7 +75,7 @@ function loadUsersToTable() {
             <td>${user.id}</td>
             <td>${user.name}</td>
             <td>${user.email}</td>
-            <td><img src="${user.profilePhoto || 'default-profile.png'}" alt="Profile Photo" width="50"></td>
+            <td><img src="${user.profilePhoto || 'images/default-profile.png'}" alt="Profile Photo" width="50"></td>
             <td>${user.role}</td>
             <td>${user.email_verified ? 'Yes' : 'No'}</td>
             <td>${user.created_at}</td>

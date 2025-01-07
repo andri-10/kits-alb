@@ -80,9 +80,6 @@ $orderResult = $orderStmt->get_result();
             </div>
         </div>
     </div>
-    
-
-    
 </div>
 
 <footer class="kits-footer">
