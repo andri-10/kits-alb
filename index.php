@@ -13,13 +13,13 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-    <!-- CSS Files -->
+   
     <link rel="stylesheet" href="styles/shared/kits-header.css">
     <link rel="stylesheet" href="styles/pages/index.css">
   </head>
   <body>
     <div class="wrapper">
-      <!-- Header -->
+      
       <header class="kits-header">
         <section class="left-section">
             <a href="index.php" class="header-link">
@@ -30,11 +30,11 @@ $isLoggedIn = isset($_SESSION['user_id']);
       
         <div class="kits-header-right-section">
           <?php if ($isLoggedIn): ?>
-            <!-- If logged in, show the logout button -->
+            
             <a href="logout.php" class="header-link">Sign Out</a>
             <a href="account.php" class="header-link">Account</a>
           <?php else: ?>
-            <!-- If not logged in, show the login button -->
+            
             <a href="login.php" class="header-link">Sign In</a>
           <?php endif; ?>
           <a href="contact.php" class="header-link">Contact Us</a>
@@ -58,7 +58,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
 
       </header>
 
-      <!-- Main Content -->
       <div class="content">
         <div class="carousel-container">
           <div class="carousel">
@@ -70,7 +69,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </div>
       </div>
 
-      <!-- Footer -->
+     
       <footer class="kits-footer">
         <p>&copy; 2024 Football Kits Albania. All rights reserved. <br> Follow us on 
           <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
@@ -78,7 +77,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
       </footer>
     </div>
 
-    <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
     <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
@@ -94,7 +92,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
       });
     </script>
 
-    <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   </body>
 </html>

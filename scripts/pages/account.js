@@ -100,9 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append("remove_profile_picture", true);
     
-        // Explicitly do NOT include new_username when removing profile picture
-        // This ensures only the profile picture gets removed without affecting the username
-    
         fetch("backend/update-profile.php", {
             method: "POST",
             body: formData,

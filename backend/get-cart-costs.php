@@ -31,7 +31,7 @@ $sql = "
         END AS shipping_cost_cents
     FROM products p
     JOIN shopping_cart sc ON p.id = sc.product_id
-    WHERE sc.user_id = ?  -- Select cart items for the current user
+    WHERE sc.user_id = ?  
     GROUP BY sc.product_id, sc.delivery_option
 ";
 

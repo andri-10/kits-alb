@@ -13,7 +13,7 @@ body {
     padding: 20px;
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
-    min-height: calc(100vh - 120px); /* Adjust for header and footer height */
+    min-height: calc(100vh - 120px); 
 }
 
 .stats-section {
@@ -92,12 +92,12 @@ header {
     color: white;
 }
 
-/* General styling for the body when the popup is open */
+
 body.popup-active {
-    overflow: hidden; /* Prevent scrolling behind the popup */
+    overflow: hidden; 
 }
 
-/* The backdrop overlay */
+
 #popup-backdrop {
     position: fixed;
     top: 0;
@@ -105,11 +105,11 @@ body.popup-active {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    display: none; /* Initially hidden */
-    z-index: 999; /* Ensure it's behind the form */
+    display: none; 
+    z-index: 999; 
 }
 
-/* The form itself */
+
 #create-product-form, #update-product-form{
     position: fixed;
     top: 50%;
@@ -120,12 +120,12 @@ body.popup-active {
     width: 400px;
     border-radius: 8px;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
-    z-index: 1000; /* Ensure it's above the backdrop */
-    display: none; /* Initially hidden */
+    z-index: 1000; 
+    display: none; 
     box-sizing: border-box;
 }
 
-/* Style for the form's input elements */
+
 #create-product-form input, #update-product-form input{
     width: 100%;
     padding: 8px;
@@ -135,7 +135,7 @@ body.popup-active {
     box-sizing: border-box;
 }
 
-/* Image preview */
+
 #create-product-form #image-preview, #update-product-form #image-preview{
     margin-top: 10px;
     width: 100px;
@@ -143,7 +143,7 @@ body.popup-active {
     object-fit: cover;
 }
 
-/* Button styling */
+
 #create-product-form button, #update-product-form button{
     padding: 10px 15px;
     border: none;
@@ -155,20 +155,20 @@ body.popup-active {
 }
 
 #create-product-form button[type="button"], #update-product-form button[type="button"] {
-    background-color: #f44336; /* Red for cancel */
+    background-color: #f44336; 
 }
 
-/* Hover effects for buttons */
+
 #create-product-form button:hover, #update-product-form button:hover{
     opacity: 0.9;
 }
 
-/* Cancel button hover */
+
 #create-product-form button[type="button"]:hover, #update-product-form button[type="button"]:hover  {
     opacity: 0.8;
 }
 
-/* Style for the table to expand the whole page */
+
 #product-list-table, #user-list-table{
     width: 100%;
     border-collapse: collapse;
@@ -177,25 +177,25 @@ body.popup-active {
     text-align: left;
 }
 
-/* Add borders to the table */
+
 #product-list-table th, #user-list-table th,
 #product-list-table td, #user-list-table td {
     border: 1px solid #ddd;
     padding: 10px;
 }
 
-/* Add a background to the table header */
+
 #product-list-table thead, #user-list-table thead  {
     background-color: #f4f4f4;
     font-weight: bold;
 }
 
-/* Add hover effect for table rows */
+
 #product-list-table tbody tr:hover #user-list-table tbody tr:hover {
     background-color: #f9f9f9;
 }
 
-/* Button styles for Edit and Delete */
+
 button.edit-btn,
 button.delete-btn {
     padding: 5px 10px;

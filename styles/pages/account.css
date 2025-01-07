@@ -127,7 +127,7 @@ h1 {
 }
 
 
-/* Popup backdrop */
+
 .popup-backdrop {
   position: fixed;
   top: 0;
@@ -139,7 +139,7 @@ h1 {
   display: none;
 }
 
-/* Popup form */
+
 .popup-form {
   position: fixed;
   top: 50%;
@@ -155,7 +155,7 @@ h1 {
   display: none;
 }
 
-/* Form heading */
+
 .popup-form h3 {
   font-size: 1.5rem;
   color: #333;
@@ -180,7 +180,7 @@ text-align: center;
   margin-top: 10px;
   }
 
-/* Input field styling */
+
 .popup-form input[type="text"],
 .popup-form input[type="email"],
 .popup-form input[type="password"] {
@@ -247,7 +247,7 @@ text-align: center;
   opacity: 0.8;
 }
 
-/* Success message */
+
 .success-message {
   color: green;
   font-size: 1rem;
@@ -255,7 +255,7 @@ text-align: center;
   text-align: center;
 }
 
-/* Error message */
+
 .error-message {
   color: red;
   font-size: 1rem;
@@ -266,7 +266,7 @@ text-align: center;
 
 
 
-/* Mobile responsiveness */
+
 @media (max-width: 768px) {
   .account-container {
     padding: 15px;

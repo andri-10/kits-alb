@@ -1,4 +1,4 @@
-/* General Styling */
+
 body {
   margin: 0;
   padding: 0;
@@ -11,7 +11,7 @@ body {
 }
 
 .content {
-  flex: 1; /* Takes up remaining space between header and footer */
+  flex: 1; 
 }
 
 .kits-header {
@@ -126,10 +126,10 @@ body {
 }
 
 
-/* Hamburger Menu Adjustments */
+
 @media (max-width: 575px) {
   .kits-header-right-section {
-    display: none; /* Remove the right section links for mobile view */
+    display: none; 
   }
 
   .kits-header .right-section-mobile {
@@ -155,7 +155,7 @@ body {
   }
 
   .kits-header .hamburger-menu-opened {
-    max-height: 300px; /* Adjust this as needed */
+    max-height: 300px; 
   }
 
   .kits-header .hamburger-menu-link {

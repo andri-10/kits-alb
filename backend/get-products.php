@@ -13,14 +13,14 @@ try {
     }
     $sql .= '
         ORDER BY 
-            -- Prioritize national teams over clubs based on the keywords
+            
             CASE 
-                WHEN keywords LIKE "%national%" THEN 1  -- National teams come first
-                ELSE 2  -- Clubs come after national teams
+                WHEN keywords LIKE "%national%" THEN 1  
+                ELSE 2  
             END,
-            -- Sort by team name excluding "Home", "Away", "Third" (using REGEXP)
+            
             REGEXP_REPLACE(name, "(Home|Away|Third|Kit|kit)", "") ASC,
-            -- Prioritize Home, then Away, then Third kit types
+            
             CASE 
                 WHEN name LIKE "%Home%" THEN 1
                 WHEN name LIKE "%Away%" THEN 2

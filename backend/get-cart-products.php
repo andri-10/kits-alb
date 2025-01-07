@@ -20,7 +20,7 @@ $sql = "
         GROUP_CONCAT(DISTINCT c.size) AS sizes
     FROM products p
     JOIN shopping_cart c ON p.id = c.product_id
-    WHERE c.user_id = ?  -- Select cart items for the current user
+    WHERE c.user_id = ?  
     GROUP BY c.product_id
 ";
 

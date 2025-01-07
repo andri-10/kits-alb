@@ -107,7 +107,7 @@ $conn->close();
                         </div>
                     </form>
 
-                    <!-- Error/Success Messages -->
+                  
                     <?php if (!empty($error)): ?>
                         <p class="error-message" id="phpError2"><?= $error; ?></p>
                     <?php endif; ?>
@@ -126,7 +126,7 @@ $conn->close();
         </p>
     </footer>
     
-    <!-- Session Timeout Script - Only add if user is logged in -->
+    
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>

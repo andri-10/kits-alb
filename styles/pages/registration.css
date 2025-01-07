@@ -121,7 +121,7 @@ body {
   color: rgb(233, 144, 11);
 }
 
-/* Style for error and success messages */
+
 .error-message, .success-message {
   color: #ff0000;
   padding: 10px;
@@ -135,7 +135,7 @@ body {
   text-align: center;
 }
 .success-message {
-  color: #006400; /* Green for success messages */
+  color: #006400; 
   
 }
 

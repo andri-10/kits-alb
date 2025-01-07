@@ -22,11 +22,11 @@
         <section class="stats-section">
             <div class="stat-card">
                 <h3>Total Earnings</h3>
-                <p>$2,5 million</p> <!-- Placeholder for total earnings -->
+                <p>$2,5 million</p> 
             </div>
             <div class="stat-card">
                 <h3>Total Sales</h3>
-                <p>120k</p> <!-- Placeholder for total sales -->
+                <p>120k</p> 
             </div>
         </section>
 
@@ -67,7 +67,7 @@
         </p>
     </footer>
 
-    <!-- Link to the JavaScript file -->
+    
     <script type="module" src="scripts/pages/admin.js"></script>
 </body>
 </html>

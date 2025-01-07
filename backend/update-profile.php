@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $updates[] = "profile_photo = ?";
         $params[] = $profilePicturePath;
         $types .= "s";
+        $_SESSION['profile_photo']=$profilePicturePath;
     }
     if (empty($updates)) {
         echo json_encode(["success" => false, "message" => "No changes provided."]);

@@ -139,7 +139,7 @@ $conn->close();
                     <div class="yellowLine" id="w-c-s-bgc_p-2-dm-id"></div>
                 </div>
 
-                <!-- Step 1: Account Creation -->
+                
                 <?php if ($step == 1): ?>
                 <p class="text-blk subHeading">
                     Join us and start your journey with Kits Alb!
@@ -173,7 +173,7 @@ $conn->close();
                                 <p class="return"> Already have an account? <a class="link" href="login.php">Sign In</a></p>
                             </div>
 
-                            <!-- Error/Success Messages -->
+                          
                             <?php if (!empty($error)): ?>
                                 <p class="error-message" id="phpError2"><?= $error; ?></p>
                             <?php endif; ?>
@@ -184,7 +184,7 @@ $conn->close();
                     </div>
                 </div>
 
-                <!-- Step 2: Token Verification -->
+                
                 <?php elseif ($step == 2): ?>
                 <div class="responsive-container-block container">
                     <form class="form-box" method="POST" id="step2Form">
@@ -201,7 +201,7 @@ $conn->close();
                         </div>
                     </form>
                     
-                    <!-- Error/Success Messages -->
+                    
                     <?php if (!empty($error)): ?>
                                 <p class="error-message" id="phpError2"><?= $error; ?></p>
                             <?php endif; ?>
@@ -228,7 +228,7 @@ $conn->close();
         }
     </script>
     <script src="scripts/pages/emailVerify.js"></script>
-    <!-- Session Timeout Script - Only add if user is logged in -->
+    
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
