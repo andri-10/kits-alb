@@ -1,18 +1,13 @@
-import { products } from "../data/products.js"; // Import the ProductList class
+import { products } from "../data/products.js";
 
 document.addEventListener("DOMContentLoaded", async function() {
-  // Load the products when the page loads
   await products.loadFromBackend();
   loadProductsToTable();
   loadUsersToTable();
 });
-
-// Function to load products from the ProductList into the table
 function loadProductsToTable() {
   const table = document.getElementById('product-list-table');
-  table.innerHTML = ""; // Clear any existing rows in the table
-
-  // Add table headers
+  table.innerHTML = "";
   const headerRow = table.insertRow();
   headerRow.innerHTML = `
     <th>Product ID</th>
@@ -24,8 +19,6 @@ function loadProductsToTable() {
     <th>Keywords</th>
     <th>Actions</th>
   `;
-
-  // Loop through the products array and add each product to the table
   products.search('').forEach(product => {
     const row = table.insertRow();
     row.innerHTML = `
@@ -41,8 +34,6 @@ function loadProductsToTable() {
         <button class="delete-product-btn" data-product-id="${product.id}">Delete</button>
       </td>
     `;
-
-    // Add event listeners for each button
     const editButton = row.querySelector('.edit-product-btn');
     const deleteButton = row.querySelector('.delete-product-btn');
 
@@ -59,9 +50,7 @@ function loadProductsToTable() {
 
 function loadUsersToTable() {
   const table = document.getElementById('user-list-table');
-  table.innerHTML = ""; // Clear any existing rows in the table
-
-  // Add table headers
+  table.innerHTML = "";
   const headerRow = table.insertRow();
   headerRow.innerHTML = `
     <th>User ID</th>
@@ -74,13 +63,10 @@ function loadUsersToTable() {
     <th>Updated At</th>
     <th>Actions</th>
   `;
-
-  // Fetch users from the server
   fetch('backend/get-all-users.php')
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Loop through the users array and add each user to the table
         data.users.forEach(user => {
           const row = table.insertRow();
           row.innerHTML = `
@@ -99,8 +85,6 @@ function loadUsersToTable() {
               <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
             </td>
           `;
-
-          // Add event listeners for each button
           const editButton = row.querySelector('.edit-user-btn');
           const deleteButton = row.querySelector('.delete-user-btn');
           const promoteButton = row.querySelector('.promote-user-btn');
@@ -123,7 +107,6 @@ function loadUsersToTable() {
           });
         });
       } else {
-        // If there are no users or error occurred
         const row = table.insertRow();
         row.innerHTML = `<td colspan="9">No users found.</td>`;
       }
@@ -132,35 +115,27 @@ function loadUsersToTable() {
       console.error('Error fetching users:', error);
     });
 }
-
-// Function to handle editing a product
 function editProduct(productId) {
-  const product = products.findById(productId);  // Get the product by ID
-  console.log('Editing product:', product); // Debugging line
+  const product = products.findById(productId);
+  console.log('Editing product:', product);
   openForm('update-product', product);
 }
-
-// Function to handle deleting a product
 function deleteProduct(productId) {
   if (confirm(`Are you sure you want to delete the product with ID: ${productId}?`)) {
-    // Make the request to delete the product via the backend (deleteproduct.php)
     fetch('backend/delete-product.php', {
-      method: 'POST', // Or 'GET' depending on how the backend expects it
+      method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        productId: productId, // Send the productId as part of the request body
+        productId: productId,
       })
     })
     .then(response => response.json())
     .then(data => {
-      // Check for success or error in the response
       if (data.success) {
         alert(`Product with ID: ${productId} deleted successfully.`);
         location.reload();
-        // Optionally, you can update the UI to remove the deleted product, e.g., removing the row from a table
-        // Example: document.getElementById(`product-${productId}`).remove();
       } else {
         alert(`Error: ${data.error || 'Failed to delete the product.'}`);
       }
@@ -177,12 +152,8 @@ document.getElementById('create-product-btn').addEventListener('click', function
   console.log("Create Product button clicked");
   openForm('create-product');
 });
-
-// Function to handle opening the "Create Product" or "Update Product" form
 function openForm(formType, product = null) {
-  console.log("openForm called with type:", formType); // Debugging line
-
-  // Remove any existing form and backdrop before adding new ones
+  console.log("openForm called with type:", formType);
   if (document.getElementById('create-product-form')) {
     document.getElementById('create-product-form').remove();
   }
@@ -192,8 +163,6 @@ function openForm(formType, product = null) {
   if (document.getElementById('update-product-form')) {
     document.getElementById('update-product-form').remove();
   }
-
-  // Create the form HTML for creating or updating a product
   let formHtml = '';
   if (formType === 'create-product') {
     formHtml = `
@@ -244,20 +213,12 @@ function openForm(formType, product = null) {
       </div>
     `;
   }
-
-  // Inject the form HTML into the body
   document.body.insertAdjacentHTML('beforeend', formHtml);
   console.log("Form HTML inserted");
-
-  // Show the form and backdrop
   document.getElementById(`${formType}-form`).style.display = 'block';
   document.getElementById('popup-backdrop').style.display = 'block';
-  document.body.classList.add('popup-active'); // Prevent scrolling behind the popup
-
-  // Add event listener for cancel button
+  document.body.classList.add('popup-active');
   document.getElementById('cancel-product').addEventListener('click', cancelForm);
-
-  // Add image preview functionality
   document.getElementById('image').addEventListener('change', function(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -268,12 +229,8 @@ function openForm(formType, product = null) {
     };
     reader.readAsDataURL(file);
   });
-
-  // Handle form submission (Create or Update)
   document.getElementById('submit-product').addEventListener('click', function(event) {
-    event.preventDefault();  // Prevent default form submission behavior
-
-    // Gather form data
+    event.preventDefault();
     const productId = document.getElementById('product-id').value;
     const productName = document.getElementById('product-name').value;
     const rating = parseFloat(document.getElementById('rating').value);
@@ -288,17 +245,11 @@ function openForm(formType, product = null) {
     formData.append('count', count);
     formData.append('price', price);
     formData.append('keywords', keywords.join(','));
-
-    // Append the image file if there is one
     const imageInput = document.getElementById('image');
     if (imageInput.files.length > 0) {
       formData.append('image', imageInput.files[0]);
     }
-
-    // Determine which PHP script to call (Create or Update)
     const url = formType === 'create-product' ? 'backend/create-product.php' : 'backend/update-product.php';
-
-    // Send data to the server
     fetch(url, {
       method: 'POST',
       body: formData
@@ -317,14 +268,9 @@ function openForm(formType, product = null) {
         console.error('Error:', error);
         alert('There was an error processing the request.');
       });
-
-    // Close the form after submission (optional)
     cancelForm();
   });
 }
-
-
-// Cancel function to close the form and backdrop
 function cancelForm() {
   const form = document.getElementById('create-product-form') || document.getElementById('update-product-form');
   const backdrop = document.getElementById('popup-backdrop');
@@ -334,5 +280,5 @@ function cancelForm() {
   if (backdrop) {
     backdrop.remove();
   }
-  document.body.classList.remove('popup-active'); // Re-enable scrolling
+  document.body.classList.remove('popup-active');
 }

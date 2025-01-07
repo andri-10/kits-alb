@@ -17,22 +17,15 @@ $error = '';
 $email = '';
 $password = '';
 $step = 1;
-
-// Max failed attempts and block duration for brute force protection
 $max_failed_attempts = 7;
-$block_duration = 1800; // 30 minutes in seconds
-
-// Function to log login attempts
+$block_duration = 1800;
 function logLoginAttempt($conn, $email, $status) {
     $stmt = $conn->prepare("INSERT INTO login_logs (email, status, timestamp) VALUES (?, ?, NOW())");
     $stmt->bind_param("ss", $email, $status);
     $stmt->execute();
     $stmt->close();
 }
-
-// Only initialize session variables for failed attempts if it's a login attempt (i.e., POST request)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Initialize failed attempts if not set
     if (!isset($_SESSION['failed_attempts'])) {
         $_SESSION['failed_attempts'] = 0;
     }
@@ -42,8 +35,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $email = $_POST['email'];
     $password = $_POST['password'];
-
-    // Check failed attempts
     if ($_SESSION['failed_attempts'] >= $max_failed_attempts) {
         $last_failed_attempt = $_SESSION['last_failed_attempt'];
         $current_time = time();
@@ -52,25 +43,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($time_diff < $block_duration) {
             $error = "Too many failed attempts. Please try again in 30 minutes.";
         } else {
-            $_SESSION['failed_attempts'] = 0; // Reset failed attempts
+            $_SESSION['failed_attempts'] = 0;
         }
     }
 
     if (empty($error)) {
-        // Check if email exists in the database
-        $stmt = $conn->prepare("SELECT id, email, password, role, email_verified, name FROM Users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, email, password, role, email_verified, profile_photo, name FROM Users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            // Email found, verify password
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
-                $_SESSION['failed_attempts'] = 0; // Reset failed attempts
-
-                // If email is not verified, redirect to verify-email.php
+                $_SESSION['failed_attempts'] = 0;
                 if ($user['email_verified'] == 0) {
                     $token = rand(100000, 999999);
                     $_SESSION['reset_email'] = $email;
@@ -79,21 +66,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     if (sendRegistrationTokenEmail($email, $token)) {
                         header("Location: verify-email.php");
-                        exit; // Prevent further execution
+                        exit;
                     } else {
                         $error = "Failed to send token email.";
                     }
                 }
-
-                // Log successful login
                 logLoginAttempt($conn, $email, 'success');
-
-                // Create session for logged-in user
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
                 $_SESSION['email']= $user['email'];
-
-                // Handle "Remember Me" functionality
+                $_SESSION['profile_photo']= $user['profile_photo'];
                 if (isset($_POST['keep-signed-in'])) {
                     $remember_token = bin2hex(random_bytes(32));
                     setcookie("remember_me_token", $remember_token, time() + (30 * 24 * 60 * 60), "/");
@@ -102,8 +84,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bind_param("si", $remember_token, $user['id']);
                     $stmt->execute();
                 }
-
-                // Redirect based on user role
                 if ($user['role'] === 'admin') {
                     header("Location: admin.php");
                 } else {
@@ -111,21 +91,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 exit;
             } else {
-                // Password incorrect
                 $_SESSION['failed_attempts'] += 1;
                 $_SESSION['last_failed_attempt'] = time();
-
-                // Log failed login attempt
                 logLoginAttempt($conn, $email, 'failed');
 
                 $error = "The email or password you entered is incorrect.";
             }
         } else {
-            // Email not found
             $_SESSION['failed_attempts'] += 1;
             $_SESSION['last_failed_attempt'] = time();
-
-            // Log failed login attempt
             logLoginAttempt($conn, $email, 'failed');
 
             $error = "The email you entered does not exist.";

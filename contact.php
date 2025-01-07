@@ -1,6 +1,6 @@
 <?php
 session_start();
-require __DIR__ . '/backend/utils.php'; // Includes PHPMailer functionality
+require __DIR__ . '/backend/utils.php';
 
 $servername = "localhost";
 $username = "root";
@@ -18,22 +18,16 @@ $success = '';
 $step = 1;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Step 1: Process contact form submission
     if (isset($_POST['submit'])) {
         $first_name = filter_var($_POST['FirstName'], FILTER_SANITIZE_STRING);
         $last_name = filter_var($_POST['LastName'], FILTER_SANITIZE_STRING);
         $email = filter_var($_POST['Email'], FILTER_SANITIZE_EMAIL);
         $message = filter_var($_POST['Message'], FILTER_SANITIZE_STRING);
-
-        // Validate email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email format.";
         } else {
-            // Generate a ticket number (could also be unique or auto-incremented)
             $ticket_number = strtoupper(uniqid("Ticket#", true));
-
-            // Step 2: Send email to support team
-            $support_email = "kits.albania@gmail.com"; // Replace with your support email
+            $support_email = "kits.albania@gmail.com";
             $subject = "Ticket: $ticket_number from $first_name $last_name";
             $body = "
                 Name: $first_name
@@ -43,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ";
 
             if (sendEmail($support_email, $subject, $body)) {
-                // Step 3: Send confirmation email to user
                 $user_subject = "Ticket Confirmation: $ticket_number";
                 $user_body = "Dear $first_name $last_name,
 
@@ -60,7 +53,7 @@ The Kits Alb Support Team
 
                 if (sendEmail($email, $user_subject, $user_body)) {
                     $success = "Your message has been sent. Please check your email for confirmation!";
-                    $step = 2; // Show the thank you message after successful submission
+                    $step = 2;
                 } else {
                     $error = "Failed to send confirmation email.";
                 }

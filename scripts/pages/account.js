@@ -39,17 +39,16 @@ document.addEventListener("DOMContentLoaded", () => {
         popupForm.style.display = "flex";
         popupForm.style.flexDirection = "column";
         popupForm.style.justifyContent = "center";
-        // Fetch and display current username
         const usernameDisplay = document.getElementById("username-field");
-        usernameDisplay.textContent = "Loading..."; // Temporary message while fetching
+        usernameDisplay.textContent = "Loading...";
   
         fetch("backend/get-username.php")
             .then((response) => response.json())
             .then((data) => {
                 if (data.success && usernameDisplay) {
-                    usernameDisplay.value = data.username || "User"; // Display fetched username
+                    usernameDisplay.value = data.username || "User";
                 } else {
-                    usernameDisplay.value = "Error loading username"; // Fallback message
+                    usernameDisplay.value = "Error loading username";
                 }
             })
             .catch(() => {
@@ -100,7 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
     popupForm.querySelector(".remove-picture-btn").addEventListener("click", () => {
         const formData = new FormData();
         formData.append("remove_profile_picture", true);
-  
+    
+        // Explicitly do NOT include new_username when removing profile picture
+        // This ensures only the profile picture gets removed without affecting the username
+    
         fetch("backend/update-profile.php", {
             method: "POST",
             body: formData,
@@ -126,8 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 message.style.display = "block";
             });
     });
-  
-    // Handle Image Preview
+    
     const profileImageInput = document.getElementById("profile-image");
     const imgPreview = document.getElementById("imgPreview");
   
@@ -136,14 +137,10 @@ document.addEventListener("DOMContentLoaded", () => {
   
         if (file) {
             const reader = new FileReader();
-            
-            // Event listener for when the file is read
             reader.onload = (e) => {
-                imgPreview.src = e.target.result; // Update image preview
-                imgPreview.style.display = "block"; // Make sure it's visible
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = "block";
             };
-            
-            // Read the image file
             reader.readAsDataURL(file);
         }
     });

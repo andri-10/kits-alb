@@ -2,22 +2,18 @@
 session_start();
 require_once 'utils.php';
 
-header('Content-Type: application/json'); // Ensure the response is in JSON format
-
+header('Content-Type: application/json');
 $response = ['success' => false];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inputData = json_decode(file_get_contents('php://input'), true);
 
     if (isset($inputData['action']) && $inputData['action'] === 'resend') {
-        // Logic to resend the token
         if (isset($_SESSION['reset_email'])) {
             $email = $_SESSION['reset_email'];
-            $token = rand(100000, 999999); // Generate a new token
-            $_SESSION['reset_token'] = $token; // Update the session with the new token
-            $_SESSION['token_time'] = time(); // Reset the token time
-
-            // Send the new token email
+            $token = rand(100000, 999999);            
+            $_SESSION['reset_token'] = $token;            
+            $_SESSION['token_time'] = time();            
             if (sendTokenEmail($email, $token)) {
                 $response['success'] = true;
             } else {
@@ -29,5 +25,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-echo json_encode($response); // Send the response back to the front-end
-?>
+echo json_encode($response);?>

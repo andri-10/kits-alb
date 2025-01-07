@@ -17,19 +17,13 @@ if ($conn->connect_error) {
 $error = '';
 $success = '';
 $step = 1;
-
-// Check if the user came from account.php and has a valid email in the session
 if (isset($_GET['from']) && $_GET['from'] === 'account' && isset($_SESSION['email']) && !isset($_POST['step'])) {
-    $email = $_SESSION['email']; // Retrieve email from session
+    $email = $_SESSION['email'];
     $step = 2;
-
-    // Generate and store a token for password reset
     $token = rand(100000, 999999);
     $_SESSION['reset_token'] = $token;
     $_SESSION['token_time'] = time();
     $_SESSION['reset_email'] = $email;
-
-    // Send the token via email
     if (!sendTokenEmail($email, $token)) {
         $error = "Failed to send token email.";
         header("Location: account.php");
@@ -50,13 +44,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
-                // Generate and store a token for password reset
                 $token = rand(100000, 999999);
                 $_SESSION['reset_email'] = $email;
                 $_SESSION['reset_token'] = $token;
                 $_SESSION['token_time'] = time();
-
-                // Send the token via email
                 if (sendTokenEmail($email, $token)) {
                     $step = 2;
                 } else {
@@ -67,7 +58,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } elseif (isset($_POST['step']) && $_POST['step'] == 2) {
-        // Step 2: Validate token
         $entered_token = $_POST['token'];
 
         if ($_SESSION['reset_token'] == $entered_token && (time() - $_SESSION['token_time']) <= 60) {
@@ -77,7 +67,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $step = 2;
         }
     } elseif (isset($_POST['step']) && $_POST['step'] == 3) {
-        // Step 3: Reset the password
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
 
@@ -89,8 +78,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $step = 3;
         } else {
             $email = $_SESSION['reset_email'];
-
-            // Fetch the current password hash from the database
             $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -99,13 +86,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($result->num_rows === 1) {
                 $row = $result->fetch_assoc();
                 $current_hashed_password = $row['password'];
-
-                // Verify if the new password matches the current password
                 if (password_verify($new_password, $current_hashed_password)) {
                     $error = "Error changing password.";
                     $step = 3;
                 } else {
-                    // Hash the new password and update it in the database
                     $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
 
                     $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");

@@ -1,37 +1,15 @@
 <?php
-// Enable error reporting for debugging purposes
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
-// Database connection settings
-$servername = "localhost"; // Your database server
-$username = "root"; // Your database username
-$password = ""; // Your database password
-$dbname = "web"; // Your database name
-
-// Create a connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
+$servername = "localhost";$username = "root";$password = "";$dbname = "web";$conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Connection failed: ' . $conn->connect_error]);
-    exit; // Stop the script if connection fails
-}
-
-// Start session to check if the user is logged in
+    exit;}
 session_start();
-
-// Verify if the user is logged in by checking the session
 if (!isset($_SESSION['user_id'])) {
-    // If not logged in, send an error message
     echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-    exit; // Stop the script if user is not logged in
-}
-
-// Get the logged-in user_id from the session
+    exit;}
 $user_id = $_SESSION['user_id'];
-
-// Fetch product details and quantities for the current user
 $sql = "
     SELECT 
         p.id AS product_id,
@@ -47,12 +25,9 @@ $sql = "
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);  // Bind the user_id to the prepared statement
-$stmt->execute();
+$stmt->bind_param("i", $user_id);$stmt->execute();
 
 $result = $stmt->get_result();
-
-// Check if the query executed successfully
 if (!$result) {
     echo json_encode(['error' => 'Database query failed']);
     exit;
@@ -66,14 +41,10 @@ while ($row = $result->fetch_assoc()) {
         'name' => $row['product_name'],
         'priceCents' => $row['priceCents'],
         'quantity' => $row['quantity'],
-        'sizes' => explode(',', $row['sizes']) // Parse sizes as an array
+        'sizes' => explode(',', $row['sizes'])    
     ];
 }
-
-// Close the statement and connection
 $stmt->close();
 $conn->close();
-
-// Return the cart data as JSON
 echo json_encode($cartItems);
 ?>

@@ -27,9 +27,6 @@ function sendTokenEmail($email, $token) {
         $mail->Subject = 'Password Reset';
         $mail->Body = 'Your password reset confirmation code is: ' . $token;
 
-        //If it is not working uncomment this for debug
-        //$mail->SMTPDebug = 3;
-
         $mail->send();
         return true;
     } catch (Exception $e) {
@@ -92,9 +89,6 @@ function sendRegistrationTokenEmail($email, $token) {
         $mail->addAddress($email);
         $mail->Subject = 'Email verification';
         $mail->Body = 'Your email verification code is: ' . $token;
-
-        //If it is not working uncomment this for debug
-        //$mail->SMTPDebug = 3;
 
         $mail->send();
         return true;

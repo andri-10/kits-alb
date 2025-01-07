@@ -1,10 +1,6 @@
 <?php
 session_start();
-
-// Set the timeout duration (15 minutes)
-$timeout_duration = 900; // 15 minutes in seconds
-
-// For AJAX checks
+$timeout_duration = 900;
 if (isset($_GET['check_session'])) {
     header('Content-Type: application/json');
     
@@ -26,8 +22,5 @@ if (isset($_GET['check_session'])) {
     echo json_encode(['status' => 'active']);
     exit;
 }
-
-
-// Update last activity time
 $_SESSION['last_activity'] = time();
 ?>

@@ -3,7 +3,6 @@ import {ComponentV2} from '../ComponentV2.js';
 
 export class CheckoutHeader extends ComponentV2 {
   async render() {
-    // Wait for the total quantity to resolve
     const quantity = await cart.calculateTotalQuantity();
 
     this.element.innerHTML = `
@@ -42,7 +41,6 @@ export class CheckoutHeader extends ComponentV2 {
   }
 
   async updateCartCount() {
-    // Wait for the total quantity to resolve
     const totalQuantity = await cart.calculateTotalQuantity();
     this.element.querySelector('.js-return-to-home-link')
       .textContent = `${totalQuantity} items`;

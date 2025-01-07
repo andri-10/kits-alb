@@ -3,8 +3,6 @@ import { WindowUtils } from '../utils/WindowUtils.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   const kitsHeader = new KitsHeader('.js-kits-header', true).create();
-
-  // Setup the event listener for the "Add to Cart" button
   const addToCartButton = document.querySelector('.add-to-cart');
   if (addToCartButton) {
     addToCartButton.addEventListener("click", async (event) => {
@@ -14,9 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function handleAddToCart(event, kitsHeader) {
-  const basePath = '/backend'; // Change this to your actual backend path
-
-  // Step 1: Check if the user is logged in
+  const basePath = '/backend';
   const response = await fetch(`${basePath}/check-session.php`);
   const session = await response.json();
 
@@ -24,8 +20,6 @@ async function handleAddToCart(event, kitsHeader) {
     window.location.href = 'login.php';
     return;
   }
-
-  // Step 2: Get product ID, size, and quantity
   const addToCartButton = event.target;
   const productId = addToCartButton.getAttribute("data-product-id");
   const size = document.getElementById("size").value;
@@ -33,13 +27,10 @@ async function handleAddToCart(event, kitsHeader) {
   const quantity = quantitySelector ? parseInt(quantitySelector.value, 10) : 1;
 
   try {
-    // Step 3: Perform add-to-cart logic for each quantity
     const addToCartPromises = [];
     for (let i = 0; i < quantity; i++) {
-      addToCartPromises.push(sendAddToCartRequest(productId, size));  // Push promises to the array
+      addToCartPromises.push(sendAddToCartRequest(productId, size));
     }
-
-    // Wait for all promises to resolve
     await Promise.all(addToCartPromises);
 
    
@@ -86,8 +77,6 @@ async function getUserId() {
   const data = await response.json();
   return data.userId || null;
 }
-
-// Function to display the success message after the product is added to the cart
 function showSuccessMessage(productContainer) {
   const successMessage = productContainer.querySelector('.js-added-to-cart-message');
   if (successMessage) {

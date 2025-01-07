@@ -126,18 +126,15 @@ export class OrdersGrid extends Component {
   
 
   #addToCart(event) {
-    // Add item to cart.
     const button = event.currentTarget;
     const orderId = button.getAttribute('data-order-id');
     const cartItemId = button.getAttribute('data-cart-item-id');
 
     const order = orders.findById(orderId);
     const productDetails = order.findProductDetails(cartItemId);
-    cart.addProduct(productDetails.productId, 1);  // Removed variation handling
+    cart.addProduct(productDetails.productId, 1);
 
     this.#kitsHeader?.updateCartCount();
-
-    // Show added to cart message.
     button.classList.add('added-to-cart');
 
     const previousTimeoutId = this.#addedToCartTimeouts[orderId + cartItemId];

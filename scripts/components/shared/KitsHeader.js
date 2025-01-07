@@ -15,31 +15,30 @@ export class KitsHeader extends ComponentV2 {
     'click .js-hamburger-menu-toggle': (event) => this.#toggleDropdownMenu(event),
   
   };
-
-  // Store references to cart quantity elements
   #cartQuantityElement;
   #cartQuantityMobileElement;
-
-  // Check if the user is logged in
   async getUserId() {
     const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
-    return data.userId || null;  // Return userId if logged in, otherwise return null
+    return data.userId || null;
   }
+
+  async getProfilePhoto(){
+    const response = await fetch('backend/get-profile-photo.php');
+    const data = await response.json();
+    return data.profilePhoto || null;
+  }
+
+  
 
   async render() {
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
-  
-    // Wait for the total quantity to be fetched
     let totalCartQuantity = await cart.calculateTotalQuantity();
-  
-    // Check if the user is logged in
     const userId = await this.getUserId();
-    const cartLinkHref = userId ? 'checkout.php' : 'login.php'; // Conditionally set the href
+    const cartLinkHref = userId ? 'checkout.php' : 'login.php';
     const orderLinkHref = userId ? 'orders.php' : 'login.php'; 
-    // Render the header HTML with the dynamic cart link
   
     let searchSection = '';
   
@@ -62,9 +61,11 @@ export class KitsHeader extends ComponentV2 {
     let accountSection = '';
 
     if(userId){
+      const profilePhoto = await this.getProfilePhoto();
+      
       accountSection = `
         <a class="js-pfp-link pfp-link header-link" href="account.php">
-          <img class="pfp-icon" src="images/default-profile.png">
+          <img class="pfp-icon" src="${profilePhoto ? profilePhoto.slice(2) : 'images/default-profile.png'}">
         </a>
       `
     }
@@ -116,15 +117,11 @@ export class KitsHeader extends ComponentV2 {
     if(!this.hideSearch){
     const searchBar = document.querySelector('.kits-header .search-bar');
     const clearButton = document.querySelector('.kits-header .search-clear-button');
-  
-    // Check if there is text in the search bar and show/hide clear button accordingly
     if (searchBar.value.trim().length > 0) {
       clearButton.style.display = 'block';
     } else {
       clearButton.style.display = 'none';
     }
-  
-    // Show clear button on input change
     searchBar.addEventListener('input', function() {
       if (searchBar.value.trim().length > 0) {
         clearButton.style.display = 'block';
@@ -133,20 +130,14 @@ export class KitsHeader extends ComponentV2 {
         clearButton.style.display = 'none';
       }
     });
-  
-    // Perform search when Enter is pressed
     this.element.querySelector('.js-search-bar').addEventListener('keypress', (event) => {
       if (event.key === 'Enter') {
         this.#performSearch();
       }
     });
-  
-    // Perform search when search button is clicked
     this.element.querySelector('.js-search-button').addEventListener('click', () => {
       this.#performSearch();
     });
-  
-    // Clear the search input and perform search
     this.element.querySelector('.js-clear-search').addEventListener('click', () => {
       this.element.querySelector('.js-search-bar').value = ''; 
       clearButton.style.display = 'none';
@@ -160,12 +151,6 @@ export class KitsHeader extends ComponentV2 {
     this.updateCartCount();
     this.#initializeHamburgerMenu();
   }
-  
-
-
-
-
-  // Add selectors for both normal and mobile cart quantities
   getCartQuantityElement() {
     return this.#cartQuantityElement;
   }
@@ -175,13 +160,10 @@ export class KitsHeader extends ComponentV2 {
   }
 
   async updateCartCount() {
-    // Ensure that references to the elements are available
     if (!this.#cartQuantityElement || !this.#cartQuantityMobileElement) {
       console.error("Cart quantity elements are not available.");
       return;
     }
-
-    // Get the updated total cart quantity
     try {
       const totalCartQuantity = await cart.calculateTotalQuantity();
 
@@ -189,8 +171,6 @@ export class KitsHeader extends ComponentV2 {
         console.error("Failed to retrieve the cart quantity.");
         return;
       }
-
-      // Update the cart count in the header directly for both normal and mobile
       this.#cartQuantityElement.textContent = totalCartQuantity;
       this.#cartQuantityMobileElement.textContent = totalCartQuantity;
     } catch (error) {
@@ -218,9 +198,8 @@ export class KitsHeader extends ComponentV2 {
 
   #performSearch() {
     const searchText = this.element.querySelector('.js-search-bar').value;
-    // Update the URL with the search query
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     searchParams.set('search', searchText);
-    WindowUtils.setSearch(searchParams.toString()); // This updates the URL without reloading the page
+    WindowUtils.setSearch(searchParams.toString());
   }
 }

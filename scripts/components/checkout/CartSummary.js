@@ -10,7 +10,7 @@ export class CartSummary extends ComponentV2 {
   events = {
     'click .js-delivery-option':(event) => this.#selectDeliveryOption(event),
     'keyup .js-new-quantity-input': (event) => this.#handleQuantityInput(event),
-    'click .js-save-quantity-link': (event) => this.#handleSaveQuantityClick(event),  // Trigger save logic on click
+    'click .js-save-quantity-link': (event) => this.#handleSaveQuantityClick(event),
     'click .js-cancel-quantity-update': (event) => this.#cancelUpdateQuantity(event),
     'click .js-delete-quantity-link': (event) => this.#handleDeleteLinkClick(event),
     'click .js-update-button': (event) => this.#toggleSizeSelector(event),
@@ -55,11 +55,9 @@ export class CartSummary extends ComponentV2 {
         }
       });
     });
-  
-    // Attach change event listener for all radio buttons (e.g., delivery options)
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', (event) => {
-        this.#handleRadioChange(event);  // You can replace this with your desired logic
+        this.#handleRadioChange(event);
       });
     });
   }
@@ -68,12 +66,9 @@ export class CartSummary extends ComponentV2 {
     const selectedRadio = event.target;
     const productId = selectedRadio.getAttribute("name").slice(16);
     const val = selectedRadio.getAttribute("value");
-    // If it's a delivery option radio button (assuming your radio buttons have data attributes for identification)
     if (selectedRadio.classList.contains('js-delivery-option')) {
       this.#selectDeliveryOption(event);
     }
-    
-    // If it's another type of radio button, you can handle other logic here
     console.log('Radio button changed:', selectedRadio);
     console.log(productId);
     this.#handleDeliveryUpdate(productId, val);
@@ -91,11 +86,9 @@ export class CartSummary extends ComponentV2 {
       }
 
       const cartData = await response.json();
-      console.log('Cart data:', cartData);  // Log the entire response to ensure it's correct
+      console.log('Cart data:', cartData);
 
-      this.cartData = cartData; // Store cart data in the class
-
-      // Render cart items
+      this.cartData = cartData;
       this.renderCartItems(cartData);
     } catch (error) {
       console.error('Error fetching cart data:', error);
@@ -103,10 +96,7 @@ export class CartSummary extends ComponentV2 {
     }
   }
 
-  /**
-   * Render the cart items.
-   * @param {Array} cartData - The cart data fetched from the backend.
-   */
+  
   renderCartItems(cartData) {
     if (cartData.length === 0) {
       this.#renderEmptyCartMessage();
@@ -115,7 +105,6 @@ export class CartSummary extends ComponentV2 {
   
     let cartSummaryHTML = '';
     cartData.forEach(cartItem => {
-      // Generate unique delivery options HTML for each cart item
       const deliveryOptionsHTML = this.#createDeliveryOptionsHTML(cartItem);
   
       cartSummaryHTML += `
@@ -160,7 +149,7 @@ export class CartSummary extends ComponentV2 {
             <button class="button-primary update-size-button js-update-button">Update Sizes</button>
               <div class="js-size-selector-dropdown size-selector-dropdown" style="display: none;">
               <div class="size-options">
-                <!-- The fetched product options will be injected here -->
+                
               </div>
             </div>
           </div>
@@ -176,154 +165,120 @@ export class CartSummary extends ComponentV2 {
     const cartItemElement = updateButton.closest('.js-cart-item');
     const productId = cartItemElement.getAttribute('data-cart-item-id');
     const dropdown = cartItemElement.querySelector('.js-size-selector-dropdown');
-    const quantityInput = cartItemElement.querySelector('.js-quantity-input'); // Select the quantity input
+    const quantityInput = cartItemElement.querySelector('.js-quantity-input');
     
     if (dropdown.style.display === 'none' || !dropdown.style.display) {
-      dropdown.style.display = 'block'; // Show the size selector
-      updateButton.textContent = 'Collapse'; // Change button text
-      updateButton.classList.add('collapse-button'); // Add class for "Collapse"
-      
-      // Fetch products related to this kit (assuming the product belongs to a kit)
+      dropdown.style.display = 'block';
+      updateButton.textContent = 'Collapse';
+      updateButton.classList.add('collapse-button');
       this.#fetchKitProducts(productId).then(kitProducts => {
         this.#populateSizeSelector(dropdown, kitProducts);
       });
-  
-      // Make the quantity input readonly when the size selector is shown (because the user is updating size)
-      quantityInput.setAttribute('readonly', 'readonly'); // Prevent the user from modifying the quantity
+      quantityInput.setAttribute('readonly', 'readonly');
     } else {
-      dropdown.style.display = 'none'; // Hide the size selector
-      updateButton.textContent = 'Update Sizes'; // Reset button text
-      updateButton.classList.remove('collapse-button'); // Remove class for "Collapse"
-  
-      // Revert the readonly state when the size selector is hidden (allow editing again)
-      quantityInput.removeAttribute('readonly'); // Re-enable editing of the quantity
+      dropdown.style.display = 'none';
+      updateButton.textContent = 'Update Sizes';
+      updateButton.classList.remove('collapse-button');
+      quantityInput.removeAttribute('readonly');
     }
   }
-  
-  // Fetch the related products from the backend for a specific kit
   async #fetchKitProducts(productId) {
     try {
-      console.log('Fetching products for kit...', productId); // Debugging line
+      console.log('Fetching products for kit...', productId);
   
       const response = await fetch('backend/get-individual-products.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId }) // Sending productId in the request body
+        body: JSON.stringify({ product_id: productId })
       });
-  
-      // Check if the response is OK
       if (!response.ok) {
         throw new Error('Failed to fetch kit products');
       }
-  
-      // Parse the JSON response
       const data = await response.json();
-  
-      // Debugging: Log the response to verify
-      console.log('Response data:', data); // Log the entire response
-  
-      // Check if the response contains the data we need
+      console.log('Response data:', data);
       if (data.success && Array.isArray(data.data)) {
-        console.log('Kit Products:', data.data); // Log the products
-        return data.data; // Return the product data
+        console.log('Kit Products:', data.data);
+        return data.data;
       } else {
         console.error('No data found or an error occurred');
         return [];
       }
     } catch (error) {
       console.error('Error fetching kit products:', error);
-  console.error('Error details:', error.stack || error); // Log the error stack trace or the error message
-      return []; // Return an empty array in case of an error
+  console.error('Error details:', error.stack || error);
+      return [];
     }
   }
-  
-  // Populates the size selector dropdown with fetched kit products
   #populateSizeSelector(dropdown, kitProducts) {
     const sizeSelectorContainer = dropdown.querySelector('.size-options');
-    sizeSelectorContainer.innerHTML = ''; // Clear existing options
+    sizeSelectorContainer.innerHTML = '';
 
     if (kitProducts.length === 0) {
       sizeSelectorContainer.innerHTML = `<div>No products available for this kit</div>`;
       return;
     }
-    
-    kitProducts.forEach(product => {
-      console.log(product); // Debugging: Log product details
 
-      const selectedSize = product.cart_size; // Fetch the selected size for this product
-      console.log(`Selected size for ${product.product_name}:`, selectedSize); // Debugging output
-  
-      // Generate size options for each product
+    kitProducts.forEach(product => {
+      console.log(product);
+
+      const selectedSize = product.cart_size;
+      console.log(`Selected size for ${product.product_name}:`, selectedSize);
       const sizeOptionsHTML = this.#createSizeSelectorForProduct(product, selectedSize, product.cart_id);
-  
-      // Create the product container and append size options
       const productElement = document.createElement('div');
       productElement.classList.add('kit-product');
       productElement.innerHTML = `
-        
-        
         <div class="kit-product-image-container">
-        <img class="product-image" style="margin:0" src="${product.product_image}" alt="${product.product_name}"/>
-        <div class="product-details">
-        <div class="product-name">${product.product_name || 'Unnamed Product'}</div>
-        <div class="product-price">${MoneyUtils.formatMoney(product.product_pricecents)}</div>
-        <div class="size-options-radio">${sizeOptionsHTML}</div>
-        <div class="button-and-message">
-        <button class="button-primary save-size-button js-save-size-button" data-cart-id="${product.cart_id}">Save Size</button>
-        <span class="update-size-message update-size-message-${product.cart_id}"></span>
+          <img class="product-image" style="margin:0" src="${product.product_image}" alt="${product.product_name}"/>
+          <div class="product-details">
+            <div class="product-name">${product.product_name || 'Unnamed Product'}</div>
+            <div class="product-price">${MoneyUtils.formatMoney(product.product_pricecents)}</div>
+            <div class="size-options-radio">${sizeOptionsHTML}</div>
+            <div class="update-size-message update-size-message-${product.cart_id}"></div>
+          </div>
         </div>
-        </div>
-        
-
-        </div>
-        
       `;
       sizeSelectorContainer.appendChild(productElement);
-  
-      // Add event listener for the save button
-      productElement.querySelector('.js-save-size-button').addEventListener('click', (event) => {
-        this.#handleSizeUpdate(event, product.cart_id);
+      
+      // Add event listener to radio buttons instead of the Save button
+      productElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', (event) => {
+          this.#handleSizeUpdate(event, product.cart_id);
+        });
       });
     });
-  }
-  
-  // Create the size options for each individual product in the kit
-  #createSizeSelectorForProduct(product, selectedSize, cartId) {
-    let sizeOptionsHTML = '';
-
-    // Available sizes (can be fetched from the backend or set beforehand)
-    const availableSizes = ['S', 'M', 'L', 'XL', 'XXL']; // Default sizes
-
-    // Loop through all available sizes and create the radio buttons
-    availableSizes.forEach(size => {
-        const isChecked = selectedSize === size;
-
-        sizeOptionsHTML += `
-            <label>
-                <input 
-                    type="radio" 
-                    name="size-${cartId}"
-                    value="${size}" 
-                    ${isChecked ? 'checked' : ''} />
-                ${size}
-            </label><br>
-        `;
-    });
-
-    return sizeOptionsHTML;
 }
 
+#createSizeSelectorForProduct(product, selectedSize, cartId) {
+  let sizeOptionsHTML = '';
+  const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+  availableSizes.forEach(size => {
+      const isChecked = selectedSize === size;
+
+      sizeOptionsHTML += `
+          <label>
+              <input 
+                  type="radio" 
+                  name="size-${cartId}"
+                  value="${size}" 
+                  ${isChecked ? 'checked' : ''} />
+              ${size}
+          </label><br>
+      `;
+  });
+
+  return sizeOptionsHTML;
+}
  
-  async #handleSizeUpdate(event, cartId) {
+ async #handleSizeUpdate(event, cartId) {
     const productElement = event.target.closest('.kit-product');
     const selectedSize = productElement.querySelector('input[type="radio"]:checked')?.value;
   
     if (!selectedSize) {
       console.error('No size selected');
-      alert('Please select a size before saving.');
+      alert('Please select a size.');
       return;
     }
-  
+
     console.log(`Saving size ${selectedSize} for cart ID ${cartId}`);
   
     try {
@@ -337,32 +292,21 @@ export class CartSummary extends ComponentV2 {
           size: selectedSize, 
         }),
       });
-  
+
       const result = await response.json();
-  
-      // Get the message container for this cart item
       const messageContainer = productElement.querySelector(`.update-size-message-${cartId}`);
   
       if (result.success) {
         console.log(`Size updated successfully for cart ID ${cartId}`);
-        
-        
-        // Show success message in green
         messageContainer.textContent = 'Size updated successfully.';
-        messageContainer.style.color = 'green'; // Optional: Green text for success
+        messageContainer.style.color = 'green';
       } else {
         console.error('Failed to update size:', result.message);
-        
-        // Show error message in red
-        messageContainer.textContent = `Size is already selected!`;
-        messageContainer.style.color = 'red'; // Optional: Red text for error
       }
-  
-      // Show the message by adding the 'is-visible' class
       messageContainer.classList.add('is-visible');
   
       setTimeout(() => {
-        console.log('Fading out message'); // Debugging: Check if timeout runs
+        console.log('Fading out message');
         messageContainer.classList.remove('is-visible');
       }, 2000);
   
@@ -373,38 +317,33 @@ export class CartSummary extends ComponentV2 {
       messageContainer.textContent = 'An error occurred while updating size.';
       messageContainer.style.color = 'red'; 
   
-      
       messageContainer.classList.add('is-visible');
   
-      
       setTimeout(() => {
         messageContainer.classList.remove('is-visible');
       }, 2000);
     }
 
     this.#paymentSummary.refreshPaymentDetails();
-  }
+}
 
   async #handleDeliveryUpdate(productId, value) {
     try {
-      // Fetch the user ID (you might want to get this from the user's session)
       const userId = await this.#getUserId();
       if (!userId) {
         console.error('User is not logged in');
-        window.location.href = 'login.php'; // Redirect to login if not logged in
+        window.location.href = 'login.php';
         return;
       }
-  
-      // Make the request to update the delivery option for all cart items with the same product ID and user ID
       const response = await fetch('backend/update-cart-delivery.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId,  // Pass user ID here
-          product_id: productId,  // Pass the product ID
-          delivery_option: value,  // Pass the selected delivery option
+          user_id: userId,
+          product_id: productId,
+          delivery_option: value,
         }),
       });
   
@@ -514,8 +453,6 @@ export class CartSummary extends ComponentV2 {
   #updateHeaderWithDeliveryOption(deliveryOption) {
       const shippingCost = MoneyUtils.formatMoney(deliveryOption.costCents);
       const deliveryDate = DateUtils.formatDateWeekday(deliveryOption.calculateDeliveryDate());
-
-      // Assuming you have a method on #checkoutHeader to update the delivery info:
       this.#checkoutHeader.updateDeliveryInfo(shippingCost, deliveryDate);
   }
 

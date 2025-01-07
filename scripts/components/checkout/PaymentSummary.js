@@ -27,7 +27,7 @@ export class PaymentSummary extends Component {
     const data = await response.json();
 
     console.log(data.userId);
-    return data.userId || null;  // Return userId if logged in, otherwise return null
+    return data.userId || null;
     
   }
 

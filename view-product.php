@@ -21,13 +21,11 @@ try {
             $productKeywords = json_decode($product['keywords'], true);
             
             if ($productKeywords && is_array($productKeywords)) {
-                // Filter out "jersey" from the keywords array
                 $filteredKeywords = array_filter($productKeywords, function ($keyword) {
                     return strtolower($keyword) !== 'jersey';
                 });
                
                 if (!empty($filteredKeywords)) {
-                    // Build the query with filtered keywords
                     $placeholders = implode(' OR ', array_fill(0, count($filteredKeywords), "keywords LIKE CONCAT('%', ?, '%')"));
                     
                     $query = "
@@ -42,7 +40,6 @@ try {
                         $params[] = $keyword;
                     }
                 } else {
-                    // Fallback: Fetch random products excluding the current one
                     $query = "
                         SELECT * FROM products 
                         WHERE id != ? 

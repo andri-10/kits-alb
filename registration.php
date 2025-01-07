@@ -24,7 +24,7 @@ $step = 1;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['step']) && $_POST['step'] == 1) {
         $username = $_POST['username'];
-        $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL); // Sanitize email
+        $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
 
@@ -34,7 +34,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email format.";
         } else {
-            // Check if email already exists
             $stmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -42,17 +41,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($result->num_rows > 0) {
                 $error = "An account with this email already exists.";
-                $email = ''; // Reset email to clear it in the form
+                $email = '';
             } elseif ($password !== $confirm_password) {
                 $error = "Passwords do not match.";
             } elseif (strlen($password) < 8 || !preg_match("/[A-Z]/", $password) || !preg_match("/[^a-zA-Z0-9]/", $password)) {
-                // Check for password conditions
                 $error = "Password must be at least 8 characters long, must contain at least 1 uppercase letter, and at least 1 special character.";
             } else {
-                // Hash the password before inserting into the database
                 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
-                // Insert user into database with email_verified set to 0
                 $stmt = $conn->prepare("INSERT INTO Users (name, email, password, role, email_verified) VALUES (?, ?, ?, 'user', 0)");
                 $stmt->bind_param("sss", $username, $email, $hashed_password);
 

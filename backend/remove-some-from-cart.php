@@ -1,46 +1,27 @@
 <?php
-// Enable error reporting for debugging purposes
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
-// Database connection settings
 $host = 'localhost';
 $user = 'root';
 $password = '';
 $database = 'web';
-
-// Create a connection
 $conn = new mysqli($host, $user, $password, $database);
-
-// Check connection
 if ($conn->connect_error) {
     die(json_encode(['error' => 'Database connection failed']));
 }
-
-// Start session to check if the user is logged in
 session_start();
-
-// Verify if the user is logged in by checking the session
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'User not logged in']);
     exit;
 }
-
-// Get the logged-in user_id from the session
 $user_id = $_SESSION['user_id'];
-
-// Get the product_id and quantity from the request
 $requestPayload = json_decode(file_get_contents('php://input'), true);
 $product_id = $requestPayload['product_id'] ?? null;
 $quantity_to_remove = $requestPayload['quantity'] ?? null;
-
-// Validate input
 if (!$product_id || !$quantity_to_remove || !is_numeric($quantity_to_remove) || $quantity_to_remove <= 0) {
     echo json_encode(['error' => 'Invalid product ID or quantity']);
     exit;
 }
-
-// First, check if the user has enough items of this product in their cart
 $countSql = "SELECT COUNT(*) as total FROM shopping_cart 
              WHERE user_id = ? AND product_id = ?";
 $countStmt = $conn->prepare($countSql);
@@ -55,8 +36,6 @@ if ($total_items < $quantity_to_remove) {
     echo json_encode(['error' => 'Not enough items in cart to remove']);
     exit;
 }
-
-// Delete the specified number of most recently added items
 $deleteSql = "DELETE FROM shopping_cart 
               WHERE id IN (
                   SELECT id FROM (
@@ -75,7 +54,6 @@ $affected_rows = $deleteStmt->affected_rows;
 $deleteStmt->close();
 
 if ($success && $affected_rows > 0) {
-    // Get remaining quantity
     $remainingSql = "SELECT COUNT(*) as remaining FROM shopping_cart 
                     WHERE user_id = ? AND product_id = ?";
     $remainingStmt = $conn->prepare($remainingSql);

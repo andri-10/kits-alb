@@ -20,6 +20,8 @@
   width: 180px;
 }
 
+
+
 @media (max-width: 800px) {
   .kits-header .left-section {
     width: unset;
@@ -67,6 +69,7 @@
   margin-right: 10px;
   display: flex;
 }
+
 
 .kits-header .search-bar {
   width: 100%;
@@ -126,6 +129,14 @@
   display: none;
 }
 
+
+@media (min-width: 576px){
+  .kits-header .hamburger-menu-dropdown{
+    display: none;
+  }
+
+  
+}
 @media (max-width: 575px) {
   .kits-header .right-section {
     display: none;
@@ -156,7 +167,7 @@
 }
 
 .kits-header .hamburger-menu-opened {
-  max-height: 88px; /* Adjust height of dropdown */
+  max-height: 88px; 
 }
 
 @media (max-width: 575px) {
@@ -195,6 +206,7 @@
 .kits-header .returns-text {
   display: block;
   font-size: 12px;
+  margin-top:3px;
 }
 
 .kits-header .orders-text {
@@ -219,11 +231,12 @@
 .kits-header .pfp-icon {
   width: 40px;
   height: 40px;
+  border-radius:100px
 
 }
 
 .kits-header .cart-text {
-  margin-top: 12px;
+  
   font-size: 15px;
   font-weight: 700;
 }
@@ -237,6 +250,7 @@
   left: 22px;
   width: 26px;
   text-align: center;
+  margin-top:1px
 }
 
 .kits-header .cart-quantity-mobile {

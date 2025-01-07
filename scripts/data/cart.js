@@ -7,14 +7,12 @@ export class Cart {
   #items;
 
   constructor() {
-    this.#items = []; // Initialize an empty cart
-    this.loadFromBackend(); // Load cart from backend
+    this.#items = [];
+    this.loadFromBackend();
   }
-
-  // Fetch cart data from backend and load it
   async loadFromBackend() {
     try {
-      const response = await fetch('backend/get-cart-products.php'); // Update the PHP endpoint
+      const response = await fetch('backend/get-cart-products.php');
       const data = await response.json();
       
       if (Array.isArray(data)) {
@@ -34,8 +32,6 @@ export class Cart {
       console.error('Error loading cart:', error);
     }
   }
-
-  // Add an item to the cart by making a POST request to the backend
   async addToCart(productId, quantity) {
     console.log('Adding to cart:', { productId, quantity });
   
@@ -46,15 +42,13 @@ export class Cart {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          product_id: productId.toString(), // Ensure productId is a string
+          product_id: productId.toString(),
           quantity: parseInt(quantity),
         })
       });
 
       const data = await response.json();
       console.log('Response:', data);
-
-      // If successful, reload cart from backend to reflect changes
       if (data.success) {
         await this.loadFromBackend();
       }
@@ -65,8 +59,6 @@ export class Cart {
       return 0;
     }
   }
-
-  // Fetch total cart quantity from the backend
   async calculateTotalQuantity() {
     try {
       const response = await fetch('backend/get-cart-count.php', {
@@ -74,21 +66,17 @@ export class Cart {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({})  // No product_id needed, just calculate the total quantity
+        body: JSON.stringify({})
       });
 
       const data = await response.json();
       console.log('Cart count data:', data);
-
-      // Return the total cart count or 0 if not found
       return data.cart_count || 0;
     } catch (error) {
       console.error('Cart count error:', error);
       return 0;
     }
   }
-
-  // Update the delivery option for a cart item
   async updateDeliveryOption(cartItemId, deliveryOptionId) {
     try {
       const response = await fetch('backend/update-delivery-option.php', {
@@ -104,8 +92,6 @@ export class Cart {
 
       const data = await response.json();
       console.log('Delivery option update response:', data);
-
-      // Reload cart to reflect updated delivery options
       if (data.success) {
         await this.loadFromBackend();
       }
@@ -113,8 +99,6 @@ export class Cart {
       console.error('Error updating delivery option:', error);
     }
   }
-
-  // Calculate the total costs (product, shipping, and taxes) by fetching from the backend
   async calculateCosts(userId) {
     try {
       const response = await fetch('backend/get-cart-costs.php', {
@@ -122,10 +106,8 @@ export class Cart {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ user_id: userId }) // Send user ID to backend
+        body: JSON.stringify({ user_id: userId })
       });
-  
-      // Log the response status and response body
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Failed to fetch cart costs:', errorText);
@@ -141,10 +123,6 @@ export class Cart {
       return { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     }
   }
-  
-  
-
-  // Remove an item from the cart (call backend to remove)
   async removeFromCart(cartItemId) {
     try {
       const response = await fetch('backend/remove-from-cart.php', {
@@ -157,8 +135,6 @@ export class Cart {
 
       const data = await response.json();
       console.log('Remove from cart response:', data);
-
-      // Reload cart to reflect item removal
       if (data.success) {
         await this.loadFromBackend();
       }
@@ -182,7 +158,6 @@ export class Cart {
         } else {
             console.log(`Quantity decreased, new quantity: ${data.quantity}`);
         }
-        // Update the UI or re-fetch cart data here
     } else {
         console.error('Failed to decrease quantity:', data.error);
     }
@@ -191,8 +166,6 @@ export class Cart {
 isEmpty() {
   return this.#items.length === 0;
 }
-  
-  // Get the current items in the cart
   get items() {
     return this.#items;
   }

@@ -1,11 +1,11 @@
 body {
   font-family: Roboto, Arial;
   color: rgb(33, 33, 33);
-  /* Remove default margin for the body. */
+  
   margin: 0;
 }
 
-/* Remove default margin for paragraphs. */
+
 p {
   margin: 0;
 }
@@ -80,7 +80,7 @@ input, select, button {
   color: rgb(196, 80, 0);
 }
 
-/* Styles for dropdown selectors. */
+
 select {
   color: rgb(33, 33, 33);
   background-color: rgb(240, 240, 240);

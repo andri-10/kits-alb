@@ -50,16 +50,14 @@ export class ProductList {
   async loadFromBackend() {
     try {
       const response = await fetch('backend/get-products.php');
-      
-      // Log the response body as text for debugging
       const responseText = await response.text();
-      console.log('Response Text:', responseText);  // Log the actual response body
+      console.log('Response Text:', responseText);
   
       if (!response.ok) {
         throw new Error('Failed to fetch products from backend');
       }
   
-      const productsData = JSON.parse(responseText);  // Explicitly parse as JSON
+      const productsData = JSON.parse(responseText);
       this.#products = productsData.map(product => {
         return new Product(product);
       });
@@ -77,7 +75,6 @@ export class ProductList {
   }
 
   search(searchText) {
-    // If there's no search text, return all the products.
     if (!searchText) return this.#products;
 
     return this.#products.filter(product => {
