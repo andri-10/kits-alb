@@ -34,25 +34,27 @@
             <div class="products-management">
                 <h2>Manage Products</h2>
                 <button id="create-product-btn">Create New Product</button>
-                <div id="product-list">
-                    <h3>Product List</h3>
-                    <table id="product-list-table"> </table>
-                </div>
+                <div id = "product-list" >
+                    <details>
+                        <summary>Product List</summary>
+                        <table id="product-list-table">
+                            
+                        </table>
+                    </details>
             </div>
         </section>
+
 
         <div id="edit-product-container"> </div>
 
         <section class="users-management">
             <h2>Manage Users</h2>
-            <div id="user-actions">
-                <button id="promote-user-btn">Promote to Admin</button>
-                <button id="demote-user-btn">Demote Admin</button>
-                <button id="delete-user-btn">Delete User</button>
-            </div>
             <div id="user-list">
-                <h3>All Users</h3>
-                <table id="user-list-table"> </table>
+               <details>
+                    <summary>Users List</summary>
+                    <table id="user-list-table"> </table>
+               </details> 
+                
             </div>
         </section>
 
