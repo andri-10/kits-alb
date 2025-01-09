@@ -1,5 +1,6 @@
 <?php
 include("backend/session-timeout.php");
+include("backend/security-config.php");
 $isLoggedIn = isset($_SESSION['user_id']);
 ?>
 

@@ -1,13 +1,17 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+session_start();
+
+
 $servername = "localhost";
 $username = "root";$password = "";$dbname = "web";
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Connection failed: ' . $conn->connect_error]);
     exit;}
-session_start();
+
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
     exit;}

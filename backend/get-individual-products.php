@@ -1,6 +1,9 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+session_start();
+
 $servername = "localhost";
 $username = "root"; 
 $password = "";
@@ -9,7 +12,7 @@ if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Connection failed: ' . $conn->connect_error]);
     exit;
 }
-session_start();
+
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 if ($user_id === null) {
     echo json_encode(['status' => 'error', 'message' => 'User not logged in']);

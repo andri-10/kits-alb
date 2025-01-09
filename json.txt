@@ -1,8 +1,0 @@
-INSERT INTO products (id, image, name, stars, rating_count, priceCents, keywords)
-VALUES
-  
-  
-  
-  ('ij90kl12-mn34-op56-qr78-tuvwxyz567890', './images/products/japan-home.png', 'Japan Home Kit 2024-2025', 5, 78, 3499, '["jersey", "national team", "japan"]');
-  
-  

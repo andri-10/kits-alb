@@ -1,6 +1,7 @@
 <?php
 session_start();
 require __DIR__ . '/backend/utils.php';
+include("backend/security-config.php");
 
 $servername = "localhost";
 $username = "root";

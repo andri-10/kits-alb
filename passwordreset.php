@@ -1,5 +1,6 @@
 <?php
 session_start();
+include("backend/security-config.php");
 
 require __DIR__ . '/backend/utils.php';
 

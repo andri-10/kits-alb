@@ -1,5 +1,7 @@
 <?php
+
 include("backend/session-timeout.php");
+include("backend/security-config.php");
 
 $servername = "localhost";
 $username = "root";

@@ -1,8 +1,12 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-header('Content-Type: application/json');
+
 session_start();
+
+
+header('Content-Type: application/json');
+
 $userId = $_SESSION['user_id'] ?? null;
 if (!$userId) {
     echo json_encode(['error' => 'No user ID provided or user not logged in']);

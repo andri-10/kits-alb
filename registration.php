@@ -1,5 +1,7 @@
 <?php
+
 include("backend/session-timeout.php");
+include("backend/security-config.php");
 require __DIR__ . '/backend/utils.php';
 // Check if the user is logged in
 $isLoggedIn = isset($_SESSION['user_id']);

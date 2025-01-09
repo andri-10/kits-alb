@@ -11,6 +11,13 @@ document.getElementById('create-product-btn').addEventListener('click', function
   openForm('create-product');
 });
 
+async function getUserId() {
+  const basePath = window.location.origin + '/backend';
+  const response = await fetch(`${basePath}/get-user-id.php`);
+  const data = await response.json();
+  return data.userId || null;
+}
+
 function loadProductsToTable() {
   const table = document.getElementById('product-list-table');
   table.innerHTML = "";
@@ -235,148 +242,194 @@ function loadUsersToTable() {
     <th>Actions</th>
   `;
 
-  fetch('backend/get-all-users.php')
+  
+  fetch('backend/get-user-id.php')
     .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        data.users.forEach(user => {
-          const row = table.insertRow();
-          row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td><img src="${user.profilePhoto || 'images/default-profile.png'}" alt="Profile Photo" width="50"></td>
-            <td>${user.role}</td>
-            <td>${user.email_verified ? 'Yes' : 'No'}</td>
-            <td>${user.created_at}</td>
-            <td>${user.updated_at}</td>
-            <td>
-              <button class="edit-user-btn" data-user-id="${user.id}">Edit</button>
-              <button class="delete-user-btn" data-user-id="${user.id}">Delete</button>
-              ${user.role === 'admin' ? `
-                <button class="demote-user-btn" data-user-id="${user.id}">Demote</button>
-              ` : ''}
-              ${user.role === 'user' ? `
-                <button class="promote-user-btn" data-user-id="${user.id}">Promote</button>
-              ` : ''}
-            </td>
-          `;
+    .then(sessionData => {
+      const loggedInUserId = Number(sessionData.userId);
+      
+      
+      fetch('backend/get-all-users.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            data.users.forEach(user => {
+              const row = table.insertRow();
+             
+              row.innerHTML = `
+                <td>${user.id}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td><img src="${user.profile_photo || 'images/default-profile.png'}" alt="Profile Photo" width="50"></td>
+                <td>${user.role}</td>
+                <td>${user.email_verified ? 'Yes' : 'No'}</td>
+                <td>${user.created_at}</td>
+                <td>${user.updated_at}</td>
+                <td>
+                  ${
+                    Number(user.id) !== loggedInUserId 
+                      ? `
+                        <button class="edit-user-btn" data-user-id="${user.id}">Edit</button>
+                        <button class="delete-user-btn" data-user-id="${user.id}">Delete</button>
+                        ${
+                          user.role === 'admin'
+                            ? `<button class="demote-user-btn" data-user-id="${user.id}">Demote</button>`
+                            : `<button class="promote-user-btn" data-user-id="${user.id}">Promote</button>`
+                        }
+                      `
+                      : 'Your account' 
+                  }
+                </td>
+              `;
 
-          const promoteButton = row.querySelector('.promote-user-btn');
-          const demoteButton = row.querySelector('.demote-user-btn');
-          const editButton = row.querySelector('.edit-user-btn');
-          const deleteButton = row.querySelector('.delete-user-btn');
-          
-          if(editButton){
-            editButton.addEventListener('click', function() {
-              editUser(user);
+              if (user.id !== loggedInUserId) {
+                const promoteButton = row.querySelector('.promote-user-btn');
+                const demoteButton = row.querySelector('.demote-user-btn');
+                const editButton = row.querySelector('.edit-user-btn');
+                const deleteButton = row.querySelector('.delete-user-btn');
+                
+                if (editButton) {
+                  editButton.addEventListener('click', function() {
+                    editUser(user);
+                  });
+                }
+                if (deleteButton) {
+                  deleteButton.addEventListener('click', function() {
+                    deleteUser(user.id);
+                  });
+                }
+                if (promoteButton) {
+                  promoteButton.addEventListener('click', () => {
+                    updateUserRole(user.id, 'admin');
+                  });
+                }
+                if (demoteButton) {
+                  demoteButton.addEventListener('click', () => {
+                    updateUserRole(user.id, 'user');
+                  });
+                }
+              }
             });
+          } else {
+            const row = table.insertRow();
+            row.innerHTML = `<td colspan="9">No users found.</td>`;
           }
-
-          if(deleteButton){
-            deleteButton.addEventListener('click', function() {
-              deleteUser(user);
-            });
-          }
-
-          if (promoteButton) {
-            promoteButton.addEventListener('click', () => {
-              updateUserRole(user.id, 'admin');
-            });
-          }
-
-          if (demoteButton) {
-            demoteButton.addEventListener('click', () => {
-              updateUserRole(user.id, 'user');
-            });
-          }
+        })
+        .catch(error => {
+          console.error('Error fetching users:', error);
         });
-      } else {
-        const row = table.insertRow();
-        row.innerHTML = `<td colspan="9">No users found.</td>`;
-      }
     })
     .catch(error => {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching session data:', error);
     });
 }
-function updateUserRole(userId, newRole) {
-  fetch('backend/update-role.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: `user_id=${userId}&role=${newRole}`,
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(data.message);
-        loadUsersToTable();
-      } else {
-        alert(`Error: ${data.error || "Failed to update role."}`);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('An unexpected error occurred.');
+
+async function updateUserRole(userId, newRole) {
+  try {
+    const adminId = await getUserId(); // Make sure this function returns a promise
+    const response = await fetch('backend/update-role.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `user_id=${userId}&role=${newRole}&admin_id=${adminId}`, // Pass the adminId in the request
     });
+    const data = await response.json();
+    if (data.success) {
+      alert(data.message);
+      loadUsersToTable();
+    } else {
+      alert(`Error: ${data.error || "Failed to update role."}`);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An unexpected error occurred.');
+  }
 }
+
+
+
 function editUser(user) {
   const popupBackdrop = document.createElement("div");
   popupBackdrop.className = "popup-backdrop";
   document.body.appendChild(popupBackdrop);
-
+  const removeImgStyle = (user.profile_photo === "") ? 'none' : 'block';
   const popupForm = document.createElement("div");
   popupForm.className = "popup-form";
   popupForm.innerHTML = 
     `<h3>Edit Profile</h3>
-     <img id="imgPreview" src="${user.profilePhoto || 'images/default-profile.png'}" alt="Image Preview" style="width: 200px; height: 200px; margin-bottom: 10px;"><br>
+     <img id="imgPreview" src="${user.profile_photo || 'images/default-profile.png'}" alt="Image Preview" style="width: 200px; height: 200px; margin-bottom: 10px;"><br>
      <div class="username-section">
        <label for="username-field">Username:</label>
        <input type="text" id="username-field" value="${user.name}" required><br>
      </div>
      <div class="image-section">
        <label for="profile-image">Profile Picture:</label>
-       <input type="file" id="profile-image" accept="image/*"><br>
-     </div>
+       <button type="button" id="remove-picture" style="display: ${removeImgStyle}">Remove Profile Picture</button>
      <button type="button" id="submit-profile">Save Changes</button>
      <button type="button" id="cancel-profile">Cancel</button>`;
 
   document.body.appendChild(popupForm);
+  console.log(removeImgStyle)
 
-  // Show the popup form
   document.body.classList.add('popup-active');
 
-  // Cancel button
   document.getElementById('cancel-profile').addEventListener('click', function() {
     popupBackdrop.remove();
     popupForm.remove();
     document.body.classList.remove('popup-active');
   });
 
-  // Profile image preview
-  document.getElementById('profile-image').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const preview = document.getElementById('imgPreview');
-      preview.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+ // Add the remove picture event listener
+document.getElementById('remove-picture').addEventListener('click', () => {
+  const formData = new FormData();
+  formData.append('remove_profile_picture', true);
+  formData.append('target_user_id', Number(user.id));
+  
+  // Debug logging
+  console.log('Sending profile update request:');
+  console.log('Target User ID:', user.id);
+  console.log('FormData entries:');
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
+  fetch('backend/update-user-profile.php', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Server response:', data);
+    if (data.success) {
+      alert('Profile picture removed successfully!');
+      location.reload();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to remove profile picture.'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while removing the profile picture.');
   });
 
-  // Submit the updated user information
+  popupBackdrop.remove();
+    popupForm.remove();
+    document.body.classList.remove('popup-active');
+});
+  
+
   document.getElementById('submit-profile').addEventListener('click', function() {
     const username = document.getElementById('username-field').value;
-    const imageInput = document.getElementById('profile-image');
+    
     const formData = new FormData();
-    formData.append('userId', user.id);
-    formData.append('username', username);
 
-    if (imageInput.files.length > 0) {
-      formData.append('profileImage', imageInput.files[0]);
-    }
+    // Use parameter names expected by PHP
+    
+    console.log(Number(user.id));
+    formData.append('target_user_id', Number(user.id)); // Match PHP's 'target_user_id'
+    formData.append('new_username', username); // Match PHP's 'new_username'
+
 
     fetch('backend/update-user-profile.php', {
       method: 'POST',
@@ -402,20 +455,22 @@ function editUser(user) {
   });
 }
 
-function deleteUser(userId) {
+
+async function deleteUser(userId) {
+  const adminId = await getUserId(); // Capture the admin's ID, ensure getUserId() works properly
   fetch("backend/delete-user.php", {
       method: "POST",
       headers: {
           "Content-Type": "application/json",
       },
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify({ user_id: userId, admin_id: adminId }), // Include admin_id in the request body
   })
       .then((response) => response.json())
       .then((data) => {
           console.log(data);
           if (data.success) {
               alert("User deleted successfully.");
-              loadUsersToTable(); 
+              loadUsersToTable();
           } else {
               alert("Error deleting user.");
           }

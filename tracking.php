@@ -1,3 +1,7 @@
+<?php
+session_start();
+include("backend/security-config.php");
+?>
 <!DOCTYPE html>
 <html>
   <head>

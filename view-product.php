@@ -1,5 +1,6 @@
 <?php
-
+session_start();
+include("backend/security-config.php");
 $host = 'localhost';
 $dbname = 'web';
 $username = 'root';

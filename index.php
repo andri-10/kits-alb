@@ -1,6 +1,7 @@
 <?php
 include("backend/session-timeout.php");
 $isLoggedIn = isset($_SESSION['user_id']);
+include("backend/security-config.php");
 ?>
 
 <!DOCTYPE html>
@@ -29,16 +30,26 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </section>
       
         <div class="kits-header-right-section">
+          
+        <a href="catalog.php" class="header-link">Catalog</a>
+        <?php if ($isLoggedIn): ?>
+          <?php if ($_SESSION['user_role']==="admin"): ?>    
+            <a href="admin.php" class="header-link">Admin</a>
+            <?php endif; ?>
+          <a href="account.php" class="header-link">Account</a>
+          <?php endif; ?>
+          
+          <a href="contact.php" class="header-link">Contact Us</a>
+          
+          
           <?php if ($isLoggedIn): ?>
             
             <a href="logout.php" class="header-link">Sign Out</a>
-            <a href="account.php" class="header-link">Account</a>
+            
           <?php else: ?>
             
             <a href="login.php" class="header-link">Sign In</a>
           <?php endif; ?>
-          <a href="contact.php" class="header-link">Contact Us</a>
-          <a href="catalog.php" class="header-link">Catalog</a>
         </div>
 
         <section class="right-section-mobile">
