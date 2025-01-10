@@ -139,6 +139,7 @@ flex-wrap:wrap;
   flex-wrap:wrap;
   border:1px solid rgb(217, 217, 234);
   padding:15px 0px;
+  position:relative
 
 }
 .size-options{
@@ -161,6 +162,8 @@ flex-wrap:wrap;
   font-size: 14px;
   opacity: 0;
   transition: opacity 1s ease-out;
+  position:absolute;
+  bottom:10%
 }
 
 .update-size-message.is-visible {
