@@ -105,11 +105,24 @@ export class CartSummary extends ComponentV2 {
     let cartSummaryHTML = '';
     cartData.forEach(cartItem => {
       const deliveryOptionsHTML = this.#createDeliveryOptionsHTML(cartItem);
+      
+      let val = 1;
+      let deliveryText = "";
+  
+    deliveryOptions.all.forEach(deliveryOption => {
+      const deliveryDate = deliveryOption.calculateDeliveryDate();
+      if(cartItem.deliveryOption===val)
+        deliveryText += `Delivery date: ${DateUtils.formatDateWeekday(deliveryDate)}`
+  
+      
+  
+      val += 1;
+    });
   
       cartSummaryHTML += `
         <div class="js-cart-item cart-item-container" data-cart-item-id="${cartItem.productId}">
           <div class="delivery-date delivery-date-${cartItem.productId}">
-            <span class="js-delivery-date js-delivery-date-${cartItem.productId}"></span>
+            <span class="js-delivery-date js-delivery-date-${cartItem.productId}">${deliveryText}</span>
           </div>
   
           <div class="cart-item-details-and-delivery">
@@ -154,7 +167,11 @@ export class CartSummary extends ComponentV2 {
           </div>
         </div>
       `;
+
     });
+
+    
+    
   
     this.element.innerHTML = cartSummaryHTML;
   }
@@ -370,15 +387,18 @@ export class CartSummary extends ComponentV2 {
   #createDeliveryOptionsHTML(cartItem) {
     let deliverOptionsHTML = '';
     let val = 1;
+  
     deliveryOptions.all.forEach(deliveryOption => {
       const id = deliveryOption.id;
       const costCents = deliveryOption.costCents;
       const deliveryDate = deliveryOption.calculateDeliveryDate();
-
+  
       const shippingText = costCents === 0
         ? 'FREE Shipping'
         : `${MoneyUtils.formatMoney(costCents)} - Shipping`;
-
+  
+      const isChecked = cartItem.deliveryOption === val;
+  
       deliverOptionsHTML += `
         <div class="js-delivery-option delivery-option"
           data-delivery-option-id="${id}" data-testid="delivery-option-${id}">
@@ -389,7 +409,7 @@ export class CartSummary extends ComponentV2 {
             type="radio"
             data-testid="delivery-option-input"
             value=${val}
-            ${deliveryOption.isDefault ? 'checked' : ''} 
+            ${isChecked ? 'checked' : ''} 
           >
           
           <div>
@@ -402,12 +422,15 @@ export class CartSummary extends ComponentV2 {
           </div>
         </div>
       `;
-
-      val+=1;
+  
+      
+  
+      val += 1;
     });
-
+  
     return deliverOptionsHTML;
   }
+  
 
   #selectDeliveryOption(event) {
     const deliveryOptionElem = event.target.closest('.js-delivery-option');

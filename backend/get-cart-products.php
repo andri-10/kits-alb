@@ -24,8 +24,10 @@ $sql = "
         p.image AS product_image,
         p.name AS product_name,
         p.priceCents,
+        c.delivery_option,
         COUNT(c.product_id) AS quantity,
         GROUP_CONCAT(DISTINCT c.size) AS sizes
+        
     FROM products p
     JOIN shopping_cart c ON p.id = c.product_id
     WHERE c.user_id = ?  
@@ -49,7 +51,8 @@ while ($row = $result->fetch_assoc()) {
         'name' => $row['product_name'],
         'priceCents' => $row['priceCents'],
         'quantity' => $row['quantity'],
-        'sizes' => explode(',', $row['sizes'])    
+        'sizes' => explode(',', $row['sizes']),    
+        'deliveryOption' => $row['delivery_option'] 
     ];
 }
 $stmt->close();
