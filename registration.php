@@ -230,7 +230,7 @@ $conn->close();
         }
     </script>
     <script src="scripts/pages/emailVerify.js"></script>
-    
+    <script src="scripts/components/shared/KitsFooter.js"></script>
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>

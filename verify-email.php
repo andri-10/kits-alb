@@ -132,7 +132,7 @@ $conn->close();
     <?php if ($isLoggedIn): ?>
         <script src="scripts/session-manager.js"></script>
     <?php endif; ?>
-
+    <script src="scripts/components/shared/KitsFooter.js"></script>
     <script src="scripts/pages/emailVerify.js"></script>
 </body>
 </html>

@@ -90,6 +90,6 @@ $orderResult = $orderStmt->get_result();
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
     </p>
 </footer>
-
+<script src="scripts/components/shared/KitsFooter.js"></script>
 </body>
 </html>

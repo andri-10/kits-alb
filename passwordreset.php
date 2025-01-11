@@ -229,7 +229,7 @@ $conn->close();
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
       </p>
     </footer>
-
+    <script src="scripts/components/shared/KitsFooter.js"></script>
     <script src="scripts/pages/passwordreset.js"></script>
 </body>
 </html>
