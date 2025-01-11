@@ -1,22 +1,30 @@
-
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f4f7fc;
   color: #333;
-
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .account-container {
   max-width: 900px;
-  margin: 100px auto;
+  margin: 100px auto 0; /* Remove bottom margin */
   padding: 30px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   justify-content: center;
-  margin-bottom: 126px;
+  flex: 1;
+}
+
+.kits-footer {
+  position: fixed; /* Fix footer at bottom on large screens */
+  bottom: 0;
+  width: 100%;
+  background-color: #1e1e29; /* Assuming this is your footer's background color */
 }
 
 h1 {
@@ -272,7 +280,12 @@ text-align: center;
     padding: 15px;
     box-sizing: border-box;
   }
-
+  .kits-footer {
+    position: relative; 
+  }
+  .account-container {
+    margin-bottom: 20px;
+  } 
   .profile-info img {
    width: 130px;
    height: 130px;
