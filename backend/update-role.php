@@ -1,4 +1,6 @@
 <?php
+require 'utils.php';
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -20,14 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($userId && $newRole && $adminId) {
         // Fetch the current role of the user
-        $result = $conn->prepare("SELECT role FROM users WHERE id = ?");
+        $result = $conn->prepare("SELECT role, email FROM users WHERE id = ?");
         $result->bind_param("i", $userId);
         $result->execute();
-        $result->bind_result($currentRole);
+        $result->bind_result($currentRole, $email);
         $result->fetch();
         $result->close();
 
-        // Check if the current role is different from the new role
         if ($currentRole !== $newRole) {
             // Perform the role update
             $stmt = $conn->prepare("UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?");
@@ -35,13 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($stmt->execute()) {
                 // Determine log description based on role change
-                if ($newRole === 'admin' && $currentRole !== 'admin') {
-                    $logDescription = "Promoted to admin.";
-                } elseif ($newRole === 'user' && $currentRole === 'admin') {
-                    $logDescription = "Demoted to user without admin privileges.";
-                } else {
-                    $logDescription = "Changed role.";
-                }
+                $logDescription = ($newRole === 'admin' && $currentRole !== 'admin') ?
+                    "Promoted to admin." :
+                    (($newRole === 'user' && $currentRole === 'admin') ?
+                        "Demoted to user without admin privileges." :
+                        "Changed role.");
 
                 // Log the action in the admin_logs table
                 $action = "Changed role";
@@ -50,8 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $logStmt->bind_param("iiss", $adminId, $userId, $action, $logDescription);
                 $logStmt->execute();
 
-                // Respond with success message
-                echo json_encode(["success" => true, "message" => "User role updated successfully."]);
+                // Send an email to the user
+                $subject = "Important - Football Kits Albania";
+                $body = "Dear User,\n\nYou have been " .
+                    ($newRole === 'admin' ? "promoted to an administrator role." : "demoted to a standard user role.") .
+                    "\n\nSincerely,\nThe Football Kits Albania Team";
+
+                $emailSent = sendEmail($email, $subject, $body);
+
+                // Respond with a success message
+                echo json_encode([
+                    "success" => true,
+                    "message" => "User role updated successfully.",
+                    "emailSent" => $emailSent
+                ]);
             } else {
                 echo json_encode(["success" => false, "error" => "Failed to update user role."]);
             }
@@ -68,4 +79,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 mysqli_close($conn);
-?>

@@ -4,6 +4,8 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
 
+require_once 'utils.php'; // Include utils.php to access the sendEmail function
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -29,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $removeProfilePicture = isset($_POST['remove_profile_picture']);
     $image = isset($_FILES['profile_image']) ? $_FILES['profile_image'] : null;
 
-    $result = $conn->prepare("SELECT name, profile_photo FROM users WHERE id = ?");
+    $result = $conn->prepare("SELECT name, profile_photo, email FROM users WHERE id = ?");
     $result->bind_param("i", $targetUserId);
     $result->execute();
     $userData = $result->get_result();
@@ -38,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $row = $userData->fetch_assoc();
         $currentUsername = $row['name'];
         $currentProfilePhoto = $row['profile_photo'];
+        $targetUserEmail = $row['email']; // Get the user's email
     } else {
         echo json_encode(["success" => false, "message" => "Target user not found"]);
         exit();
@@ -86,9 +89,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $logStmt->bind_param("iiss", $userId, $targetUserId, $action, $logDescription);
                 $logStmt->execute();
             }
+
+            // Send email to the user about the profile update
+            $subject = "Your Profile Has Been Updated";
+            $body = "Dear $currentUsername,\n\nYour profile has been updated by an administrator.\n\n" . $logDescription . "\n\nIf you have any questions, please contact support.\n\nBest regards,\nFootball Kits Albania";
+            if (!sendEmail($targetUserEmail, $subject, $body)) {
+                echo json_encode(["success" => false, "message" => "Profile updated, but email could not be sent."]);
+                exit();
+            }
+
             echo json_encode([
                 "success" => true,
-                "message" => "Profile updated successfully"
+                "message" => "Profile updated successfully, and an email notification was sent."
             ]);
         } else {
             echo json_encode(["success" => false, "message" => "Error updating profile: " . $stmt->error]);

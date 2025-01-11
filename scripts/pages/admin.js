@@ -332,7 +332,7 @@ async function updateUserRole(userId, newRole) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: `user_id=${userId}&role=${newRole}&admin_id=${adminId}`, // Pass the adminId in the request
+      body: `user_id=${userId}&role=${newRole}&admin_id=${adminId}`,
     });
     const data = await response.json();
     if (data.success) {
