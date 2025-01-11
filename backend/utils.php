@@ -97,3 +97,23 @@ function sendRegistrationTokenEmail($email, $token) {
     }
 }
 
+
+function sendRoleUpdateEmail($email, $newRole) {
+    $subject = "Important - Football Kits Albania";
+    $body = "Dear User,
+
+We would like to inform you that your role has been updated by our administrator. 
+You have been " . ($newRole === 'admin' ? 'promoted to an Admin' : 'demoted to a User without admin privileges') . ".
+
+We value your contributions to Football Kits Albania.
+
+Sincerely,
+Football Kits Albania";
+
+    if (mail($email, $subject, $body, "From: no-reply@footballkitsalbania.com")) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
