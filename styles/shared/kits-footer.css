@@ -2,10 +2,16 @@
   background-color: rgb(19, 25, 33);
   color: white;
   text-align: center;
-  padding: 10px 0;
   font-size: medium;
   margin-top: auto; 
+  padding-bottom: 1px;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  padding-top: 15px;
 }
+
+
 
 .footer-link {
   color: #febd69;
