@@ -61,6 +61,7 @@ $orderResult = $orderStmt->get_result();
 </header>
 
 <div class="account-container">
+    <div class="everything-container">
     <h1>User Profile</h1>
     <div class="profile-info">
         <div class="profile-image">
@@ -81,6 +82,7 @@ $orderResult = $orderStmt->get_result();
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

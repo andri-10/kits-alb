@@ -4,25 +4,27 @@ body {
   padding: 0;
   background-color: #f4f7fc;
   color: #333;
-  min-height: 70vh;
+  
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .account-container {
   max-width: 900px;
-  margin: 100px auto 0; /* Remove bottom margin */
+  margin: 100px auto; /* Remove bottom margin */
   padding: 30px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   justify-content: center;
   flex: 1;
+  
+  max-height:500px;
 }
 
 .kits-footer {
-  position: fixed; /* Fix footer at bottom on large screens */
-  bottom: 0;
+  margin-top:auto;
   width: 100%;
   background-color: #1e1e29; /* Assuming this is your footer's background color */
 }
@@ -273,19 +275,34 @@ text-align: center;
 
 
 
+@media (max-height: 788px){
+  .account-container {
+    padding: 15px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    min-height:380px;
+    max-height:400px;
+  }
 
+  h1{
+    margin-top:10px;
+    font-size:1.8rem
+  }
+
+  .profile-info img {
+    width: 130px;
+    height: 130px;
+   }
+}
 
 @media (max-width: 768px) {
   .account-container {
     padding: 15px;
     box-sizing: border-box;
-  }
-  .kits-footer {
-    position: relative; 
-  }
-  .account-container {
     margin-bottom: 20px;
-  } 
+    max-height:400px;
+  }
+  
   .profile-info img {
    width: 130px;
    height: 130px;
@@ -293,11 +310,21 @@ text-align: center;
 
 }
 
-@media (max-width:401px){
+@media (max-width:478px){
+  .account-container {
+    
+    max-height:430px;
+  }
   .profile-info .two-main-buttons{
     flex-direction: column;
     gap:0;
     justify-content: center;
+  }
+  h1{
+    font-size:2rem;
+    padding:0;
+    margin-right:20px;
+    margin-left:20px
   }
 
   .profile-info .profile-name{

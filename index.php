@@ -57,14 +57,23 @@ include("backend/security-config.php");
         </section>
 
         <div class="js-hamburger-menu-dropdown hamburger-menu-dropdown" data-testid="hamburger-menu-dropdown">
+          <a class="hamburger-menu-link" href="catalog.php">Catalog</a>
           <?php if ($isLoggedIn): ?>
-            <a class="hamburger-menu-link" href="logout.php">Sign Out</a>
-            <a class="hamburger-menu-link" href="account.php">Account</a>
-          <?php else: ?>
-            <a class="hamburger-menu-link" href="login.php">Sign In</a>
+          <?php if ($_SESSION['user_role']==="admin"): ?>    
+            <a href="admin.php" class="header-link">Admin</a>
+            <?php endif; ?>
+          <a href="account.php" class="header-link">Account</a>
           <?php endif; ?>
           <a class="hamburger-menu-link" href="contact.php">Contact Us</a>
-          <a class="hamburger-menu-link" href="catalog.php">Catalog</a>
+          <?php if ($isLoggedIn): ?>
+            
+            <a class="hamburger-menu-link" href="logout.php">Sign Out</a>
+            
+          <?php else: ?>
+            
+            <a href="login.php" class="header-link">Sign In</a>
+          <?php endif; ?>
+          
         </div>    
 
       </header>
