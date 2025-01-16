@@ -21,6 +21,89 @@ export class PaymentSummary extends Component {
     this.#usePaypal = localStorage.getItem('exercises-kits-use-paypal') === 'true';
   }
 
+  #showError(message) {
+    const errorContainer = document.createElement('div');
+    errorContainer.className = 'payment-error';
+    errorContainer.style.color = 'red';
+    errorContainer.style.marginTop = '10px';
+    errorContainer.textContent = message;
+    
+    const existingError = document.querySelector('.payment-error');
+    if (existingError) {
+      existingError.remove();
+    }
+    
+    const buttonsContainer = this.element.querySelector('.js-payment-buttons-container');
+    buttonsContainer.parentNode.insertBefore(errorContainer, buttonsContainer);
+  }
+
+  async #logPayment(paymentData) {
+    try {
+      const response = await fetch('/backend/log-payment.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to log payment');
+      }
+    } catch (error) {
+      console.error('Error logging payment:', error);
+    }
+  }
+
+  async #validateDeliveryOptions() {
+    const cartItems = await cart.getItems();
+    return cartItems.every(item => item.selectedDelivery);
+  }
+
+  async #performCheckout() {
+    // Validate delivery options first
+    const isValid = await this.#validateDeliveryOptions();
+    if (!isValid) {
+      this.#showError('Please select a delivery option for all products');
+      return;
+    }
+
+    try {
+      const costs = await cart.calculateCosts();
+
+      // Log payment initiation
+      await this.#logPayment({
+        payment_method: 'card',
+        status: 'initiated',
+        amount: costs.totalCents,
+        timestamp: new Date().toISOString()
+      });
+
+      await orders.createNewOrder(cart);
+      
+      // Log successful payment
+      await this.#logPayment({
+        payment_method: 'card',
+        status: 'success',
+        amount: costs.totalCents,
+        timestamp: new Date().toISOString()
+      });
+
+      WindowUtils.setHref('orders.php');
+    } catch (error) {
+      console.error('Checkout error:', error);
+      this.#showError('An error occurred during checkout. Please try again.');
+      
+      // Log failed payment
+      await this.#logPayment({
+        payment_method: 'card',
+        status: 'error',
+        error_message: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
   async #getUserId() {
     const basePath = '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);

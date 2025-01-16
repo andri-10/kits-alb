@@ -24,12 +24,33 @@ export class KitsHeader extends ComponentV2 {
     return data.userId || null;
   }
 
-  async getProfilePhoto(){
-    const response = await fetch('backend/get-profile-photo.php');
-    const data = await response.json();
-    return data.profilePhoto || null;
+  async getUserId() {
+    try {
+      const response = await fetch('/backend/get-user-id.php');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.userId || null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
   }
-
+  
+  async getProfilePhoto() {
+    try {
+      const response = await fetch('/backend/get-profile-photo.php');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.profilePhoto || null;
+    } catch (error) {
+      console.error('Error fetching profile photo:', error);
+      return null;
+    }
+  }
   
 
   async render() {
