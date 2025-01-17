@@ -7,7 +7,6 @@ import { ComponentV2 } from '../ComponentV2.js';
 export class ProductsGrid extends ComponentV2 {
   events = {
     'click .js-add-to-cart-button': (event) => this.#checkSessionAndAddToCart(event),
-    'click .js-variation-option': (event) => this.#selectVariation(event),
     'click .js-view-product-button': (event) => this.#viewProduct(event),
   };
 
@@ -17,30 +16,30 @@ export class ProductsGrid extends ComponentV2 {
   setKitsHeader(kitsHeader) {
     this.#kitsHeader = kitsHeader;
   }
-  
+
   #viewProduct(event) {
-    event.preventDefault(); // Prevent default action
-    const button = event.currentTarget; 
-    const productId = button.getAttribute('data-product-id'); 
+    event.preventDefault();
+    const button = event.currentTarget;
+    const productId = button.getAttribute('data-product-id');
     window.location.href = `view-product.php?id=${productId}`;
-}
-  
+  }
+
   async render() {
     try {
       const searchParams = new URLSearchParams(WindowUtils.getSearch());
       const searchText = searchParams.get('search') || '';
 
-      const response = searchText
-        ? await fetch(`backend/search-products.php?search=${searchText}`)
-        : await fetch('backend/get-products.php');
-
+      const response = await fetch('backend/get-products.php');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const productsData = await response.json();
+      const filteredProducts = productsData.filter(product => {
+        return product.name.toLowerCase().includes(searchText.toLowerCase());
+      });
 
-      if (productsData.length === 0) {
+      if (filteredProducts.length === 0) {
         this.element.innerHTML = `
           <div class="empty-results-message" data-testid="empty-results-message">
             No products matched your search.
@@ -49,7 +48,7 @@ export class ProductsGrid extends ComponentV2 {
       }
 
       let productsGridHTML = '';
-      productsData.forEach((product) => {
+      filteredProducts.forEach((product) => {
         const productImage = product.image || product.createImageUrl();
         const ratingStarsImage = this.createRatingStarsUrl(product.rating.stars);
         const formattedPrice = MoneyUtils.formatMoney(product.priceCents);
@@ -84,8 +83,6 @@ export class ProductsGrid extends ComponentV2 {
               </select>
             </div>
 
-            ${this.#createVariationsSelectorHTML(product)}
-
             <div class="product-spacer"></div>
 
             <div class="js-added-to-cart-message added-to-cart-message" data-testid="added-to-cart-message">
@@ -106,12 +103,10 @@ export class ProductsGrid extends ComponentV2 {
       });
 
       this.element.innerHTML = productsGridHTML;
-
-      // Manually attach event listeners
       this.attachEventListeners();
       this.element.querySelectorAll('.js-view-product-button').forEach((button) => {
         button.addEventListener('click', (event) => this.#viewProduct(event));
-    });
+      });
 
     } catch (error) {
       console.error('Error rendering products:', error);
@@ -124,77 +119,14 @@ export class ProductsGrid extends ComponentV2 {
     addToCartButtons.forEach((button) => {
       button.addEventListener('click', (event) => this.#checkSessionAndAddToCart(event));
     });
-
-    const variationButtons = this.element.querySelectorAll('.js-variation-option');
-    variationButtons.forEach((button) => {
-      button.addEventListener('click', (event) => this.#selectVariation(event));
-    });
   }
 
   createRatingStarsUrl(stars) {
-    return `/kits-alb/images/ratings/rating-${stars * 10}.png`;
-  }
-
-  #createVariationsSelectorHTML(product) {
-    if (!product.variations) return '';
-
-    let variationsHTML = '';
-    Object.keys(product.variations).forEach((name) => {
-      variationsHTML += `
-        <div class="variation-name">${name}</div>
-        <div class="js-variation-options-container variation-options-container">
-          ${this.#createVariationOptionsHTML(name, product.variations[name])}
-        </div>`;
-    });
-    return variationsHTML;
-  }
-
-  #createVariationOptionsHTML(variationName, variationOptions) {
-    let optionsHTML = '';
-    variationOptions.forEach((option, index) => {
-      optionsHTML += `
-        <button class="js-variation-option variation-option ${index === 0 ? 'js-selected-variation is-selected' : ''}"
-          data-variation-name="${variationName}" data-variation-value="${option}" data-testid="variation-${variationName}-${option}">
-          ${option}
-        </button>`;
-    });
-    return optionsHTML;
-  }
-
-  #selectVariation(event) {
-    const button = event.currentTarget;
-    const variationsContainer = button.closest('.js-variation-options-container');
-    const previousButton = variationsContainer.querySelector('.js-selected-variation');
-    if (previousButton) {
-      previousButton.classList.remove('js-selected-variation', 'is-selected');
-    }
-    button.classList.add('js-selected-variation', 'is-selected');
-
-    const productContainer = button.closest('.js-product-container');
-    const productId = productContainer.getAttribute('data-product-id');
-    const product = products.findById(productId);
-    const variation = this.#getSelectedVariation(productContainer);
-    const productImage = product.createImageUrl(variation);
-
-    productContainer.querySelector('.js-product-image').src = productImage;
-  }
-
-  #getSelectedVariation(productContainer) {
-    if (!productContainer.querySelector('.js-selected-variation')) {
-      return null;
-    }
-
-    const selectedVariation = {};
-    productContainer.querySelectorAll('.js-selected-variation').forEach((button) => {
-      const name = button.getAttribute('data-variation-name');
-      const value = button.getAttribute('data-variation-value');
-      selectedVariation[name] = value;
-    });
-    return selectedVariation;
+    return `./images/ratings/rating-${stars * 10}.png`;
   }
 
   async #checkSessionAndAddToCart(event) {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/check-session.php`);
     const data = await response.json();
     if (!data.isLoggedIn) {
@@ -209,34 +141,24 @@ export class ProductsGrid extends ComponentV2 {
     const productId = productContainer.getAttribute('data-product-id');
     const quantitySelector = productContainer.querySelector('.js-quantity-selector');
     const quantity = quantitySelector ? parseInt(quantitySelector.value, 10) : 1;
-  
-    // Collect all add-to-cart requests into an array of promises
+    const size = 'L';
     const addToCartPromises = [];
     for (let i = 0; i < quantity; i++) {
-      addToCartPromises.push(this.#sendAddToCartRequest(productId));  // Push promises to the array
+      addToCartPromises.push(this.#sendAddToCartRequest(productId, size));
     }
-  
-    // Wait for all promises to resolve
     await Promise.all(addToCartPromises);
-  
-    // Now update the cart count after all requests have completed
     this.#kitsHeader.updateCartCount();
-  
-    // Show success message for each product added
     this.#showSuccessMessage(productContainer, productId);
   }
-  
-  
-
-  // Function to send the AJAX request to the PHP backend
-  async #sendAddToCartRequest(productId) {
+  async #sendAddToCartRequest(productId, size) {
     const userId = await this.#getUserId();
-  
+
     if (!userId) {
       window.location.href = 'login.php';
       return;
     }
-  const basePath = window.location.origin + '/kits-alb/backend/';
+
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/add-to-cart.php`, {
       method: 'POST',
       headers: {
@@ -245,18 +167,16 @@ export class ProductsGrid extends ComponentV2 {
       body: JSON.stringify({
         user_id: userId,
         product_id: productId,
+        size: size,
       }),
     });
-  
+
     const data = await response.json();
     if (data.status === 'Product added to cart' || data.status === 'Product quantity updated in cart') {
-      // Success message is handled in the #showSuccessMessage method after each product is added
     } else {
       console.error(data.status);
     }
   }
-
-  // Function to display the success message
   #showSuccessMessage(productContainer, productId) {
     const successMessage = productContainer.querySelector('.js-added-to-cart-message');
     if (successMessage) {
@@ -271,10 +191,8 @@ export class ProductsGrid extends ComponentV2 {
       }, 2000);
     }
   }
-
-  // Function to retrieve the user ID from session or database
   async #getUserId() {
-    const basePath = window.location.origin + '/kits-alb/backend/';
+    const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
     const data = await response.json();
     return data.userId || null;

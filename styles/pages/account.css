@@ -1,0 +1,347 @@
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7fc;
+  color: #333;
+  
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-container {
+  max-width: 900px;
+  margin: 100px auto; /* Remove bottom margin */
+  padding: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  flex: 1;
+  
+  max-height:500px;
+}
+
+.kits-footer {
+  margin-top:auto;
+  width: 100%;
+  background-color: #1e1e29; /* Assuming this is your footer's background color */
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-align:center
+}
+
+.name-and-email{
+  display:flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.profile-name{
+  margin-bottom:0;
+  margin-top:0;
+  font-size:1.5rem;
+}
+
+.profile-email{
+  margin-top:5px;
+  font-size:0.9rem;
+  color:#797979
+}
+
+.profile-image{
+  display:flex;
+  width: 60%;
+  justify-content: center;
+
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.profile-info {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+  
+}
+
+.profile-info img, #imgPreview {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ddd;
+  margin-bottom: 10px;
+  margin-left:auto;
+  margin-right:auto
+}
+
+.profile-info form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-info .profile-buttons {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin: 0px auto;
+  align-content: space-between;
+  justify-content: space-between;
+}
+
+.profile-info .two-main-buttons {
+  display: flex;
+  justify-content: center;
+  gap:20px;
+  width:100%
+}
+
+.profile-info .edit-profile-btn,
+.profile-info .reset-password-btn {
+  margin-top: 10px;
+ 
+  width: 200px;
+  min-width:180px;
+  padding: 10px 20px;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  border:0;
+  text-wrap: nowrap
+}
+
+.edit-profile-btn{
+  background-color: #ff9900;
+}
+.reset-password-btn{
+  background-color: #1e1e29;
+}
+
+.edit-profile-btn:hover{
+  background-color: #ffb13b;
+}
+.reset-password-btn:hover{
+  background-color: #3b3b51;
+}
+.profile-info .choose-image-btn input[type="file"] {
+  display: none;
+}
+
+
+
+.popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: none;
+}
+
+
+.popup-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  z-index: 1100;
+  display: none;
+}
+
+
+.popup-form h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.popup-form .username-section{
+display:inline-block;
+margin: 0 auto;
+text-align: center;
+
+}
+
+.popup-form .image-section{
+  box-sizing: border-box;
+  display:flex;
+  margin: 0 auto;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  }
+
+
+.popup-form input[type="text"],
+.popup-form input[type="email"],
+.popup-form input[type="password"] {
+    width: 40%; 
+    min-width:40%;
+    padding: 6px 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.popup-form input[type="file"]{
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 76%;
+  margin-top:2px
+
+}
+
+.popup-form #username-field{
+  margin-left:10px;
+}
+
+.popup-form .form-buttons{
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap:15px;
+  flex-wrap:wrap
+}
+
+.popup-form .form-buttons button{
+  width:120px
+}
+
+.popup-form button {
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer; 
+}
+
+.popup-form button.submit-btn {
+  background-color: #45a049;
+  color: #ffffff;
+}
+
+.popup-form button.remove-picture-btn {
+  background-color: #df8600;
+  width:84%;
+  color: #ffffff;
+  padding: 6px 9px;
+  margin-top:-30px
+}
+
+.popup-form button.cancel-btn {
+  background-color: #c00013;
+  color: #ffffff;
+}
+
+.popup-form button:hover {
+  opacity: 0.8;
+}
+
+
+.success-message {
+  color: green;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+.error-message {
+  color: red;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+
+@media (max-height: 788px){
+  .account-container {
+    padding: 15px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    min-height:380px;
+    max-height:400px;
+  }
+
+  h1{
+    margin-top:10px;
+    font-size:1.8rem
+  }
+
+  .profile-info img {
+    width: 130px;
+    height: 130px;
+   }
+}
+
+@media (max-width: 768px) {
+  .account-container {
+    padding: 15px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    max-height:400px;
+  }
+  
+  .profile-info img {
+   width: 130px;
+   height: 130px;
+  }
+
+}
+
+@media (max-width:478px){
+  .account-container {
+    
+    max-height:430px;
+  }
+  .profile-info .two-main-buttons{
+    flex-direction: column;
+    gap:0;
+    justify-content: center;
+  }
+  h1{
+    font-size:2rem;
+    padding:0;
+    margin-right:20px;
+    margin-left:20px
+  }
+
+  .profile-info .profile-name{
+    font-size:1rem;
+  }
+
+  .profile-info .profile-email{
+    font-size:0.7rem;
+  }
+.profile-info .edit-profile-btn,
+.profile-info .reset-password-btn {
+ margin-left:auto;
+ margin-right:auto;
+ width:100%;
+ min-width:80px;
+ padding-left:5px;
+ padding-right: 5px;
+}
+  
+}

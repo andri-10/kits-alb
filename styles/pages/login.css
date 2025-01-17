@@ -1,3 +1,8 @@
+*{
+  box-sizing: border-box;
+}
+
+
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
@@ -93,6 +98,9 @@ body {
     padding: 10px;
   }
   
+  .new_home_web .responsive-cell-block{
+    justify-content: center;
+  }
   .new_home_web textarea {
     min-height: 120px;
     resize: vertical;
@@ -128,12 +136,23 @@ body {
     text-decoration: underline;
   }
 
+  .new_home_web .error-message{
+    color: red; 
+    font-size: 14px; 
+    text-align: center; 
+    margin-top: 25px;
+  max-width: 315px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 
   
   @media (max-width: 768px) {
+
     .new_home_web .form-box {
       width: 100%;
-      padding: 0 20px;
+      padding: 0;
     }
   
     .new_home_web .text-blk.heading {
@@ -144,6 +163,7 @@ body {
       font-size: 16px;
       line-height: 22px;
     }
+   
   }
   
   @media (max-width: 500px) {

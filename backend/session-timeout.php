@@ -1,10 +1,6 @@
 <?php
 session_start();
-
-// Set the timeout duration (15 minutes)
-$timeout_duration = 900; // 15 minutes in seconds
-
-// For AJAX checks
+$timeout_duration = 900;
 if (isset($_GET['check_session'])) {
     header('Content-Type: application/json');
     
@@ -13,7 +9,7 @@ if (isset($_GET['check_session'])) {
         exit;
     }
     
-    if (isset($_SESSION['last_activity'])) {
+    if (isset($_SESSION['last_activity'])  && $_SESSION['user_role']!=="admin" && !isset($_COOKIE['remember_me_token'])) {
         $inactive_time = time() - $_SESSION['last_activity'];
         if ($inactive_time > $timeout_duration) {
             session_unset();
@@ -26,18 +22,5 @@ if (isset($_GET['check_session'])) {
     echo json_encode(['status' => 'active']);
     exit;
 }
-
-// Regular page load checks
-if (isset($_SESSION['last_activity'])) {
-    $inactive_time = time() - $_SESSION['last_activity'];
-    if ($inactive_time > $timeout_duration) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php");
-        exit;
-    }
-}
-
-// Update last activity time
 $_SESSION['last_activity'] = time();
 ?>

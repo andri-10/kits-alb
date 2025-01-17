@@ -6,10 +6,10 @@ main {
   margin-top: 140px;
   margin-bottom: 100px;
 
-  /* margin-left and margin-right auto is a trick to center
-    an element horizontally without needing a container. */
+  
   margin-left: auto;
   margin-right: auto;
+  position:relative;
 }
 
 .page-title {
@@ -18,24 +18,45 @@ main {
   margin-bottom: 18px;
 }
 
-.checkout-grid {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  column-gap: 12px;
+.payment-summary-holder{
+  padding: 0;
+  
+}
 
-  /* Use align-items: start; so the elements in the grid
-    won't stretch vertically. */
-  align-items: start;
+.payment-summary-holder.scrolled > .payment-summary{
+  top: 6.5%;
+}
+
+.payment-summary-holder.scrolled {
+  position: fixed;
+  top: 7.25%; /* Aligns with the top margin of the main content */
+  height: 100%;
+  
+  width: calc(25vw + 10px);
+     min-width: 323px; /* Minimum width */
+     max-width: 356.66px; /* Maximum width */
+    
+  z-index: 1000; /* Ensure it appears on top */
 }
 
 @media (max-width: 1000px) {
   main {
     max-width: 500px;
   }
-
-  .checkout-grid {
-    grid-template-columns: 1fr;
+  .payment-summary-holder{
+    padding: 0 15px;
+    position:relative;
+    left:"";
   }
+  .checkout-grid{
+    display:flex;
+    flex-direction: column-reverse;
+  }
+  .cart-summary, .payment-summary-holder{
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
 }
 
 .cart-item-container,
@@ -55,10 +76,7 @@ main {
 
 @media (max-width: 1000px) {
   .payment-summary {
-    /* grid-row puts this element into a specific row in
-      the grid. (Normally, an element's row is determined
-      by how many elements are in the grid and the order
-      of the elements in the HTML) */
+    
     grid-row: 1;
     margin-bottom: 12px;
   }
@@ -67,6 +85,7 @@ main {
 .cart-item-details-and-delivery{
 
 display:flex;
+justify-content: space-between;
 flex-wrap:wrap;
 
 }
@@ -91,6 +110,7 @@ flex-wrap:wrap;
 }
 
 .quantity-message {
+  padding-top: 10px;
   font-size: 14px;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
@@ -100,14 +120,31 @@ flex-wrap:wrap;
   opacity: 1;
 }
 
+.edit-quantity{
+  font-weight: bold;
+  margin: 8px 0px;
+}
+
+.delete-quantity{
+  margin-top: 8px;
+  text-align: auto;
+}
+
+.js-quantity-input{
+  padding: 2px;
+}
+
 .kit-product{
   margin-top:0;
 }
+
 .kit-product-image-container{
   display:flex;
   flex-wrap:wrap;
   border:1px solid rgb(217, 217, 234);
-  padding-top:15px
+  padding:15px 0px;
+  position:relative
+
 }
 .size-options{
  margin-top:30px;
@@ -117,6 +154,7 @@ flex-wrap:wrap;
 }
 .size-options-radio{
   display:flex;
+  gap:4px
 }
 
 .button-and-message{
@@ -128,24 +166,58 @@ flex-wrap:wrap;
   font-size: 14px;
   opacity: 0;
   transition: opacity 1s ease-out;
+  position:absolute;
+  bottom:10%
 }
 
 .update-size-message.is-visible {
   opacity: 1;
 }
+
+.update-size-button,
+.save-size-button{
+  background-color: rgb(19, 25, 33);
+  padding: 10px;
+  font-weight: bold;
+  color: white;
+  border: none;
+}
+
+.update-size-button:hover, .save-size-button:hover{
+  background-color: rgb(56, 75, 99);
+  border: none;
+}
+
+
+.collapse-button{
+
+  padding: 10px;
+  font-weight: bold;
+  background-color: rgb(221, 229, 239);
+  border: none;
+  color: rgb(19, 25, 33);
+}
+
+.collapse-button:hover{
+  background-color: rgb(169, 181, 195);
+  border-color: none;
+}
+
+
 @media (max-width: 1000px) {
   .cart-item-container .cart-item-details-grid {
     grid-template-columns: 100px 1fr;
     row-gap: 30px;
   }
+
+
 }
 
 .cart-item-container .product-image {
   max-width: 100%;
   max-height: 120px;
 
-  /* margin-left and margin-right auto is a trick to center
-    an element horizontally without needing a container. */
+  
   margin-left: auto;
   margin-right: auto;
 }
@@ -153,6 +225,12 @@ flex-wrap:wrap;
 .cart-item .product-details-and-quantity{
   display: flex;
       flex-direction: column;
+}
+
+.cart-item-container .kit-product-image-container .product-details{
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left:15px
 }
 .cart-item-container .product-name {
   font-weight: 700;
@@ -178,17 +256,13 @@ flex-wrap:wrap;
   font-size: 16px;
 }
 
-/* The quantity text box and save quantity link are
-  initially hidden. */
+
 .cart-item-container .new-quantity-input,
 .cart-item-container .save-quantity-link {
   display: none;
 }
 
-/* When updating the quantity we want to:
-  1. Show a text box where the user can set a quantity.
-  2. Hide the "Update" quantity link and replace it with
-    a "Save" quantity link. */
+
 .cart-item-container .is-updating-quantity .new-quantity-input,
 .cart-item-container .is-updating-quantity .save-quantity-link {
   display: inline-block;
@@ -201,9 +275,7 @@ flex-wrap:wrap;
 
 @media (max-width: 1000px) {
   .cart-item-container .delivery-options {
-    /* This property means that this element will be
-      placed in column 1 and will take up 2 columns
-      in the grid. */
+    
     grid-column: 1 / span 2;
   }
 }

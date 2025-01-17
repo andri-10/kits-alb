@@ -1,8 +1,7 @@
 <?php
 include("backend/session-timeout.php");
-
-// Check if the user is logged in
 $isLoggedIn = isset($_SESSION['user_id']);
+include("backend/security-config.php");
 ?>
 
 <!DOCTYPE html>
@@ -15,13 +14,13 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-    <!-- CSS Files -->
+   
     <link rel="stylesheet" href="styles/shared/kits-header.css">
     <link rel="stylesheet" href="styles/pages/index.css">
   </head>
   <body>
     <div class="wrapper">
-      <!-- Header -->
+      
       <header class="kits-header">
         <section class="left-section">
             <a href="index.php" class="header-link">
@@ -31,20 +30,54 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </section>
       
         <div class="kits-header-right-section">
-          <?php if ($isLoggedIn): ?>
-            <!-- If logged in, show the logout button -->
-            <a href="logout.php" class="header-link">Log Out</a>
-            <a href="account.php" class="header-link">Account</a>
-          <?php else: ?>
-            <!-- If not logged in, show the login button -->
-            <a href="login.php" class="header-link">Log In</a>
+          
+        <a href="catalog.php" class="header-link">Catalog</a>
+        <?php if ($isLoggedIn): ?>
+          <?php if ($_SESSION['user_role']==="admin"): ?>    
+            <a href="admin.php" class="header-link">Admin</a>
+            <?php endif; ?>
+          <a href="account.php" class="header-link">Account</a>
           <?php endif; ?>
+          
           <a href="contact.php" class="header-link">Contact Us</a>
-          <a href="catalog.php" class="header-link">Catalog</a>
+          
+          
+          <?php if ($isLoggedIn): ?>
+            
+            <a href="logout.php" class="header-link">Sign Out</a>
+            
+          <?php else: ?>
+            
+            <a href="login.php" class="header-link">Sign In</a>
+          <?php endif; ?>
         </div>
+
+        <section class="right-section-mobile">
+            <img class="js-hamburger-menu-toggle hamburger-menu-toggle" src="images/icons/hamburger-menu.png" data-testid="hamburger-menu-toggle">
+        </section>
+
+        <div class="js-hamburger-menu-dropdown hamburger-menu-dropdown" data-testid="hamburger-menu-dropdown">
+          <a class="hamburger-menu-link" href="catalog.php">Catalog</a>
+          <?php if ($isLoggedIn): ?>
+          <?php if ($_SESSION['user_role']==="admin"): ?>    
+            <a href="admin.php" class="header-link">Admin</a>
+            <?php endif; ?>
+          <a href="account.php" class="header-link">Account</a>
+          <?php endif; ?>
+          <a class="hamburger-menu-link" href="contact.php">Contact Us</a>
+          <?php if ($isLoggedIn): ?>
+            
+            <a class="hamburger-menu-link" href="logout.php">Sign Out</a>
+            
+          <?php else: ?>
+            
+            <a href="login.php" class="header-link">Sign In</a>
+          <?php endif; ?>
+          
+        </div>    
+
       </header>
 
-      <!-- Main Content -->
       <div class="content">
         <div class="carousel-container">
           <div class="carousel">
@@ -56,7 +89,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </div>
       </div>
 
-      <!-- Footer -->
+     
       <footer class="kits-footer">
         <p>&copy; 2024 Football Kits Albania. All rights reserved. <br> Follow us on 
           <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
@@ -64,11 +97,23 @@ $isLoggedIn = isset($_SESSION['user_id']);
       </footer>
     </div>
 
-    <!-- Session Timeout Script - Only add if user is logged in -->
     <?php if ($isLoggedIn): ?>
     <script src="scripts/session-manager.js"></script>
-<?php endif; ?>
+    <?php endif; ?>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.querySelector(".hamburger-menu-toggle");
+        const menuDropdown = document.querySelector(".hamburger-menu-dropdown");
+
+        menuToggle.addEventListener("click", function () {
+          menuDropdown.classList.toggle("hamburger-menu-opened");
+        });
+      });
+    </script>
+    <script src="scripts/components/shared/KitsFooter.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  </body>
+</html>
   </body>
 </html>

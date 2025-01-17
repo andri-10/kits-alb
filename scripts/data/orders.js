@@ -57,8 +57,6 @@ export class OrderList {
 
     const id = uuid();
     const orderTimeMs = Date.now();
-
-    // Calculate costs.
     let productCostCents = 0;
     let shippingCostCents = 0;
 
@@ -76,8 +74,6 @@ export class OrderList {
     const totalCostCents = Math.round(
       productCostCents + shippingCostCents + taxCents
     );
-
-    // Create product details.
     const productDetailsList = [];
 
     cart.items.forEach(cartItem => {

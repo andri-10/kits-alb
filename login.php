@@ -1,4 +1,7 @@
 <?php
+session_start();
+require __DIR__ . '/backend/utils.php';
+include("backend/security-config.php");
 
 $servername = "localhost";
 $username = "root";
@@ -11,38 +14,54 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-session_start();
-
 $error = '';
 $email = '';
 $password = '';
-
-if (!isset($_SESSION['failed_attempts'])) {
-    $_SESSION['failed_attempts'] = 0;
-    $_SESSION['last_failed_attempt'] = null;
-}
-
+$step = 1;
 $max_failed_attempts = 7;
 $block_duration = 1800;
+
+function logLoginAttempt($conn, $email, $status) {
+    $stmt = $conn->prepare("INSERT INTO login_logs (email, status, timestamp) VALUES (?, ?, NOW())");
+    $stmt->bind_param("ss", $email, $status);
+    $stmt->execute();
+    $stmt->close();
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if ($_SESSION['failed_attempts'] >= $max_failed_attempts) {
-        $last_failed_attempt = $_SESSION['last_failed_attempt'];
+    // Check if the email has failed attempts logged
+    $stmt = $conn->prepare("SELECT failed_attempts, last_failed_attempt FROM failed_login_attempts WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $failed_data = $result->fetch_assoc();
+    $stmt->close();
+
+    $failed_attempts = $failed_data['failed_attempts'] ?? 0;
+    $last_failed_attempt = strtotime($failed_data['last_failed_attempt'] ?? '1970-01-01 00:00:00');
+
+    if ($failed_attempts >= $max_failed_attempts) {
         $current_time = time();
         $time_diff = $current_time - $last_failed_attempt;
-
+        
         if ($time_diff < $block_duration) {
-            $error = "Too many failed attempts. Please try again in 30 minutes.";
+            
+            $error = "Too many failed attempts. Please try again later";
         } else {
-            $_SESSION['failed_attempts'] = 0;
+            
+            $stmt = $conn->prepare("UPDATE failed_login_attempts SET failed_attempts = 0 WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->close();
+            $failed_attempts = 0;
         }
     }
 
     if (empty($error)) {
-        $stmt = $conn->prepare("SELECT id, password, role FROM Users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, email, password, role, email_verified, profile_photo, name FROM Users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -51,33 +70,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
-                $_SESSION['failed_attempts'] = 0;
+                // Successful login
+                $stmt = $conn->prepare("DELETE FROM failed_login_attempts WHERE email = ?");
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $stmt->close();
+
+                logLoginAttempt($conn, $email, 'success');
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_role'] = $user['role'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['profile_photo'] = $user['profile_photo'];
+
+                if (isset($_POST['keep-signed-in'])) {
+                    $remember_token = bin2hex(random_bytes(32));
+                    setcookie("remember_me_token", $remember_token, time() + (30 * 24 * 60 * 60), "/");
+
+                    $stmt = $conn->prepare("UPDATE Users SET remember_me_token = ? WHERE id = ?");
+                    $stmt->bind_param("si", $remember_token, $user['id']);
+                    $stmt->execute();
+                }
 
                 if ($user['role'] === 'admin') {
-                    header("Location: admin/dashboard.php");
+                    header("Location: admin.php");
                 } else {
                     header("Location: index.php");
                 }
                 exit;
-            } else {
-                $_SESSION['failed_attempts'] += 1;
-                $_SESSION['last_failed_attempt'] = time();
-                $error = "Invalid password. Please try again.";
             }
-        } else {
-            $_SESSION['failed_attempts'] += 1;
-            $_SESSION['last_failed_attempt'] = time();
-            $error = "No account found with that email.";
         }
 
+        // Generic error for incorrect email or password
+        if ($failed_attempts === 0) {
+            $stmt = $conn->prepare("INSERT INTO failed_login_attempts (email, failed_attempts, last_failed_attempt) VALUES (?, 1, NOW())");
+            $stmt->bind_param("s", $email);
+        } else {
+            $stmt = $conn->prepare("UPDATE failed_login_attempts SET failed_attempts = failed_attempts + 1, last_failed_attempt = NOW() WHERE email = ?");
+            $stmt->bind_param("s", $email);
+        }
+        $stmt->execute();
         $stmt->close();
+
+        logLoginAttempt($conn, $email, 'failed');
+        $error = "Invalid email or password.";
     }
 }
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -139,12 +180,18 @@ $conn->close();
                                 <label for="keep-signed-in">Keep me signed in</label>
                             </div>
                             <input type="submit" name="submit" value = "Sign in" class="send">
+                            <?php if ($error): ?>
+                        <div class="error-message">
+                            <?php echo $error; ?>
+                        </div>
+                    <?php endif; ?>
                         </div>
                     </form>
                     <div class="links">
                         <a class = "link" href="passwordreset.php">Forgot your password?</a>
                         <p>New to Kits Alb? <a class = "link" href="registration.php">Create your account.</a></p>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -155,7 +202,7 @@ $conn->close();
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
       </p>
     </footer>
-
+    <script src="scripts/components/shared/KitsFooter.js"></script>
     <script>
         function togglePassword() {
             var password = document.getElementById("password");

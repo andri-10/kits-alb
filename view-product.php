@@ -1,5 +1,6 @@
 <?php
-
+session_start();
+include("backend/security-config.php");
 $host = 'localhost';
 $dbname = 'web';
 $username = 'root';
@@ -19,25 +20,38 @@ try {
         $product = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($product) {
             $productKeywords = json_decode($product['keywords'], true);
-        
+            
             if ($productKeywords && is_array($productKeywords)) {
-                $placeholders = implode(' OR ', array_fill(0, count($productKeywords), "keywords LIKE CONCAT('%', ?, '%')"));
-
-                $stmt = $pdo->prepare(
-                    "SELECT * FROM products 
-                     WHERE id != ? 
-                     AND ($placeholders)
-                     LIMIT 5"
-                );
-        
-                $params = [$productId];
-        
-                foreach ($productKeywords as $keyword) {
-                    $params[] = $keyword;
+                $filteredKeywords = array_filter($productKeywords, function ($keyword) {
+                    return strtolower($keyword) !== 'jersey';
+                });
+               
+                if (!empty($filteredKeywords)) {
+                    $placeholders = implode(' OR ', array_fill(0, count($filteredKeywords), "keywords LIKE CONCAT('%', ?, '%')"));
+                    
+                    $query = "
+                        SELECT * FROM products 
+                        WHERE id != ? 
+                        AND ($placeholders)
+                        ORDER BY RAND()
+                        LIMIT 6";
+                    
+                    $params = [$productId];
+                    foreach ($filteredKeywords as $keyword) {
+                        $params[] = $keyword;
+                    }
+                } else {
+                    $query = "
+                        SELECT * FROM products 
+                        WHERE id != ? 
+                        ORDER BY RAND()
+                        LIMIT 6";
+                    $params = [$productId];
                 }
-        
+            
+                $stmt = $pdo->prepare($query);
                 $stmt->execute($params);
-        
+            
                 $relatedProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }        
@@ -82,15 +96,39 @@ try {
             </div>
             <div class="product-info">
                 <h1><?php echo htmlspecialchars($product['name']); ?></h1>
-                <label for="size">Size:</label>
-                <select id="size" name="size">
-                    <option value="S">S</option>
-                    <option value="M">M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
-                </select>
+                <div class="size-and-quantity">
+                    <div class="size-menu">
+                        <label for="size">Size:</label>
+                        <select id="size" name="size">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                        </select>
+                    </div>
+                    <div class="quantity-menu">
+                        <label for="quantity">Quantity:</label>
+                    <select id="quantity" name="quantity">
+                        <option selected value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+              </select>
+            </div>
+                
+                </div>
                 <p class="product-price">$<?php echo $price; ?></p>
+                <div class="js-added-to-cart-message added-to-cart-message" data-testid="added-to-cart-message">
+              <img src="images/icons/checkmark.png">
+              Added
+            </div>
                 <button class="add-to-cart" data-product-id="<?php echo $product['id']; ?>">Add to Cart</button>
             </div>
         </div>

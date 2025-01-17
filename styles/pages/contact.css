@@ -1,3 +1,8 @@
+*{
+  box-sizing: border-box;
+}
+
+
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
@@ -5,15 +10,15 @@ body {
   background-color: #f4f4f4;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensures the body takes full viewport height */
+  min-height: 100vh; 
 }
 
 .new_home_web {
-  flex: 1; /* Expands the container to fill available space */
+  flex: 1; 
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px; /* Add some padding for better spacing */
+  padding: 20px; 
   animation: dropdown 1s ease-in-out;
 }
 
@@ -57,7 +62,7 @@ body {
 .new_home_web .responsive-container-block.textContainer {
   flex-direction: column;
   align-items: center;
-  margin-top: 0; /* Remove extra margins */
+  margin-top: 0; 
   margin-bottom: 10px;
   max-width: 1320px;
   z-index: 50;
@@ -66,7 +71,7 @@ body {
 
 .new_home_web .form-box {
   width: 100%;
-  max-width: 600px; /* Center form within a reasonable width */
+  max-width: 600px; 
 }
 
 .new_home_web .send:hover {
@@ -93,23 +98,23 @@ body {
   border-radius: 5px;
   font-size: 16px;
   background-color: #f1f1f1;
-  margin-bottom: 20px; /* Adds space between inputs */
+  margin-bottom: 20px; 
   padding: 10px;
 }
 
 .new_home_web textarea {
-  min-height: 120px; /* Adds height for the textarea */
-  resize: vertical; /* Allow vertical resizing */
+  min-height: 120px; 
+  resize: vertical; 
 }
 
 .new_home_web input:focus,
 .new_home_web textarea:focus {
   outline: none;
-  border-color: rgb(19, 25, 33); /* Highlight input on focus */
+  border-color: rgb(19, 25, 33); 
 }
 
 .new_home_web .topHead {
-  margin-bottom: 30px; /* Space between heading and form */
+  margin-bottom: 30px; 
 }
 
 .popup-modal {
@@ -195,7 +200,7 @@ body {
 @media (max-width: 768px) {
   .new_home_web .form-box {
     width: 100%;
-    padding: 0 20px; /* Add padding for smaller screens */
+    padding: 0 20px; 
   }
 
   .new_home_web .text-blk.heading {

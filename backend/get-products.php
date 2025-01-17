@@ -1,42 +1,69 @@
 <?php
-// Database connection
-$host = 'localhost'; // Change to your database host
-$dbname = 'web'; // Change to your database name
-$username = 'root'; // Change to your database username
-$password = ''; // Change to your database password
 
+
+
+$host = 'localhost';
+$dbname = 'web';
+$username = 'root';
+$password = '';
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // SQL query to fetch product data
-    $sql = 'SELECT id, name, image, stars, rating_count, priceCents FROM products';
-    $stmt = $pdo->query($sql);
-
-    // Fetch all products as an associative array
+    $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
+    $sql = '
+        SELECT id, name, image, stars, rating_count, priceCents, keywords
+        FROM products
+    ';
+    if ($searchTerm) {
+        $sql .= ' WHERE name LIKE :searchTerm OR keywords LIKE :searchTerm';
+    }
+    $sql .= '
+        ORDER BY 
+            
+            CASE 
+                WHEN keywords LIKE "%national%" THEN 1  
+                ELSE 2  
+            END,
+            
+            REGEXP_REPLACE(name, "(Home|Away|Third|Kit|kit)", "") ASC,
+            
+            CASE 
+                WHEN name LIKE "%Home%" THEN 1
+                WHEN name LIKE "%Away%" THEN 2
+                WHEN name LIKE "%Third%" THEN 3
+                ELSE 4
+            END
+    ';
+    $stmt = $pdo->prepare($sql);
+    if ($searchTerm) {
+        $searchTerm = '%' . $searchTerm . '%';        
+        $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
+    }
+    $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Format the products to the structure needed in the frontend
     $formattedProducts = [];
     foreach ($products as $product) {
+        $keywords = json_decode($product['keywords'], true);        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $keywords = [];
+        }
+
         $formattedProducts[] = [
             'id' => $product['id'],
             'name' => $product['name'],
             'image' => $product['image'],
             'rating' => [
-                'stars' => $product['stars'], // Assuming rating is a number out of 5
+                'stars' => $product['stars'],                
                 'count' => $product['rating_count']
             ],
-            'priceCents' => $product['priceCents']
-        ];
+            'priceCents' => $product['priceCents'],
+            'keywords' => $keywords        ];
     }
-
-    // Return the products as JSON
     header('Content-Type: application/json');
     echo json_encode($formattedProducts);
 
 } catch (PDOException $e) {
-    // Handle database connection errors
     http_response_code(500);
     echo json_encode(['error' => 'Failed to fetch products: ' . $e->getMessage()]);
 }
+?>

@@ -1,3 +1,8 @@
+<?php
+session_start();
+include("backend/security-config.php");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kits Alb - Admin Dashboard</title>
     <link rel="stylesheet" href="styles/shared/kits-header.css">
-    <link rel="stylesheet" href="styles/shared/footer-header.css">
+    <link rel="stylesheet" href="styles/shared/kits-footer.css">
     <link rel="stylesheet" href="styles/admin/admin.css">
 </head>
 <body>
@@ -22,11 +27,11 @@
         <section class="stats-section">
             <div class="stat-card">
                 <h3>Total Earnings</h3>
-                <p>$2,5 million</p> <!-- Placeholder for total earnings -->
+                <p>$2,5 million</p> 
             </div>
             <div class="stat-card">
                 <h3>Total Sales</h3>
-                <p>120k</p> <!-- Placeholder for total sales -->
+                <p>120k</p> 
             </div>
         </section>
 
@@ -34,25 +39,32 @@
             <div class="products-management">
                 <h2>Manage Products</h2>
                 <button id="create-product-btn">Create New Product</button>
-                <button id="update-product-btn">Update Product</button>
-                <button id="delete-product-btn">Delete Product</button>
-                <div id="product-list">
-                    <h3>Product List</h3>
-                </div>
+                <div id = "product-list" >
+                    <details>
+                        <summary>Product List</summary>
+                        <table id="product-list-table">
+                            
+                        </table>
+                    </details>
             </div>
         </section>
 
+
+        <div id="edit-product-container"> </div>
+
         <section class="users-management">
             <h2>Manage Users</h2>
-            <div id="user-actions">
-                <button id="promote-user-btn">Promote to Admin</button>
-                <button id="demote-user-btn">Demote Admin</button>
-                <button id="delete-user-btn">Delete User</button>
-            </div>
             <div id="user-list">
-                <h3>All Users</h3>
+               <details>
+                    <summary>Users List</summary>
+                    <table id="user-list-table"> </table>
+               </details> 
+                
             </div>
         </section>
+
+        <div id="edit-product-container"></div>
+
     </main>
 
     <footer class="kits-footer">
@@ -61,8 +73,8 @@
             <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
         </p>
     </footer>
-
-    <!-- Link to the JavaScript file -->
+    <script src="scripts/components/shared/KitsFooter.js"></script>
+    
     <script type="module" src="scripts/pages/admin.js"></script>
 </body>
 </html>

@@ -1,11 +1,9 @@
 <?php
-include("backend/session-timeout.php");
+session_start();
+include("backend/security-config.php");
 
-// Check if the user is logged in
-$isLoggedIn = isset($_SESSION['user_id']);
-?>
+require __DIR__ . '/backend/utils.php';
 
-<?php
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -19,40 +17,106 @@ if ($conn->connect_error) {
 
 $error = '';
 $success = '';
+$step = 1;
+if (isset($_GET['from']) && $_GET['from'] === 'account' && isset($_SESSION['email']) && !isset($_POST['step'])) {
+    $email = $_SESSION['email'];
+    $step = 2;
+    $token = rand(100000, 999999);
+    $_SESSION['reset_token'] = $token;
+    $_SESSION['token_time'] = time();
+    $_SESSION['reset_email'] = $email;
+    if (!sendTokenEmail($email, $token)) {
+        $error = "Failed to send token email.";
+        header("Location: account.php");
+        exit;
+    }
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
+    if (isset($_POST['step']) && $_POST['step'] == 1) {
+        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
 
-    if ($new_password !== $confirm_password) {
-        $error = "Passwords do not match.";
-    } else {
-        $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
-
-        $stmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $stmt = $conn->prepare("UPDATE Users SET password = ? WHERE email = ?");
-            $stmt->bind_param("ss", $hashed_password, $email);
-
-            if ($stmt->execute()) {
-                $success = "Password reset successful. You can now log in.";
-            } else {
-                $error = "Something went wrong. Please try again.";
-            }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Invalid email format.";
         } else {
-            $error = "No account found with this email.";
+            $stmt = $conn->prepare("SELECT email FROM Users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $token = rand(100000, 999999);
+                $_SESSION['reset_email'] = $email;
+                $_SESSION['reset_token'] = $token;
+                $_SESSION['token_time'] = time();
+                if (sendTokenEmail($email, $token)) {
+                    $step = 2;
+                } else {
+                    $error = "Failed to send token email.";
+                }
+            } else {
+                $error = "This email is not registered. <a class='register-link' href='registration.php'>Register Here</a>";
+            }
         }
-        $stmt->close();
+    } elseif (isset($_POST['step']) && $_POST['step'] == 2) {
+        $entered_token = $_POST['token'];
+
+        if ($_SESSION['reset_token'] == $entered_token && (time() - $_SESSION['token_time']) <= 60) {
+            $step = 3;
+        } else {
+            $error = "Invalid or expired token. Please try again.";
+            $step = 2;
+        }
+    } elseif (isset($_POST['step']) && $_POST['step'] == 3) {
+        $new_password = $_POST['new_password'];
+        $confirm_password = $_POST['confirm_password'];
+
+        if ($new_password !== $confirm_password) {
+            $error = "Passwords do not match.";
+            $step = 3;
+        } elseif (!preg_match("/^(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/", $new_password)) {
+            $error = "Password must be at least 8 characters long and include a number and a special character.";
+            $step = 3;
+        } else {
+            $email = $_SESSION['reset_email'];
+            $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 1) {
+                $row = $result->fetch_assoc();
+                $current_hashed_password = $row['password'];
+                if (password_verify($new_password, $current_hashed_password)) {
+                    $error = "Error changing password.";
+                    $step = 3;
+                } else {
+                    $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+
+                    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+                    $stmt->bind_param("ss", $hashed_password, $email);
+
+                    if ($stmt->execute()) {
+                        $success = "Password reset successful.";
+                        session_destroy();
+                    } else {
+                        $error = "Something went wrong. Please try again.";
+                        $step = 3;
+                    }
+                }
+            } else {
+                $error = "User not found. Please restart the process.";
+                $step = 3;
+            }
+        }
     }
 }
 
 $conn->close();
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -74,57 +138,98 @@ $conn->close();
         </section>
     </header>
 
-        <div class="new_home_web">
-            <div class="responsive-container-block big-container">
-                <div class="responsive-container-block textContainer">
-                    <div class="topHead">
-                        <p class="text-blk heading">
-                            Reset your
-                            <span class="yellowText">
-                                Password
-                            </span>
-                        </p>
-                        <div class="yellowLine" id="w-c-s-bgc_p-2-dm-id"></div>
-                    </div>
-                    <p class="text-blk subHeading">
-                        Enter your email and reset your password.
+    <div class="new_home_web">
+        <div class="responsive-container-block big-container">
+            <div class="responsive-container-block textContainer">
+                <div class="topHead">
+                    <p class="text-blk heading">
+                        Reset your
+                        <span class="yellowText">
+                            Password
+                        </span>
                     </p>
+                    <div class="yellowLine" id="w-c-s-bgc_p-2-dm-id"></div>
                 </div>
+
+                
+            </div>
+
+            <?php if ($step == 1): ?>
                 <div class="responsive-container-block container">
-                    <div class="responsive-cell-block wk-tab-12 wk-mobile-12 wk-desk-7 wk-ipadp-10 line" id="i69b">
-                        <form class="form-box" action="" method="POST">
+                    <form class="form-box" method="POST" id="step1Form">
+                        <div class="container-block form-wrapper">
+                            <div class="responsive-container-block">
+                                <input class="input" type="email" name="email" id="email" placeholder="Enter your email" required>
+                                <button type="submit" class="send">Send Confirmation Code</button>
+                                <input type="hidden" name="step" value="1">
+                            </div>
+                        </div>
+                    </form>
+                    <?php if (!empty($error)): ?>
+                        <p style="text-align:center"><?php echo $error; ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($success): ?>
+                        <p style="text-align:center" class="success"><?php echo $success; ?></p>
+                    <?php endif; ?>
+
+                    <p class ="return">Return to <a class ="link" href = "login.php">Sign In</a></p>
+                </div>
+
+            <?php elseif ($step == 2): ?>
+                <div class="responsive-container-block container">
+                    <form class="form-box" method="POST" id="step2Form">
+                        <div class="container-block form-wrapper">
+                            <div class="responsive-container-block">
+                                <input class="input" type="text" name="token" id="token" placeholder="Enter the code" required autocomplete='off'>
+
+                                    <p class= "code-sent">Please check your email.</span></p>
+                                <button type="submit" class="send">Verify </button>
+
+                                <button type="button" id="resend-btn" class="send resend" disabled>
+                                Resend Code in <span id="timer">10s</span>
+                                </button>
+                                <input type="hidden" name="step" value="2">
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <?php if (!empty($error)): ?>
+                        <p class = "error" id="phpError2" ><?php echo $error; ?></p>
+                    <?php endif; ?>
+                </div>
+            
+                <?php elseif ($step == 3): ?>
+                    <div class="responsive-container-block container">
+                        <form class="form-box" method="POST" id="step3Form">
                             <div class="container-block form-wrapper">
                                 <div class="responsive-container-block">
-                                    <div class="left4">
-                                        <div class="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6">
-                                            <input class="input" id="email" name="email" placeholder="Enter your email" required type="email">
-                                        </div>
-                                        <div class="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6">
-                                            <input class="input" id="new_password" name="new_password" placeholder="Enter a new password" required type="password">
-                                        </div>
-                                        <div class="responsive-cell-block wk-ipadp-6 wk-tab-12 wk-mobile-12 wk-desk-6">
-                                            <input class="input" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required type="password">
-                                        </div>
-                                    </div>
+                                    <input class="input" type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
+                                    <input class="input" type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
+                                    <label for="toggle-password">
+                                        <input class="input" type="checkbox" id="toggle-password"> Show Password
+                                    </label>
+                                    <button type="submit" class="send">Reset Password</button>
+                                    <input type="hidden" name="step" value="3">
                                 </div>
-                                <input type="submit" name="submit" class="send" id="w-c-s-bgc_p-1-dm-id">
-                                <p  class = "return"><a class = "link" href = "login.php">Return to Sign In</a></p>
                             </div>
                         </form>
+                        <?php if (!empty($error)): ?>
+                            <p class = "error" ><?php echo $error; ?></p>
+                        <?php endif; ?>
                     </div>
-                </div>
-            </div>
+                <?php endif; ?>
+
+            <div class="error" id="error-message"></div>
         </div>
+    </div>
 
     <footer class="kits-footer">
       <p>&copy; 2024 Kits Alb. All rights reserved. <br> Follow us on 
         <a href="https://instagram.com/kits.alb" target="_blank" class="footer-link">Instagram</a>
       </p>
     </footer>
-    <!-- Session Timeout Script - Only add if user is logged in -->
- <?php if ($isLoggedIn): ?>
-    <script src="scripts/session-manager.js"></script>
-<?php endif; ?>
+    <script src="scripts/components/shared/KitsFooter.js"></script>
+    <script src="scripts/pages/passwordreset.js"></script>
 </body>
- 
 </html>
