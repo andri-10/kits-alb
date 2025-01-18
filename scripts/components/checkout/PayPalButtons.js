@@ -59,7 +59,7 @@ export class PayPalButtons extends Component {
 
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
+      script.src = `https://www.paypal.com/sdk/js?client-id=AYtu8fXPs8Rml1R5U013O8U4mrZn2Vc5UuewyB3OsuK7n-rOk4_66mhPNRSSPY5FMSrzUXYtNtwQjlyM&currency=USD&locale=en_US`;
       script.type = 'text/javascript';
       script.async = true;
 
@@ -96,7 +96,7 @@ export class PayPalButtons extends Component {
             this.#showError('Please select a delivery option for all products');
             return Promise.reject('Delivery options not selected');
           }
-
+        
           const costs = await cart.calculateCosts();
         
           await this.#logPayment({
@@ -105,11 +105,12 @@ export class PayPalButtons extends Component {
             amount: costs.totalCents / 100,
             created_at: new Date().toISOString(),
           });
-
+        
           return actions.order.create({
             purchase_units: [
               {
                 amount: {
+                  currency_code: 'USD',
                   value: (costs.totalCents / 100).toFixed(2),
                 },
               },
@@ -130,7 +131,7 @@ export class PayPalButtons extends Component {
               created_at: new Date().toISOString(),
             });
 
-            await orders.createNewOrder(cart);
+            await orders.createNewOrder(cart, actions);
             WindowUtils.setHref('orders.php');
           } catch (error) {
             console.error('Payment error:', error);
