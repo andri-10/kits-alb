@@ -23,9 +23,7 @@ main {
   
 }
 
-.payment-summary-holder.scrolled > .payment-summary{
-  top: 6.5%;
-}
+
 
 .payment-summary-holder.scrolled {
   position: fixed;
