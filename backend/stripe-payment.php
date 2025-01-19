@@ -8,7 +8,7 @@ class StripePaymentHandler {
     private $stripe;
 
     public function __construct() {
-        \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+        \Stripe\Stripe::setApiKey('sk_test_51QingtJvqD1LcS3xATWdxx8CoH2x5MG2AcCIdPfkC0VkqfvBWzo4Sf2x6FxXNuXQPoGK3mAOf0ng3lqnx1eWppsR00s2Li0JwF');
     }
 
     public function createPaymentIntent($amount) {
@@ -47,94 +47,6 @@ class StripePaymentHandler {
                 'success' => false,
                 'error' => 'Payment error: ' . $e->getMessage()
             ];
-        }
-    }
-
-    public function handleWebhook() {
-        $payload = @file_get_contents('php://input');
-        $sigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        $endpointSecret = 'whsec_P6Ar6IjXqVUGZ5x9zhAfbJ4bBodb2cSh';
-
-        try {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload, $sigHeader, $endpointSecret
-            );
-
-            switch ($event->type) {
-                case 'payment_intent.succeeded':
-                    $paymentIntent = $event->data->object;
-                    $this->handleSuccessfulPayment($paymentIntent);
-                    break;
-
-                case 'payment_intent.payment_failed':
-                    $paymentIntent = $event->data->object;
-                    $this->handleFailedPayment($paymentIntent);
-                    break;
-            }
-
-            return ['success' => true];
-
-        } catch (\UnexpectedValueException $e) {
-            return ['error' => 'Invalid payload'];
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            return ['error' => 'Invalid signature'];
-        }
-    }
-
-    private function handleSuccessfulPayment($paymentIntent) {
-        // Log successful payment
-        $this->logPayment([
-            'order_id' => $paymentIntent->metadata->order_id,
-            'payment_gateway' => 'stripe',
-            'amount' => $paymentIntent->amount / 100,
-            'status' => 'success',
-            'transaction_id' => $paymentIntent->id,
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        
-    }
-
-    private function handleFailedPayment($paymentIntent) {
-        $this->logPayment([
-            'order_id' => $paymentIntent->metadata->order_id,
-            'payment_gateway' => 'stripe',
-            'amount' => $paymentIntent->amount / 100,
-            'status' => 'failed',
-            'transaction_id' => $paymentIntent->id,
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-    }
-
-    private function logPayment($paymentData) {
-        try {
-            $db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-
-            if ($db->connect_error) {
-                throw new Exception("Connection failed: " . $db->connect_error);
-            }
-
-            $query = "INSERT INTO payment_logs
-                     (order_id, payment_gateway, amount, status, transaction_id, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?)";
-
-            $stmt = $db->prepare($query);
-            $stmt->bind_param(
-                'ssdsss',
-                $paymentData['order_id'],
-                $paymentData['payment_gateway'],
-                $paymentData['amount'],
-                $paymentData['status'],
-                $paymentData['transaction_id'],
-                $paymentData['created_at']
-            );
-
-            $stmt->execute();
-            $stmt->close();
-            $db->close();
-
-        } catch (Exception $e) {
-            error_log("Payment logging error: " . $e->getMessage());
         }
     }
 }

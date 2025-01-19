@@ -13,6 +13,7 @@ $routes = [
     'passwordreset.php' => ['all'],
     'registration.php' => ['guest'],
     'tracking.php' => ['logged'],
+    'create-payment-intent.php' => ['logged'],  // Add payment endpoint with 'logged' access
     'verify-email.php' => ['all'],
     'view-product.php' => ['all'],
 ];

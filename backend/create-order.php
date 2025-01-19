@@ -19,30 +19,39 @@ if ($db->connect_error) {
 $input = json_decode(file_get_contents('php://input'), true);
 
 // Validate required fields
-if (!isset($input['order_id']) || !isset($input['amount'])) {
+if (!isset($input['user_id']) || !isset($input['total_price'])) {
     http_response_code(400); // Bad Request
-    echo json_encode(['error' => 'Missing required payment details']);
+    echo json_encode(['error' => 'Missing required order details']);
     exit;
 }
 
 // Sanitize input
-$orderId = intval($input['order_id']);
-$amount = floatval($input['amount']);
-$createdAt = isset($input['created_at']) ? $input['created_at'] : date('Y-m-d H:i:s');
+$userId = intval($input['user_id']);
+$totalPrice = floatval($input['total_price']);
+$status = isset($input['status']) ? htmlspecialchars($input['status'], ENT_QUOTES, 'UTF-8') : 'pending';
+$deliveryDate = isset($input['delivery_date']) ? htmlspecialchars($input['delivery_date'], ENT_QUOTES, 'UTF-8') : null;
 
-// Database query to insert the payment log
+// Validate `status` against allowed values
+$allowedStatuses = ['pending', 'completed', 'cancelled'];
+if (!in_array($status, $allowedStatuses)) {
+    http_response_code(400); // Bad Request
+    echo json_encode(['error' => 'Invalid status value']);
+    exit;
+}
+
+// Database query to insert the order
 try {
-    $query = "INSERT INTO payment_logs (order_id, amount, created_at)
-              VALUES (?, ?, ?)";
+    $query = "INSERT INTO orders (user_id, total_price, status, delivery_date)
+              VALUES (?, ?, ?, ?)";
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param('ids', $orderId, $amount, $createdAt);
+    $stmt->bind_param('idss', $userId, $totalPrice, $status, $deliveryDate);
 
     if ($stmt->execute()) {
         http_response_code(200); // Success
-        echo json_encode(['status' => 'success', 'message' => 'Payment log saved successfully']);
+        echo json_encode(['status' => 'success', 'message' => 'Order added successfully', 'order_id' => $stmt->insert_id]);
     } else {
-        throw new Exception("Error saving payment log: " . $stmt->error);
+        throw new Exception("Error adding order: " . $stmt->error);
     }
 } catch (Exception $e) {
     http_response_code(500); // Internal Server Error

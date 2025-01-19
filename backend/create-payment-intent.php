@@ -1,59 +1,95 @@
 <?php
-session_start();
-require __DIR__ . '/stripe-php/init.php';  // Make sure this path is correct
-require __DIR__ . '/backend/config.php';    // Your configuration file with the Stripe keys
-
-// Enable error reporting for debugging purposes
-ini_set('display_errors', 1);
+// create-payment-intent.php
+// Enable error logging
 error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to client
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/stripe-error.log');
 
-// Set the response type to JSON
+// Start output buffering to catch any unexpected output
+ob_start();
+
 header('Content-Type: application/json');
 
 try {
-    // Initialize Stripe
-    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
-    // Get POST data
+    require __DIR__ . '/../stripe-php/init.php';
+    require __DIR__ . '/./config.php';
+
+    // Log the incoming request
+    error_log("Received payment request: " . file_get_contents('php://input'));
+
+    // Get the raw POST data
     $input = json_decode(file_get_contents('php://input'), true);
-    
-    // Check if the 'amount' is provided in the request and it's valid
-    if (isset($input['amount']) && is_numeric($input['amount']) && $input['amount'] > 0) {
-        $amount = intval($input['amount']);
-    } else {
-        // If amount is not provided or invalid, throw an error
+
+    // Log the decoded input
+    error_log("Decoded input: " . print_r($input, true));
+
+    if (!isset($input['amount'])) {
+        throw new Exception('Amount is required');
+    }
+
+    $amount = $input['amount'];
+
+    // Validate amount
+    if (!is_numeric($amount) || $amount <= 0) {
         throw new Exception('Invalid amount');
     }
 
-    // Create PaymentIntent in Stripe
+    // Convert amount to cents for Stripe
+    $amountInCents = (int)($amount);  // Remove multiplication since amount is already in cents
+
+
+    // Initialize Stripe
+    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+
+    \Stripe\ApiRequestor::setHttpClient(
+        new \Stripe\HttpClient\CurlClient([CURLOPT_SSL_VERIFYPEER => false])
+    );
+
+    // Log the amount being sent to Stripe
+    error_log("Creating PaymentIntent for amount: " . $amountInCents);
+
+    // Create PaymentIntent
     $paymentIntent = \Stripe\PaymentIntent::create([
-        'amount' => $amount,  // Amount should be in cents (e.g., $10 = 1000 cents)
-        'currency' => 'usd',   // Currency for the payment
+        'amount' => $amountInCents,
+        'currency' => 'usd',
         'automatic_payment_methods' => [
             'enabled' => true,
         ],
         'metadata' => [
-            'user_id' => $_SESSION['user_id'] ?? 'guest', // Retrieve user_id from session or default to 'guest'
-            'order_id' => uniqid('order_')  // Generate a unique order ID
+            'order_id' => uniqid('order_'),
+            'customer_id' => $_SESSION['user_id'] ?? null
         ]
     ]);
 
-    // Return the client secret and success status in the JSON response
+    // Clear any output buffer before sending JSON response
+    ob_clean();
+
+    // Return the client secret
     echo json_encode([
-        'clientSecret' => $paymentIntent->client_secret,
-        'success' => true
+        'success' => true,
+        'clientSecret' => $paymentIntent->client_secret
     ]);
 
+} catch (\Stripe\Exception\CardException $e) {
+    ob_clean();
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Card error: ' . $e->getMessage()
+    ]);
+    error_log("Stripe Card Exception: " . $e->getMessage());
 } catch (Exception $e) {
-    // Log the error and send a JSON response with the error message
-    error_log("Error: " . $e->getMessage());  // Log the error message for debugging
-    
-    // Send HTTP status 500 for internal server error
+    ob_clean();
     http_response_code(500);
-
-    // Send a JSON response with the error message
     echo json_encode([
-        'error' => $e->getMessage(),  // Return the exception message in the response
-        'success' => false            // Indicate failure
+        'success' => false,
+        'error' => 'Server error: ' . $e->getMessage()
     ]);
+    error_log("Exception caught: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
 }
+
+// End output buffering
+ob_end_flush();

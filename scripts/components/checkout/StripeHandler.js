@@ -1,3 +1,4 @@
+// StripeHandler.js
 export class StripeHandler {
   constructor(publishableKey) {
     this.stripe = null;
@@ -11,8 +12,7 @@ export class StripeHandler {
       console.log('Loading Stripe script...');
       await this.loadStripeScript();
       console.log('Stripe script loaded successfully!');
-      
-      // Initialize Stripe with the public key
+
       this.stripe = Stripe(this.publishableKey);
       this.elements = this.stripe.elements();
       console.log('Stripe Elements initialized successfully');
@@ -22,7 +22,6 @@ export class StripeHandler {
     }
   }
 
-  // Function to load the Stripe script asynchronously
   async loadStripeScript() {
     return new Promise((resolve, reject) => {
       if (window.Stripe) {
@@ -38,7 +37,6 @@ export class StripeHandler {
     });
   }
 
-  // Create and mount the Stripe card element
   createCardElement(elementId) {
     const style = {
       base: {
@@ -47,73 +45,94 @@ export class StripeHandler {
         fontSmoothing: 'antialiased',
         fontSize: '16px',
         '::placeholder': {
-          color: '#aab7c4'
-        }
+          color: '#aab7c4',
+        },
       },
       invalid: {
         color: '#fa755a',
-        iconColor: '#fa755a'
-      }
+        iconColor: '#fa755a',
+      },
     };
 
-    console.log(`Mounting card element on elementId: ${elementId}`);
     this.card = this.elements.create('card', { style });
     this.card.mount(`#${elementId}`);
-
-    // Log card instance to ensure it's mounted
     console.log('Card Element mounted:', this.card);
+
+    // Add event listener for card errors
+    this.card.addEventListener('change', (event) => {
+      const displayError = document.getElementById('card-errors');
+      if (event.error) {
+        displayError.textContent = event.error.message;
+      } else {
+        displayError.textContent = '';
+      }
+    });
 
     return this.card;
   }
 
-  // Function to create a PaymentIntent on the backend
   async createPaymentIntent(amount) {
     try {
-      console.log("Amount sent to backend:", amount);  // Debug log showing amount to be charged
-      const response = await fetch('/backend/create-payment-intent.php', {
+      console.log('Sending amount to backend:', amount);
+
+      const response = await fetch('backend/create-payment-intent.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount }) // Send the calculated amount to the backend
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount }),
+        // Include credentials for session cookie
+        credentials: 'same-origin'
       });
 
-      // Check for a successful response from the backend
-      if (!response.ok) {
-        console.log(`This is response ${response}`)
-        console.error('Error: Backend failed to create PaymentIntent', response);
-        throw new Error('Failed to create payment intent');
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Server response:', responseText);
+        throw new Error('Invalid server response');
       }
 
-      // Parse the JSON response from the backend
-      const data = await response.json();
-      console.log("Backend response:", data);  // Log the response from backend
-
-      if (data.error) {
-        console.error('Backend error:', data.error);  // Log if there's an error in the backend response
-        throw new Error(data.error);
+      // Handle authentication errors
+      if (response.status === 401) {
+        // Redirect to login page
+        window.location.href = 'login.php';
+        throw new Error('Please log in to continue');
       }
 
-      return data;  // Return the successful response (including clientSecret)
+      if (response.status === 403) {
+        throw new Error('Access denied');
+      }
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Payment intent creation failed');
+      }
+
+      return data;
+
     } catch (error) {
-      console.error('Error creating payment intent:', error);
+      console.error('Payment intent error:', error);
       throw error;
     }
   }
 
-  // Function to process the payment after creating the PaymentIntent
   async processPayment(clientSecret) {
     try {
-      console.log('Processing payment with clientSecret:', clientSecret);  // Log the client secret being used
+      console.log('Processing payment with clientSecret:', clientSecret);
       const result = await this.stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: this.card }
+        payment_method: { card: this.card },
       });
 
       if (result.error) {
-        console.error('Payment failed with error:', result.error.message);  // Log error if payment fails
+        console.error('Payment failed with error:', result.error.message);
         throw new Error(result.error.message);
       }
 
-      console.log('Payment successfully processed:', result.paymentIntent);  // Log the successful paymentIntent
-      return result.paymentIntent;  // Return the successful payment intent
+      console.log('Payment successfully processed:', result.paymentIntent);
+      return result.paymentIntent;
     } catch (error) {
       console.error('Error processing payment:', error);
       throw error;

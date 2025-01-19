@@ -80,11 +80,34 @@ export class PaymentSummary extends ComponentV2 {
       let { totalCents } = await cart.calculateCosts();
       totalCents = Math.ceil(totalCents);
 
-      console.log('Total cents to charge:', totalCents);  // Debug log for totalCents
+      console.log('Total cents to charge:', totalCents); // Debug log for totalCents
+
+      // Fetch the user ID from the backend
+      const userId = await this.fetchUserId();
+      if (!userId) {
+        throw new Error('User not logged in');
+      }
+
+      // Create the order
+      const orderData = {
+        user_id: userId, // Use the fetched user ID
+        total_price: totalCents / 100,
+        status: 'pending', // Initial status
+        delivery_date: new Date().toISOString().split('T')[0] // Default delivery date
+      };
+
+      const orderResponse = await this.createOrder(orderData);
+      console.log('Order Response:', orderResponse); // Debug log for create order response
+
+      if (!orderResponse || !orderResponse.order_id) {
+        throw new Error('Failed to create order');
+      }
+
+      const orderId = orderResponse.order_id;
 
       // Create payment intent
       const paymentIntentResponse = await this.stripeHandler.createPaymentIntent(totalCents);
-      console.log('PaymentIntent Response:', paymentIntentResponse);  // Debug log for response
+      console.log('PaymentIntent Response:', paymentIntentResponse); // Debug log for response
 
       if (!paymentIntentResponse || !paymentIntentResponse.clientSecret) {
         throw new Error('Failed to initialize payment');
@@ -94,24 +117,59 @@ export class PaymentSummary extends ComponentV2 {
 
       // Process payment
       const paymentResult = await this.stripeHandler.processPayment(clientSecret);
-      console.log('Payment Result:', paymentResult);  // Debug log for payment result
+      console.log('Payment Result:', paymentResult); // Debug log for payment result
 
       // Log payment
       await this.logPayment({
-        order_id: paymentResult.id,
+        order_id: orderId,
         payment_gateway: 'stripe',
         amount: totalCents / 100,
         status: 'success',
         created_at: new Date().toISOString()
       });
 
-      // Create order and redirect
-      await orders.createNewOrder();
+      // Redirect to orders page
       window.location.href = 'orders.php';
     } catch (error) {
       console.error('Payment error:', error);
       this.showError(error.message || 'Payment failed. Please try again.');
       submitButton.disabled = false;
+    }
+  }
+
+  async fetchUserId() {
+    try {
+      const response = await fetch('backend/get-user-id.php');
+      const data = await response.json();
+
+      if (response.ok && data.userId) {
+        return data.userId; // Return the user ID if it exists
+      } else {
+        console.error('Failed to fetch user ID:', data.message || 'Unknown error');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  }
+
+  async createOrder(orderData) {
+    try {
+      const response = await fetch('backend/create-order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      const responseBody = await response.json();
+      if (!response.ok) {
+        throw new Error(responseBody.error || 'Failed to create order');
+      }
+      return responseBody;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
     }
   }
 
@@ -138,7 +196,7 @@ export class PaymentSummary extends ComponentV2 {
       });
 
       const responseBody = await response.text();
-      console.log('Log Payment Response:', responseBody);  // Debug log for log payment response
+      console.log('Log Payment Response:', responseBody); // Debug log for log payment response
 
       if (!response.ok) {
         throw new Error('Failed to log payment');
