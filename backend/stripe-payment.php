@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once 'init.php';
-require __DIR__ . '../stripe-php/init.php';
+require __DIR__ . '/stripe-php/init.php';
 require __DIR__ . '/backend/config.php';
 
 class StripePaymentHandler {
