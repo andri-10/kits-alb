@@ -37,9 +37,9 @@ $isLoggedIn = isset($_SESSION['user_id']);
       </section>
     </main>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=AYtu8fXPs8Rml1R5U013O8U4mrZn2Vc5UuewyB3OsuK7n-rOk4_66mhPNRSSPY5FMSrzUXYtNtwQjlyM&currency=USD&disable-funding=venmo,paylater"></script>
+    
 
-  
+
     <script type="module" src="scripts/pages/checkout.js"></script>
   
      <?php if ($isLoggedIn): ?>

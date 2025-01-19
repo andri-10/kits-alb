@@ -5,7 +5,7 @@ import {products} from '../data/products.js';
 
 products.loadFromBackend().then(() => {
   const checkoutHeader = new CheckoutHeader('.js-checkout-header').create();
-  const paymentSummary = new PaymentSummary('.js-payment-summary').create();
+  const paymentSummary = new PaymentSummary('.js-payment-summary', 'pk_test_51QingtJvqD1LcS3xYG4Frz4qh9htiMyRoTGr0weMwD5dROi3d6Iuj9LRTKC7HP2jdlL57jNtOI8Q1d4W0Pw7UfJI004aeLOIFC').create();
   const cartSummary = new CartSummary('.js-cart-summary').create();
   cartSummary.setCheckoutHeader(checkoutHeader);
   cartSummary.setPaymentSummary(paymentSummary);

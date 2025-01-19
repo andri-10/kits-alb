@@ -1,145 +1,150 @@
+import StripeHandler from './StripeHandler.js';
 import { cart } from '../../data/cart.js';
-import { MoneyUtils } from '../../utils/MoneyUtils.js';
 import { orders } from '../../data/orders.js';
-import { Component } from '../Component.js';
-import { PayPalButtons } from './PayPalButtons.js';
-import { WindowUtils } from '../../utils/WindowUtils.js';
+import { MoneyUtils } from '../../utils/MoneyUtils.js';
+import { ComponentV2 } from '../ComponentV2.js';
 
-export class PaymentSummary extends Component {
-  element;
-  events = {
-    'click .js-paypal-button': (event) => this.#selectPaypal(event),
-    'click .js-card-button': (event) => this.#selectCardPayment(event),
-  };
-
-  #usePaypal;
-  #loadedPaypal = false;
-
-  constructor(selector) {
-    super();
-    this.element = document.querySelector(selector);
-    this.#usePaypal = localStorage.getItem('exercises-kits-use-paypal') === 'true';
+export class PaymentSummary extends ComponentV2 {
+  constructor(selector, publishableKey) {
+    super(selector);
+    this.stripeHandler = new StripeHandler(publishableKey);
   }
 
-  async #getUserId() {
-    try {
-      const basePath = '/backend';
-      const response = await fetch(`${basePath}/get-user-id.php`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user ID: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.userId || null;
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      return null;
-    }
+  async create() {
+    await this.stripeHandler.initialize();
+    await this.render();
+    return this;
   }
 
   async render() {
-    this.element.innerHTML = `
-      <div class="js-payment-info"></div>
-
-      <div class="js-payment-buttons-container ${this.#usePaypal ? 'use-paypal' : ''} js-payment-summary">
-        <div class="js-paypal-button-container paypal-button-container"></div>
-        <button class="js-place-order-button place-order-button button-primary">Place your order</button>
-      </div>
-    `;
-
-    await this.refreshPaymentDetails();
-
-    if (this.#usePaypal && !this.#loadedPaypal) {
-      this.#loadPayPalButtons();
-    }
-
-    this.events['click .js-place-order-button'] = (event) => this.#performCheckout(event);
-  }
-
-  async refreshPaymentDetails() {
     try {
-      const userId = await this.#getUserId();
-      const {
-        productCostCents,
-        shippingCostCents,
-        taxCents,
-        totalCents,
-      } = await cart.calculateCosts(userId);
-
-      const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.1);
-      const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
+      const { productCostCents, shippingCostCents, taxCents, totalCents } = await cart.calculateCosts();
       const quantity = await cart.calculateTotalQuantity();
 
-      const paymentInfoElement = this.element.querySelector('.js-payment-info');
-      if (paymentInfoElement) {
-        paymentInfoElement.innerHTML = `
+      this.element.innerHTML = `
+        <div class="payment-summary">
           <div class="payment-summary-title">Order Summary</div>
+          
           <div class="payment-summary-row">
             <div>Items (${quantity}):</div>
             <div class="payment-summary-money">${MoneyUtils.formatMoney(productCostCents)}</div>
           </div>
+          
           <div class="payment-summary-row">
             <div>Shipping & handling:</div>
             <div class="payment-summary-money">${MoneyUtils.formatMoney(shippingCostCents)}</div>
           </div>
-          <div class="payment-summary-row subtotal-row">
-            <div>Total before tax:</div>
-            <div class="payment-summary-money">${MoneyUtils.formatMoney(productCostCents + shippingCostCents)}</div>
-          </div>
+          
           <div class="payment-summary-row">
-            <div>Estimated tax (10%):</div>
-            <div class="payment-summary-money">${MoneyUtils.formatMoney(finalTaxCents)}</div>
+            <div>Tax:</div>
+            <div class="payment-summary-money">${MoneyUtils.formatMoney(taxCents)}</div>
           </div>
+          
           <div class="payment-summary-row total-row">
-            <div>Final total:</div>
-            <div class="payment-summary-money">${MoneyUtils.formatMoney(finalTotalCents)}</div>
+            <div>Order total:</div>
+            <div class="payment-summary-money">${MoneyUtils.formatMoney(totalCents)}</div>
           </div>
-        `;
-      }
 
-      if (cart.isEmpty()) {
-        this.element.querySelector('.js-payment-buttons-container')
-          ?.classList.add('payment-buttons-disabled');
-      }
+          <div class="payment-form">
+            <form id="payment-form">
+              <div id="card-element" class="stripe-element"></div>
+              <div id="card-errors" class="stripe-errors" role="alert"></div>
+              
+              <button type="submit" id="submit-payment" class="button-primary payment-button">
+                Pay ${MoneyUtils.formatMoney(totalCents)}
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      this.stripeHandler.createCardElement('card-element');
+      this.attachEventListeners();
     } catch (error) {
-      console.error('Error refreshing payment details:', error);
+      console.error('Error rendering payment summary:', error);
+      this.showError('Unable to load payment information');
     }
   }
 
-  #selectCardPayment() {
-    this.#usePaypal = false;
-    this.#updatePaymentMethod();
+  attachEventListeners() {
+    const form = this.element.querySelector('#payment-form');
+    form.addEventListener('submit', (e) => this.handleSubmit(e));
   }
 
-  #selectPaypal() {
-    this.#usePaypal = true;
-    this.#updatePaymentMethod();
-  }
+  async handleSubmit(event) {
+    event.preventDefault();
+    const submitButton = this.element.querySelector('#submit-payment');
+    submitButton.disabled = true;
 
-  #updatePaymentMethod() {
-    const container = this.element.querySelector('.js-payment-buttons-container');
-    if (this.#usePaypal) {
-      container?.classList.add('use-paypal');
-      this.#loadPayPalButtons();
-    } else {
-      container?.classList.remove('use-paypal');
-    }
-
-    localStorage.setItem('exercises-kits-use-paypal', this.#usePaypal);
-  }
-
-  #performCheckout() {
     try {
-      orders.createNewOrder(cart);
-      WindowUtils.setHref('orders.php');
+      let { totalCents } = await cart.calculateCosts();
+      totalCents = Math.ceil(totalCents);
+
+      console.log('Total cents to charge:', totalCents);  // Debug log for totalCents
+
+      // Create payment intent
+      const paymentIntentResponse = await this.stripeHandler.createPaymentIntent(totalCents);
+      console.log('PaymentIntent Response:', paymentIntentResponse);  // Debug log for response
+
+      if (!paymentIntentResponse || !paymentIntentResponse.clientSecret) {
+        throw new Error('Failed to initialize payment');
+      }
+
+      const { clientSecret } = paymentIntentResponse;
+
+      // Process payment
+      const paymentResult = await this.stripeHandler.processPayment(clientSecret);
+      console.log('Payment Result:', paymentResult);  // Debug log for payment result
+
+      // Log payment
+      await this.logPayment({
+        order_id: paymentResult.id,
+        payment_gateway: 'stripe',
+        amount: totalCents / 100,
+        status: 'success',
+        created_at: new Date().toISOString()
+      });
+
+      // Create order and redirect
+      await orders.createNewOrder();
+      window.location.href = 'orders.php';
     } catch (error) {
-      console.error('Error performing checkout:', error);
+      console.error('Payment error:', error);
+      this.showError(error.message || 'Payment failed. Please try again.');
+      submitButton.disabled = false;
     }
   }
 
-  #loadPayPalButtons() {
-    if (!this.#loadedPaypal) {
-      new PayPalButtons('.js-paypal-button-container').create();
-      this.#loadedPaypal = true;
+  showError(message) {
+    const errorElement = this.element.querySelector('#card-errors');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+
+    setTimeout(() => {
+      errorElement.style.display = 'none';
+    }, 5000);
+  }
+
+  async refreshPaymentDetails() {
+    await this.render();
+  }
+
+  async logPayment(paymentData) {
+    try {
+      const response = await fetch('backend/log-payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData)
+      });
+
+      const responseBody = await response.text();
+      console.log('Log Payment Response:', responseBody);  // Debug log for log payment response
+
+      if (!response.ok) {
+        throw new Error('Failed to log payment');
+      }
+    } catch (error) {
+      console.error('Error logging payment:', error);
     }
   }
 }
