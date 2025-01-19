@@ -82,13 +82,39 @@ export class PaymentSummary extends ComponentV2 {
 
       console.log('Total cents to charge:', totalCents); // Debug log for totalCents
 
+      // Validate that the cart is not empty
+      const cartItems = cart.items; // Accessing cart items
+      console.log('Cart Items:', cartItems); // Log cart items for inspection
+
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error('Your cart is empty. Please add items to proceed.');
+      }
+
       // Fetch the user ID from the backend
       const userId = await this.fetchUserId();
       if (!userId) {
         throw new Error('User not logged in');
       }
 
-      // Create the order
+      // Create payment intent (though we'll only charge after the order is placed)
+      const paymentIntentResponse = await this.stripeHandler.createPaymentIntent(totalCents);
+      console.log('PaymentIntent Response:', paymentIntentResponse); // Debug log for response
+
+      if (!paymentIntentResponse || !paymentIntentResponse.clientSecret) {
+        throw new Error('Failed to initialize payment');
+      }
+
+      const { clientSecret } = paymentIntentResponse;
+
+      // Now, process the payment
+      const paymentResult = await this.stripeHandler.processPayment(clientSecret);
+      console.log('Payment Result:', paymentResult); // Debug log for payment result
+
+      if (paymentResult.error) {
+        throw new Error(paymentResult.error.message || 'Payment failed');
+      }
+
+      // Proceed to create the order only after successful payment
       const orderData = {
         user_id: userId, // Use the fetched user ID
         total_price: totalCents / 100,
@@ -105,21 +131,15 @@ export class PaymentSummary extends ComponentV2 {
 
       const orderId = orderResponse.order_id;
 
-      // Create payment intent
-      const paymentIntentResponse = await this.stripeHandler.createPaymentIntent(totalCents);
-      console.log('PaymentIntent Response:', paymentIntentResponse); // Debug log for response
+      // Add items to the order
+      const addItemsResponse = await this.addItemsToOrder(orderId, userId); // Pass orderId and userId to the backend
+      console.log('Add Items Response:', addItemsResponse); // Debug log for adding items response
 
-      if (!paymentIntentResponse || !paymentIntentResponse.clientSecret) {
-        throw new Error('Failed to initialize payment');
+      if (!addItemsResponse || addItemsResponse.error) {
+        throw new Error('Failed to add items to the order');
       }
 
-      const { clientSecret } = paymentIntentResponse;
-
-      // Process payment
-      const paymentResult = await this.stripeHandler.processPayment(clientSecret);
-      console.log('Payment Result:', paymentResult); // Debug log for payment result
-
-      // Log payment
+      // Log payment after order creation and item insertion
       await this.logPayment({
         order_id: orderId,
         payment_gateway: 'stripe',
@@ -134,6 +154,25 @@ export class PaymentSummary extends ComponentV2 {
       console.error('Payment error:', error);
       this.showError(error.message || 'Payment failed. Please try again.');
       submitButton.disabled = false;
+    }
+  }
+
+  async addItemsToOrder(orderId, userId) {
+    try {
+      const response = await fetch('backend/add-items-to-order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, user_id: userId })
+      });
+
+      const responseBody = await response.json();
+      if (!response.ok) {
+        throw new Error(responseBody.error || 'Failed to add items to order');
+      }
+      return responseBody;
+    } catch (error) {
+      console.error('Error adding items to order:', error);
+      throw error;
     }
   }
 
@@ -181,10 +220,6 @@ export class PaymentSummary extends ComponentV2 {
     setTimeout(() => {
       errorElement.style.display = 'none';
     }, 5000);
-  }
-
-  async refreshPaymentDetails() {
-    await this.render();
   }
 
   async logPayment(paymentData) {
