@@ -1,106 +1,142 @@
 <?php
-// Start the session to access session variables
 session_start();
 
-// Inline database connection
-$host = 'localhost'; // Replace with your database host
-$username = 'root'; // Replace with your database username
-$password = ''; // Replace with your database password
-$database = 'web'; // Replace with your database name
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$database = 'web';
 
-// Create database connection
-$db = new mysqli($host, $username, $password, $database);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+error_log("Starting add-items-to-order process");
 
-// Check for connection errors
-if ($db->connect_error) {
-    http_response_code(500); // Internal Server Error
-    echo json_encode(['error' => 'Database connection failed: ' . $db->connect_error]);
-    exit;
-}
-
-// Check if user is logged in by checking session
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(403); // Forbidden, if user is not logged in
-    echo json_encode(['error' => 'User not logged in']);
-    exit;
-}
-
-$userId = $_SESSION['user_id']; // Retrieve the user ID from session
-
-// Get the raw POST data
-$input = json_decode(file_get_contents('php://input'), true);
-
-// Validate required fields (order_id is sent from JS)
-if (!isset($input['order_id'])) {
-    http_response_code(400); // Bad Request
-    echo json_encode(['error' => 'Missing required order details']);
-    exit;
-}
-
-// Sanitize inputs
-$orderId = intval($input['order_id']);
-
-// Log for debugging purposes
-error_log("User ID: " . $userId . " - Order ID: " . $orderId);
-
-// Fetch the cart items for the user
-$cartQuery = "SELECT product_id, price, size, delivery_option FROM shopping_cart WHERE user_id = ?";
-$cartStmt = $db->prepare($cartQuery);
-$cartStmt->bind_param('i', $userId);
-$cartStmt->execute();
-$cartResult = $cartStmt->get_result();
-
-// Check if the user has items in the cart
-if ($cartResult->num_rows === 0) {
-    http_response_code(400); // Bad Request
-    echo json_encode(['error' => 'No items found in the cart']);
-    exit;
-}
-
-// Prepare the SQL query to insert into `order_items`
-$query = "INSERT INTO order_items (order_id, product_id, size, delivery_option, price) VALUES (?, ?, ?, ?, ?)";
-$stmt = $db->prepare($query);
-
-// Loop through the cart items and insert them into `order_items`
-while ($item = $cartResult->fetch_assoc()) {
-    $productId = htmlspecialchars($item['product_id'], ENT_QUOTES, 'UTF-8');
-    $price = floatval($item['price']);
-    $size = htmlspecialchars($item['size'], ENT_QUOTES, 'UTF-8');
-    $deliveryOption = intval($item['delivery_option']);
-
-    // Log each cart item before insertion
-    error_log("Inserting item: Product ID - $productId, Price - $price, Size - $size, Delivery Option - $deliveryOption");
-
-    // Bind parameters and execute the query for each item
-    $stmt->bind_param('isisd', $orderId, $productId, $size, $deliveryOption, $price);
-
-    if (!$stmt->execute()) {
-        http_response_code(500); // Internal Server Error
-        echo json_encode(['error' => 'Failed to add items to order: ' . $stmt->error]);
-        exit;
+try {
+    $db = new mysqli($host, $username, $password, $database);
+    
+    if ($db->connect_error) {
+        throw new Exception("Database connection failed: " . $db->connect_error);
     }
+
+    if (!isset($_SESSION['user_id'])) {
+        throw new Exception("User not logged in");
+    }
+
+    $userId = $_SESSION['user_id'];
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!isset($input['order_id'])) {
+        throw new Exception("Missing order_id");
+    }
+    
+    $orderId = intval($input['order_id']);
+    
+    $db->begin_transaction();
+    
+    // Join shopping_cart with products to get the price
+    $cartQuery = "SELECT sc.product_id, sc.size, sc.delivery_option, p.priceCents 
+                  FROM shopping_cart sc 
+                  JOIN products p ON sc.product_id = p.id 
+                  WHERE sc.user_id = ?";
+    $cartStmt = $db->prepare($cartQuery);
+    
+    if (!$cartStmt) {
+        throw new Exception("Failed to prepare cart query: " . $db->error);
+    }
+    
+    $cartStmt->bind_param('i', $userId);
+    
+    if (!$cartStmt->execute()) {
+        throw new Exception("Failed to execute cart query: " . $cartStmt->error);
+    }
+    
+    $cartResult = $cartStmt->get_result();
+    
+    if ($cartResult->num_rows === 0) {
+        throw new Exception("No items found in cart for user: " . $userId);
+    }
+    
+    // Log the first cart item to see its structure
+    $firstItem = $cartResult->fetch_assoc();
+    error_log("First cart item structure: " . json_encode($firstItem));
+    $cartResult->data_seek(0); // Reset the pointer to start
+    
+    // Prepare insert with exact column names from your order_items table
+    $insertQuery = "INSERT INTO order_items 
+                   (order_id, product_id, size, delivery_option, price) 
+                   VALUES (?, ?, ?, ?, ?)";
+    $insertStmt = $db->prepare($insertQuery);
+    
+    if (!$insertStmt) {
+        throw new Exception("Failed to prepare insert statement: " . $db->error);
+    }
+    
+    $insertedItems = 0;
+    
+    while ($item = $cartResult->fetch_assoc()) {
+        error_log("Processing item: " . json_encode($item));
+        
+        $productId = $item['product_id'];
+        $price = floatval($item['price']);
+        $size = $item['size'];
+        $deliveryOption = intval($item['delivery_option']);
+        
+        $insertStmt->bind_param('issii', 
+            $orderId,
+            $productId,
+            $size,
+            $deliveryOption,
+            $price
+        );
+        
+        if (!$insertStmt->execute()) {
+            throw new Exception("Failed to insert item: " . $insertStmt->error . 
+                              " [Product ID: $productId]");
+        }
+        
+        $insertedItems++;
+    }
+    
+    if ($insertedItems === 0) {
+        throw new Exception("No items were inserted");
+    }
+    
+    // Clear the cart
+    $clearCartQuery = "DELETE FROM shopping_cart WHERE user_id = ?";
+    $clearCartStmt = $db->prepare($clearCartQuery);
+    
+    if (!$clearCartStmt || !$clearCartStmt->bind_param('i', $userId)) {
+        throw new Exception("Failed to prepare cart cleanup: " . $db->error);
+    }
+    
+    if (!$clearCartStmt->execute()) {
+        throw new Exception("Failed to clear cart: " . $clearCartStmt->error);
+    }
+    
+    $db->commit();
+    
+    error_log("Successfully added $insertedItems items to order $orderId");
+    
+    http_response_code(200);
+    echo json_encode([
+        'status' => 'success',
+        'message' => "Successfully added $insertedItems items to order",
+        'order_id' => $orderId,
+        'items_count' => $insertedItems
+    ]);
+
+} catch (Exception $e) {
+    if (isset($db) && $db->ping()) {
+        $db->rollback();
+    }
+    
+    error_log("Error in add-items-to-order: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+
+} finally {
+    if (isset($cartStmt)) $cartStmt->close();
+    if (isset($insertStmt)) $insertStmt->close();
+    if (isset($clearCartStmt)) $clearCartStmt->close();
+    if (isset($db)) $db->close();
 }
-
-// Clean up the shopping cart (optional, depending on your requirements)
-$deleteCartQuery = "DELETE FROM shopping_cart WHERE user_id = ?";
-$deleteCartStmt = $db->prepare($deleteCartQuery);
-$deleteCartStmt->bind_param('i', $userId);
-$deleteCartStmt->execute();
-
-// Log for cart cleanup
-error_log("Shopping cart for user ID $userId has been cleaned.");
-
-$stmt->close();
-$cartStmt->close();
-$deleteCartStmt->close();
-
-// Close the database connection
-$db->close();
-
-// Log for successful completion
-error_log("Successfully processed the order and cleaned the cart.");
-
-// Send success response
-http_response_code(200);
-echo json_encode(['status' => 'success', 'message' => 'Items added to order successfully and cart cleaned']);
 ?>
