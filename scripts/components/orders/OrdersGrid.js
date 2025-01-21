@@ -1,40 +1,49 @@
-import { orders } from '../../data/orders.js';
-import { cart } from '../../data/cart.js';
 import { DateUtils } from '../../utils/DateUtils.js';
 import { MoneyUtils } from '../../utils/MoneyUtils.js';
-import { products } from '../../data/products.js';
 import { Component } from '../Component.js';
-import { WindowUtils } from '../../utils/WindowUtils.js';
+
 
 export class OrdersGrid extends Component {
   element;
-
-  events = {
-    'click .js-buy-again-button': (event) => this.#addToCart(event),
-    'click .js-track-package-button': (event) => this.#trackPackage(event),
-  };
-
-  #addedToCartTimeouts = {};
   #kitsHeader;
+  #orders = [];
 
   constructor(selector) {
     super();
     this.element = document.querySelector(selector);
+    this.loadOrders();
   }
 
   setKitsHeader(kitsHeader) {
     this.#kitsHeader = kitsHeader;
   }
 
+  async loadOrders() {
+    try {
+      const response = await fetch('backend/display-orders.php');
+      const data = await response.json();
+      
+      if (data.success) {
+        this.#orders = data.orders;
+        this.render();
+      } else {
+        console.error('Failed to load orders:', data.error);
+      }
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    }
+  }
+
   render() {
     let ordersHTML = '';
 
-    orders.all.forEach(order => {
-      const orderDate = DateUtils.formatDateMonth(order.orderTimeMs);
-      const orderCost = MoneyUtils.formatMoney(order.totalCostCents);
+    this.#orders.forEach(order => {
+      const orderDate = DateUtils.formatDateMonth(new Date(order.created_at).getTime());
+      const orderCost = MoneyUtils.formatMoney(order.total_price);
+      const groupedItems = this.#groupItemsByDeliveryDate(order.items);
 
       ordersHTML += `
-        <div class="order-container" data-testid="order-container-${order.id}">
+        <div class="order-container js-order-container" data-order-id="${order.id}">
           <header class="order-header">
             <section class="left-section">
               <div class="order-date">
@@ -50,110 +59,136 @@ export class OrdersGrid extends Component {
             <section class="right-section">
               <div class="order-header-label">Order ID:</div>
               <div>${order.id}</div>
+              <button class="toggle-btn js-toggle-order">
+                <span class="expand-icon">▼</span>
+              </button>
+              ${this.#renderCancelButton(order)}
             </section>
           </header>
 
-          <div class="order-details-grid">
-            ${this.#createOrderDetailsHTML(order)}
+          <div class="order-details-grid js-order-details">
+            ${this.#renderOrderGroups(groupedItems, order.progress)}
           </div>
         </div>
       `;
     });
 
     this.element.innerHTML = ordersHTML;
+    this.#attachEventListeners();
   }
 
-  #createOrderDetailsHTML(order) {
-    let ordersHTML = '';
-  
-    order.products.forEach(productDetails => {
-      const product = products.findById(productDetails.productId);
-      if (!product) {
-        console.error(`Product not found for ID: ${productDetails.productId}`);
-        return;
+  #groupItemsByDeliveryDate(items) {
+    return items.reduce((groups, item) => {
+      const date = item.delivery_date;
+      if (!groups[date]) {
+        groups[date] = [];
       }
-  
-      const productImage = product.createImageUrl();
-      const deliveryDateMessage = Date.now() < productDetails.estimatedDeliveryTimeMs
-        ? `Arriving on: ${DateUtils.formatDateMonth(productDetails.estimatedDeliveryTimeMs)}`
-        : `Delivered on: ${DateUtils.formatDateMonth(productDetails.estimatedDeliveryTimeMs)}`;
-  
-      ordersHTML += `
-        <div class="product-image-container">
-          <img src="${productImage}">
-        </div>
-  
-        <div class="product-details">
-          <div class="product-name">
-            ${product.name}
+      groups[date].push(item);
+      return groups;
+    }, {});
+  }
+
+  #renderOrderGroups(groupedItems, progress) {
+    let html = '';
+    
+    Object.entries(groupedItems).forEach(([deliveryDate, items]) => {
+      html += `
+        <div class="delivery-group">
+          <div class="delivery-date">
+            Expected Delivery: ${DateUtils.formatDateMonth(new Date(deliveryDate).getTime())}
           </div>
-  
-          <div class="product-delivery-date">
-            ${deliveryDateMessage}
+          <div class="progress-tracking">
+            <div class="progress-bar">
+              <div class="progress" style="width: ${progress.progress}%"></div>
+              <span class="progress-status">${progress.status}: ${progress.message}</span>
+            </div>
           </div>
-  
-          <div class="product-quantity">
-            Quantity: ${productDetails.quantity}
+          <div class="items-grid">
+            ${items.map(item => this.#renderOrderItem(item)).join('')}
           </div>
-  
-          <button class="js-buy-again-button buy-again-button button-primary"
-            data-order-id="${order.id}"
-            data-cart-item-id="${productDetails.cartItemId}"
-            data-testid="buy-again-button-${productDetails.cartItemId}">
-  
-            <img class="buy-again-icon" src="images/icons/buy-again.png">
-            <span class="buy-again-message">Buy it again</span>
-  
-            <span class="buy-again-success">
-              &#10003; Added
-            </span>
-          </button>
-        </div>
-  
-        <div class="product-actions">
-          <button class="js-track-package-button track-package-button button-secondary"
-            data-order-id="${order.id}"
-            data-cart-item-id="${productDetails.cartItemId}"
-            data-testid="track-package-${productDetails.cartItemId}">
-            Track package
-          </button>
         </div>
       `;
     });
-  
-    return ordersHTML;
+    
+    return html;
   }
-  
 
-  #addToCart(event) {
-    const button = event.currentTarget;
-    const orderId = button.getAttribute('data-order-id');
-    const cartItemId = button.getAttribute('data-cart-item-id');
+  #renderOrderItem(item) {
+    return `
+      <div class="order-item">
+        <div class="product-image-container">
+          <img src="${item.image}" alt="${item.product_name}">
+        </div>
+        <div class="product-details">
+          <div class="product-name">${item.product_name}</div>
+          <div class="product-size">Size: ${item.size}</div>
+          <div class="product-price">${MoneyUtils.formatMoney(item.price)}</div>
+        </div>
+      </div>
+    `;
+  }
 
-    const order = orders.findById(orderId);
-    const productDetails = order.findProductDetails(cartItemId);
-    cart.addProduct(productDetails.productId, 1);
+  #renderCancelButton(order) {
+    const orderDate = new Date(order.created_at).toLocaleDateString();
+    const today = new Date().toLocaleDateString();
+    
+    if (orderDate === today && order.status === 'pending') {
+      return `
+        <button class="cancel-btn js-cancel-order" data-order-id="${order.id}">
+          Cancel Order
+        </button>
+      `;
+    }
+    return '';
+  }
 
-    this.#kitsHeader?.updateCartCount();
-    button.classList.add('added-to-cart');
-
-    const previousTimeoutId = this.#addedToCartTimeouts[orderId + cartItemId];
-    if (previousTimeoutId) {
-      clearTimeout(previousTimeoutId);
+  async #cancelOrder(orderId) {
+    if (!confirm('Are you sure you want to cancel this order?')) {
+      return;
     }
 
-    const timeoutId = setTimeout(() => {
-      button.classList.remove('added-to-cart');
-    }, 1500);
+    try {
+      const formData = new FormData();
+      formData.append('order_id', orderId);
 
-    this.#addedToCartTimeouts[orderId + cartItemId] = timeoutId;
+      const response = await fetch('backend/cancel-order.php', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin'
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Order cancelled successfully');
+        this.loadOrders();
+      } else {
+        alert(data.error || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order');
+    }
   }
 
-  #trackPackage(event) {
-    const button = event.currentTarget;
-    const orderId = button.getAttribute('data-order-id');
-    const cartItemId = button.getAttribute('data-cart-item-id');
+  #attachEventListeners() {
+    this.element.querySelectorAll('.js-toggle-order').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const container = e.target.closest('.js-order-container');
+        container.classList.toggle('expanded');
+        const icon = button.querySelector('.expand-icon');
+        icon.textContent = container.classList.contains('expanded') ? '▼' : '▶';
+      });
+    });
 
-    WindowUtils.setHref(`tracking.php?orderId=${orderId}&cartItemId=${cartItemId}`);
+    this.element.querySelectorAll('.js-cancel-order').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const orderId = e.target.dataset.orderId;
+        this.#cancelOrder(orderId);
+      });
+    });
   }
 }
