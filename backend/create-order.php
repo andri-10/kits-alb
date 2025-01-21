@@ -28,7 +28,6 @@ if (!is_array($inputData) || empty($inputData)) {
     exit;
 }
 
-// Function to calculate the delivery date based on the delivery option
 function calculateDeliveryDate($deliveryOption) {
     $today = new DateTime();
     
@@ -38,27 +37,25 @@ function calculateDeliveryDate($deliveryOption) {
         3 => 1   // 3: 1 day delivery
     ];
 
-    $daysToAdd = isset($deliveryDays[$deliveryOption]) ? $deliveryDays[$deliveryOption] : 7;  // Default to 7 days if option not found
+    $daysToAdd = isset($deliveryDays[$deliveryOption]) ? $deliveryDays[$deliveryOption] : 7;
     $deliveryDate = $today->modify("+$daysToAdd days");
 
-    return $deliveryDate->format('Y-m-d'); // Return the date in 'YYYY-MM-DD' format for MySQL
+    return $deliveryDate->format('Y-m-d');
 }
 
 try {
     $conn->beginTransaction();
     $createdOrderIds = [];
-    $option = 1;  // Start with the first delivery option
+    $option = 1;
 
     foreach ($inputData as $batchOrder) {
-        // Only process batches that have a total price and items
         if (empty($batchOrder['finalTotalCents'])) {
             continue;
         }
 
-        // Convert cents to dollars with proper decimal formatting
-        $totalPriceDollars = number_format($batchOrder['finalTotalCents'] / 100, 2, '.', '');
+        $totalPriceDollars = $batchOrder['finalTotalCents'];
 
-        // Insert the order into the database
+        // Insert the order
         $stmt = $conn->prepare("
             INSERT INTO orders (
                 user_id, 
@@ -84,10 +81,28 @@ try {
             ':delivery_date' => $batchOrder['deliveryDate']
         ]);
 
-        // Get the order ID for the newly created order
-        $createdOrderIds[] = $conn->lastInsertId();
+        $orderId = $conn->lastInsertId();
+        $createdOrderIds[] = $orderId;
 
-        // SQL query to fetch cart products for the logged-in user based on delivery option
+        // Log the payment
+        $stmtPayment = $conn->prepare("
+            INSERT INTO payment_logs (
+                order_id,
+                amount,
+                created_at
+            ) VALUES (
+                :order_id,
+                :amount,
+                NOW()
+            )
+        ");
+
+        $stmtPayment->execute([
+            ':order_id' => $orderId,
+            ':amount' => $totalPriceDollars
+        ]);
+
+        // Get cart items
         $sql = "
             SELECT 
                 c.id AS cart_id,         
@@ -104,49 +119,49 @@ try {
             WHERE c.user_id = :user_id AND c.delivery_option = :delivery_option
         ";
 
-        // Prepare and execute the query to fetch cart items for the current delivery option
         $stmtItems = $conn->prepare($sql);
         $stmtItems->bindParam(':user_id', $userId);
         $stmtItems->bindParam(':delivery_option', $option);
         $stmtItems->execute();
 
-        // Fetch all the products for the current delivery option
         $cartItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
-        // Insert items into the order_items table for the current batch (without quantity)
-        foreach ($cartItems as $item) {
-            $stmtOrderItems = $conn->prepare("
-                INSERT INTO order_items (
-                    order_id,
-                    product_id,
-                    price,
-                    size,
-                    delivery_date
-                ) VALUES (
-                    :order_id,
-                    :product_id,
-                    :price,
-                    :size,
-                    :delivery_date
-                )
-            ");
+        // Insert order items
+foreach ($cartItems as $item) {
+    $stmtOrderItems = $conn->prepare("
+        INSERT INTO order_items (
+            order_id,
+            product_id,
+            price,
+            size,
+            delivery_date,
+            image
+        ) VALUES (
+            :order_id,
+            :product_id,
+            :price,
+            :size,
+            :delivery_date,
+            :product_image
+        )
+    ");
 
-            // Insert the item for the current batch
-            $deliveryDate = calculateDeliveryDate($option); // Calculate the delivery date based on the option
+    $deliveryDate = calculateDeliveryDate($option);
 
-            $stmtOrderItems->execute([
-                ':order_id' => $createdOrderIds[count($createdOrderIds) - 1],
-                ':product_id' => $item['product_id'],
-                ':price' => $item['product_pricecents'],
-                ':size' => $item['cart_size'],
-                ':delivery_date' => $deliveryDate
-            ]);
-        }
+    $stmtOrderItems->execute([
+        ':order_id' => $orderId,
+        ':product_id' => $item['product_id'],
+        ':price' => $item['product_pricecents'],
+        ':size' => $item['cart_size'],
+        ':delivery_date' => $deliveryDate,
+        ':product_image' => $item['product_image']
+    ]);
+}
 
-        // Increment the option for the next batch (delivery_option 1 -> 2 -> 3)
+
         $option++;
         if ($option > 3) {
-            break;  // Stop if the option exceeds 3 (we only have 3 delivery options)
+            break;
         }
     }
 
@@ -154,12 +169,23 @@ try {
         throw new Exception('No valid orders were created');
     }
 
+    // Remove all items from the user's cart
+    $stmtClearCart = $conn->prepare("
+        DELETE FROM shopping_cart
+        WHERE user_id = :user_id
+    ");
+    $stmtClearCart->execute([':user_id' => $userId]);
+
     $conn->commit();
-    echo json_encode(['order_ids' => $createdOrderIds, 'status' => 'success']);
+    echo json_encode([
+        'order_ids' => $createdOrderIds, 
+        'status' => 'success',
+        'message' => 'Orders created, payments logged, and cart cleared successfully'
+    ]);
 
 } catch (Exception $e) {
     $conn->rollBack();
-    echo json_encode(['error' => 'Error creating orders: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Error processing order and payment: ' . $e->getMessage()]);
     exit;
 }
 ?>

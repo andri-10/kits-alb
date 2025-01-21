@@ -24,7 +24,7 @@ main {
 }
 
 .payment-summary-holder.scrolled > .payment-summary{
-  top: 6.5%;
+  top: 6.8% !important;
 }
 
 .payment-summary-holder.scrolled {

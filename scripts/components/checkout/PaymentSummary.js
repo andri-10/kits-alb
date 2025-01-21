@@ -169,7 +169,7 @@ export class PaymentSummary extends ComponentV2 {
     document.getElementById("before-tax-money").textContent = `${MoneyUtils.formatMoney(productCostCents + shippingCostCents)}`;
     document.getElementById("tax-money").textContent = `${MoneyUtils.formatMoney(finalTaxCents)}`;
     document.getElementById("total-money").textContent = `${MoneyUtils.formatMoney(finalTotalCents)}`;
-
+    document.getElementById("submit-payment").textContent = `Pay ${MoneyUtils.formatMoney(finalTotalCents)}`;
     // Update warning and button based on validation
     const warningElement = document.querySelector('.payment-summary-warning');
     const submitButton = document.querySelector('#submit-payment');
@@ -302,54 +302,59 @@ export class PaymentSummary extends ComponentV2 {
     form.addEventListener('submit', (e) => this.handleSubmit(e));
   }
 
-  async handleSubmit(event) {
-    event.preventDefault();
-    const submitButton = this.element.querySelector('#submit-payment');
-    submitButton.disabled = true;
-  
-    try {
-      let { totalCents } = await cart.calculateCosts();
-      totalCents = Math.ceil(totalCents);
-  
-      // Validate that the cart is not empty
-      const cartItems = cart.items;
-      if (!cartItems || cartItems.length === 0) {
-        throw new Error('Your cart is empty. Please add items to proceed.');
-      }
-  
-      // Fetch the user ID from the backend
-      const userId = await this.fetchUserId();
-      if (!userId) {
-        throw new Error('User not logged in');
-      }
-  
-      // Group items by delivery option
-      const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
-  
-      // Send the grouped items to the backend to create orders
-      const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
-      if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
-        throw new Error('Failed to create orders');
-      }
+  // In PaymentSummary.js, update the handleSubmit method
 
-     
-  
-      // Log payment and proceed
-      await this.logPayment({
-        order_ids: orderResponse.order_ids,
-        amount: totalCents,
-        created_at: new Date().toISOString()
-      });
-  
-      // Redirect to orders page
-      window.location.replace('orders.php');
-  
-    } catch (error) {
-      console.error('Payment error:', error);
-      this.showError(error.message || 'Payment failed. Please try again.');
-      submitButton.disabled = false;
+async handleSubmit(event) {
+  event.preventDefault();
+  const submitButton = this.element.querySelector('#submit-payment');
+  submitButton.disabled = true;
+
+  try {
+    // First ensure cart data is fresh
+    await this.fetchCartData();
+    await this.fetchIndividualProducts();
+    
+    let { totalCents } = await cart.calculateCosts();
+    totalCents = Math.ceil(totalCents);
+
+    // Validate that the cart is not empty
+    const cartItems = cart.items;
+    if (!cartItems || cartItems.length === 0) {
+      throw new Error('Your cart is empty. Please add items to proceed.');
     }
+
+    // Fetch the user ID from the backend
+    const userId = await this.fetchUserId();
+    if (!userId) {
+      throw new Error('User not logged in');
+    }
+
+    // Wait for the latest grouped items data
+    await this.refreshPaymentDetails();
+    const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
+
+    // Validate all items have delivery options selected
+    const hasInvalidDelivery = groupedItems.every(group => group.items.length === 0);
+    if (hasInvalidDelivery) {
+      throw new Error('Please select delivery options for all items before proceeding.');
+    }
+
+    // Send the grouped items to the backend to create orders
+    const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
+    if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
+      throw new Error('Failed to create orders');
+    }
+
+ 
+    // Redirect to orders page
+    window.location.replace('orders.php');
+
+  } catch (error) {
+    console.error('Payment error:', error);
+    this.showError(error.message || 'Payment failed. Please try again.');
+    submitButton.disabled = false;
   }
+}
 
   
   

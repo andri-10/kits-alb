@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mainContainer = document.querySelector("main");
 
   let hasPassedScrollPoint = false;  // Store whether scroll has passed the threshold
-  const scrollPoint = 200; // The scroll threshold
+  const scrollPoint = 130; // The scroll threshold
 
   // Handle scroll event to track scroll position
   window.addEventListener("scroll", () => {
@@ -74,9 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
       summaryElement.style.left = `${leftPosition}px`;
     }
 
-    // Apply fixed positioning and adjust top position to -6.5% when scrolled
+    
     summaryElement.style.position = "fixed";
-    summaryElement.style.top = "6.5%";  // Set top when scrolled
+    summaryElement.style.top = "6.8%";  // Set top when scrolled
   }
 
   // Add listeners for scroll and resize
