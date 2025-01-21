@@ -31,7 +31,7 @@ $sql = "
         p.image AS product_image,
         p.name AS product_name,
         p.priceCents AS product_pricecents,
-        c.size AS cart_size
+        c.size AS cart_size,
         c.delivery_option AS delivery_option
     FROM products p
     JOIN shopping_cart c ON p.id = c.product_id
