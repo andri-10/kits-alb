@@ -8,8 +8,19 @@ export class PaymentSummary extends ComponentV2 {
   constructor(selector, publishableKey) {
     super(selector);
     this.stripeHandler = new StripeHandler(publishableKey);
+    this.cartData = [];
+    this.individualCartData = [];
   }
-  cartData = [];
+
+  setCartData(cartData) {
+    this.cartData = cartData;
+    // If the element exists, update visibility based on cart data
+    const paymentSummaryElement = document.querySelector('.payment-summary');
+    if (paymentSummaryElement) {
+      paymentSummaryElement.style.display =
+          (!cartData || cartData.length === 0) ? 'none' : 'block';
+    }
+  }
 
   async fetchCartData() {
     try {
@@ -24,12 +35,57 @@ export class PaymentSummary extends ComponentV2 {
       console.log('Cart data:', cartData);
 
       this.cartData = cartData;
+      const paymentSummaryElement = document.querySelector('.payment-summary');
+      if (!cartData || cartData.length === 0) {
+        if (paymentSummaryElement) {
+          paymentSummaryElement.style.display = 'none';
+        }
+      } else {
+        if (paymentSummaryElement) {
+          paymentSummaryElement.style.display = 'block';
+        }
+      }
+
       this.renderCartItems(cartData);
     } catch (error) {
       console.error('Error fetching cart data:', error);
-      
+
     }
   }
+
+  async fetchIndividualProducts() {
+    try {
+      console.log('Fetching all cart products for the logged-in user...');
+      
+      // Send the request to the PHP backend to fetch all cart products for the logged-in user
+      const response = await fetch('backend/get-your-cart-products.php', {
+        method: 'GET',  // Using GET since we're fetching all cart products
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch cart products. Status: ${response.status}`);
+      }
+
+      const cartProducts = await response.json();
+      console.log('Cart products:', cartProducts);
+
+      // Clear the individualCartData array before adding new data
+      this.individualCartData = [];
+
+      // If data is returned, add it to the individualCartData array
+      if (cartProducts.success && cartProducts.data.length > 0) {
+        this.individualCartData = cartProducts.data;  // Add all products to the array
+        console.log("This is individual cartdata")
+        console.log(this.individualCartData)
+      } else {
+        console.warn('No cart products found for the user.');
+      }
+
+    } catch (error) {
+      console.error('Error fetching cart products:', error);
+    }
+}
+
 
   updateValidationStatus(isValid) {
     const warningElement = document.querySelector('.payment-summary-warning');
@@ -61,7 +117,7 @@ export class PaymentSummary extends ComponentV2 {
     return this;
   }
 
-  
+
 
   async #getUserId() {
     const basePath = '/backend';
@@ -70,7 +126,7 @@ export class PaymentSummary extends ComponentV2 {
 
     console.log(data.userId);
     return data.userId || null;
-    
+
   }
   async refreshPaymentDetails() {
     const userId = await this.#getUserId();
@@ -81,6 +137,12 @@ export class PaymentSummary extends ComponentV2 {
       totalCents
     } = await cart.calculateCosts(userId);
 
+    await this.fetchIndividualProducts()
+    await this.fetchCartData()
+
+    console.log(this.cartData)
+   this.groupCartDataByDeliveryOption(this.cartData)
+   this.groupIndividualCartData(this.individualCartData)
     const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
     const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
     const quantity = await cart.calculateTotalQuantity();
@@ -96,6 +158,8 @@ export class PaymentSummary extends ComponentV2 {
       if (!deliveryOption) {
         allValid = false;
       }
+
+
     });
 
     // Update the payment details dynamically
@@ -130,10 +194,25 @@ export class PaymentSummary extends ComponentV2 {
   }
   async render() {
     try {
+      
+      await this.fetchCartData()
+      console.log("CartDataLength: "+this.cartData.length)
+      if (!this.cartData || this.cartData.length === 0) {
+
+        this.element.style.display = 'none';
+
+      }
+
+      await this.fetchIndividualProducts()
+
+      this.groupCartDataByDeliveryOption(this.cartData)
+      this.groupIndividualCartData(this.individualCartData)
       const { productCostCents, shippingCostCents, taxCents, totalCents } = await cart.calculateCosts();
       const quantity = await cart.calculateTotalQuantity();
       const cartItems = cart.items;
-      console.log(cart.items);
+
+
+
 
       const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
       const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
@@ -227,70 +306,44 @@ export class PaymentSummary extends ComponentV2 {
     event.preventDefault();
     const submitButton = this.element.querySelector('#submit-payment');
     submitButton.disabled = true;
-
+  
     try {
-     
-
       let { totalCents } = await cart.calculateCosts();
       totalCents = Math.ceil(totalCents);
-
+  
       // Validate that the cart is not empty
-      const cartItems =  cart.items;
+      const cartItems = cart.items;
       if (!cartItems || cartItems.length === 0) {
         throw new Error('Your cart is empty. Please add items to proceed.');
       }
-
+  
       // Fetch the user ID from the backend
       const userId = await this.fetchUserId();
       if (!userId) {
         throw new Error('User not logged in');
       }
-
-      // Create payment intent
-      const paymentIntentResponse = await this.stripeHandler.createPaymentIntent(totalCents);
-      if (!paymentIntentResponse || !paymentIntentResponse.clientSecret) {
-        throw new Error('Failed to initialize payment');
+  
+      // Group items by delivery option
+      const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
+  
+      // Send the grouped items to the backend to create orders
+      const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
+      if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
+        throw new Error('Failed to create orders');
       }
 
-      const { clientSecret } = paymentIntentResponse;
-
-      // Process the payment
-      const paymentResult = await this.stripeHandler.processPayment(clientSecret);
-      if (paymentResult.error) {
-        throw new Error(paymentResult.error.message || 'Payment failed');
-      }
-
-      // Create the order
-      const orderData = {
-        user_id: userId,
-        total_price: totalCents / 100,
-        status: 'pending',
-        delivery_date: new Date().toISOString().split('T')[0]
-      };
-
-      const orderResponse = await this.createOrder(orderData);
-      if (!orderResponse || !orderResponse.order_id) {
-        throw new Error('Failed to create order');
-      }
-
-      const orderId = orderResponse.order_id;
-
-      // Log payment before adding items
+     
+  
+      // Log payment and proceed
       await this.logPayment({
-        order_id: orderId,
-        payment_gateway: 'stripe',
-        amount: totalCents / 100,
+        order_ids: orderResponse.order_ids,
+        amount: totalCents,
         created_at: new Date().toISOString()
       });
-
-      // Add items to the order
-      const addItemsResponse = await this.addItemsToOrder(orderId, userId);
-      if (!addItemsResponse || addItemsResponse.error) {
-        throw new Error('Failed to add items to the order');
-      }
-
-      // Redirect to orders page on success
-      window.location.href = 'orders.php';
+  
+      // Redirect to orders page
+      window.location.replace('orders.php');
+  
     } catch (error) {
       console.error('Payment error:', error);
       this.showError(error.message || 'Payment failed. Please try again.');
@@ -298,24 +351,160 @@ export class PaymentSummary extends ComponentV2 {
     }
   }
 
-  async addItemsToOrder(orderId, userId) {
-    try {
-      const response = await fetch('backend/add-items-to-order.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, user_id: userId })
-      });
+  
+  
+  // Method to group cartData by delivery option
+// Modify the groupCartDataByDeliveryOption method to group by delivery option
+// Method to group cartData by delivery option, including quantity
+groupCartDataByDeliveryOption(cartData) {
+  console.log("Cart Data Before Grouping:", cartData);  // Debug log to inspect cart data
+  
+  const grouped = [
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, // Group for delivery option 1
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, // Group for delivery option 2
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }  // Group for delivery option 3
+  ];
 
-      const responseBody = await response.json();
-      if (!response.ok) {
-        throw new Error(responseBody.error || 'Failed to add items to order');
-      }
-      return responseBody;
-    } catch (error) {
-      console.error('Error adding items to order:', error);
-      throw error;
+  // Shipping cost mapping for each delivery option
+  const shippingCosts = {
+    1: 0,      // Delivery option 1: No shipping cost
+    2: 499,    // Delivery option 2: $4.99 (499 cents)
+    3: 999     // Delivery option 3: $9.99 (999 cents)
+  };
+
+  // Delivery fees for each delivery option
+  const deliveryFees = {
+    1: 0,      // Delivery option 1: No delivery fee
+    2: 499,    // Delivery option 2: $4.99 (499 cents)
+    3: 999     // Delivery option 3: $9.99 (999 cents)
+  };
+
+  // Iterate through each item and group them by delivery option
+  cartData.forEach(item => {
+    const deliveryOption = item.deliveryOption;  // Delivery option number (1, 2, or 3)
+    console.log("Delivery Option:", deliveryOption);  // Debug log to inspect delivery option
+    
+    if (deliveryOption >= 1 && deliveryOption <= 3) {
+      const group = grouped[deliveryOption - 1];
+      group.items.push(item);  // Add item to group for delivery option
+      group.totalQuantity += item.quantity; // Add quantity to total quantity for the group
+      group.totalPriceCents += item.priceCents * item.quantity; // Add price to total price for the group
+
+      // Add the shipping cost based on the delivery option
+      group.shippingCostCents += shippingCosts[deliveryOption]
     }
+  });
+
+  // Process each group to calculate final pricing (delivery fee, tax, final total)
+  grouped.forEach((group, index) => {
+    if (group.items.length > 0) {
+      const deliveryOption = index + 1;
+
+     
+
+      // Calculate tax (10% of product price + shipping cost + delivery fee)
+      group.taxCents = Math.ceil((group.totalPriceCents + group.shippingCostCents ) * 0.10);
+
+      // Final total for this batch (product price + shipping + delivery fee + tax)
+      group.finalTotalCents = group.totalPriceCents + group.shippingCostCents + group.taxCents;
+
+      // Assign a delivery date based on the delivery option
+      group.deliveryDate = this.calculateDeliveryDate(deliveryOption);
+    }
+  });
+
+  console.log("Grouped Cart Data By Delivery Option:", grouped);  // Debug log to inspect grouped cart data
+  return grouped;
+}
+
+groupIndividualCartData(cartData) {
+  console.log("Individual Cart Data Before Grouping:", cartData);  // Debug log to inspect cart data
+  
+  // Group for 3 delivery options
+  const grouped = [
+    { items: [], deliveryDate: null },  // Group for delivery option 1
+    { items: [], deliveryDate: null },  // Group for delivery option 2
+    { items: [], deliveryDate: null }   // Group for delivery option 3
+  ];
+
+  // Iterate through each item and group them by delivery option
+  cartData.forEach(item => {
+    const deliveryOption = item.delivery_option;  // Delivery option number (1, 2, or 3)
+    console.log("Delivery Option:", deliveryOption);  // Debug log to inspect delivery option
+    
+    if (deliveryOption >= 1 && deliveryOption <= 3) {
+      const group = grouped[deliveryOption - 1];
+      group.items.push(item);  // Add item to group for the corresponding delivery option
+    }
+  });
+
+  // Process each group to assign a delivery date based on the delivery option
+  grouped.forEach((group, index) => {
+    if (group.items.length > 0) {
+      const deliveryOption = index + 1;
+      // Assign a delivery date based on the delivery option
+      group.deliveryDate = this.calculateDeliveryDate(deliveryOption);
+    }
+  });
+
+  console.log("Grouped Individual Cart Data By Delivery Option:", grouped);  // Debug log to inspect grouped cart data
+  return grouped;
+}
+
+
+
+
+async createOrders(userId, totalCents, groupedItems) {
+  console.log('Creating orders with the following data:');
+  console.log('User ID:', userId);
+  console.log('Grouped Items:', groupedItems);
+
+  // Filter out empty groups and format the data
+  const ordersToCreate = groupedItems.filter(group => group.items.length > 0);
+
+  // Send the orders to the backend
+  try {
+    const response = await fetch('backend/create-order.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ordersToCreate)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create orders');
+    }
+
+    const data = await response.json();
+    console.log('Orders created successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Error creating orders:', error);
+    throw error;
   }
+}
+
+
+
+// Helper method to calculate the delivery date based on the delivery option
+calculateDeliveryDate(deliveryOption) {
+  const today = new Date();
+
+  const deliveryDays = {
+    1: 7,  // 1: 7 days delivery
+    2: 3,  // 2: 3 days delivery
+    3: 1   // 3: 1 day delivery
+  };
+
+  const daysToAdd = deliveryDays[deliveryOption] || 7;  // Default to 7 days if option not found
+  const deliveryDate = new Date(today);
+  deliveryDate.setDate(today.getDate() + daysToAdd);
+
+  // Format the date for MySQL
+  return deliveryDate.toISOString().split('T')[0]; // Returns in 'YYYY-MM-DD' format
+}
+
+
 
   async fetchUserId() {
     try {

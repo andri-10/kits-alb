@@ -27,8 +27,9 @@ export class CartSummary extends ComponentV2 {
   #checkoutHeader;
 
   setPaymentSummary(paymentSummary) {
-    this.#paymentSummary = new PaymentSummary('#payment-summary', 'pk_test_51QingtJvqD1LcS3xYG4Frz4qh9htiMyRoTGr0weMwD5dROi3d6Iuj9LRTKC7HP2jdlL57jNtOI8Q1d4W0Pw7UfJI004aeLOIFC', this.cartData);
+    this.#paymentSummary = new PaymentSummary('#payment-summary', 'pk_test_51QingtJvqD1LcS3xYG4Frz4qh9htiMyRoTGr0weMwD5dROi3d6Iuj9LRTKC7HP2jdlL57jNtOI8Q1d4W0Pw7UfJI004aeLOIFC');
     this.#paymentSummary.create(); // Create and render the payment summary
+    this.#paymentSummary.setCartData(this.cartData);
   }
 
   setCheckoutHeader(checkoutHeader) {
@@ -112,6 +113,9 @@ export class CartSummary extends ComponentV2 {
       console.log('Cart data:', cartData);
 
       this.cartData = cartData;
+      if (this.#paymentSummary) {
+        this.#paymentSummary.setCartData(cartData);
+      }
       this.renderCartItems(cartData);
     } catch (error) {
       console.error('Error fetching cart data:', error);

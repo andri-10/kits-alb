@@ -10,11 +10,12 @@ export class Cart {
     this.#items = [];
     this.loadFromBackend();
   }
+
   async loadFromBackend() {
     try {
       const response = await fetch('backend/get-cart-products.php');
       const data = await response.json();
-      
+
       if (Array.isArray(data)) {
         this.#items = data.map(item => ({
           id: item.productId,
@@ -33,9 +34,30 @@ export class Cart {
       console.error('Error loading cart:', error);
     }
   }
+
+  // Method to group cart items by delivery option
+  groupByDeliveryOption() {
+    const groupedItems = {
+      0: [],
+      1: [],
+      2: [],
+      3: []
+    };
+
+    this.#items.forEach(item => {
+      if (groupedItems.hasOwnProperty(item.selectedDelivery)) {
+        groupedItems[item.selectedDelivery].push(item);
+      } else {
+        console.warn('Invalid delivery option:', item.selectedDelivery);
+      }
+    });
+
+    return groupedItems;
+  }
+
   async addToCart(productId, quantity) {
     console.log('Adding to cart:', { productId, quantity });
-  
+
     try {
       const response = await fetch('backend/add-to-cart.php', {
         method: 'POST',
@@ -60,6 +82,7 @@ export class Cart {
       return 0;
     }
   }
+
   async calculateTotalQuantity() {
     try {
       const response = await fetch('backend/get-cart-count.php', {
@@ -67,7 +90,7 @@ export class Cart {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({ })
       });
 
       const data = await response.json();
@@ -78,6 +101,7 @@ export class Cart {
       return 0;
     }
   }
+
   async updateDeliveryOption(cartItemId, deliveryOptionId) {
     try {
       const response = await fetch('backend/update-delivery-option.php', {
@@ -100,6 +124,7 @@ export class Cart {
       console.error('Error updating delivery option:', error);
     }
   }
+
   async calculateCosts(userId) {
     try {
       const response = await fetch('backend/get-cart-costs.php', {
@@ -114,16 +139,17 @@ export class Cart {
         console.error('Failed to fetch cart costs:', errorText);
         throw new Error('Failed to fetch cart costs');
       }
-  
+
       const data = await response.json();
       console.log('Cart costs data:', data);
-  
+
       return data.costs || { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     } catch (error) {
       console.error('Error calculating cart costs:', error);
       return { productCostCents: 0, shippingCostCents: 0, taxCents: 0, totalCents: 0 };
     }
   }
+
   async removeFromCart(cartItemId) {
     try {
       const response = await fetch('backend/remove-from-cart.php', {
@@ -146,27 +172,28 @@ export class Cart {
 
   async decreaseQuantity(productId) {
     const response = await fetch('backend/remove-from-cart.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId })
     });
 
     const data = await response.json();
 
     if (data.success) {
-        if (data.quantity === 0) {
-            console.log('Product removed from cart');
-        } else {
-            console.log(`Quantity decreased, new quantity: ${data.quantity}`);
-        }
+      if (data.quantity === 0) {
+        console.log('Product removed from cart');
+      } else {
+        console.log(`Quantity decreased, new quantity: ${data.quantity}`);
+      }
     } else {
-        console.error('Failed to decrease quantity:', data.error);
+      console.error('Failed to decrease quantity:', data.error);
     }
-}
+  }
 
-isEmpty() {
-  return this.#items.length === 0;
-}
+  isEmpty() {
+    return this.#items.length === 0;
+  }
+
   get items() {
     return this.#items;
   }
