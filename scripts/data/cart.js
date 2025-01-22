@@ -1,7 +1,4 @@
 import '../packages/uuid.js';
-import {MoneyUtils} from '../utils/MoneyUtils.js';
-import {deliveryOptions} from './deliveryOptions.js';
-import {products} from './products.js';
 
 export class Cart {
   #items;
@@ -35,8 +32,7 @@ export class Cart {
     }
   }
 
-  // Method to group cart items by delivery option
-  groupByDeliveryOption() {
+    groupByDeliveryOption() {
     const groupedItems = {
       0: [],
       1: [],

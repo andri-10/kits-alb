@@ -1,6 +1,4 @@
-import { cart } from '../../data/cart.js';
 import { deliveryOptions } from '../../data/deliveryOptions.js';
-import { products } from '../../data/products.js';
 import { MoneyUtils } from '../../utils/MoneyUtils.js';
 import { DomUtils } from '../../utils/DomUtils.js';
 import { DateUtils } from '../../utils/DateUtils.js';
@@ -24,7 +22,7 @@ export class CartSummary extends ComponentV2 {
 
   setPaymentSummary(paymentSummary) {
     this.#paymentSummary = new PaymentSummary('#payment-summary', 'pk_test_51QingtJvqD1LcS3xYG4Frz4qh9htiMyRoTGr0weMwD5dROi3d6Iuj9LRTKC7HP2jdlL57jNtOI8Q1d4W0Pw7UfJI004aeLOIFC');
-    this.#paymentSummary.create(); // Create and render the payment summary
+    this.#paymentSummary.create(); 
   }
 
   setCheckoutHeader(checkoutHeader) {
@@ -35,7 +33,6 @@ export class CartSummary extends ComponentV2 {
   
   async render() {
     try {
-      
       await this.fetchCartData();
       this.#attachEventListeners();
     } catch (error) {
@@ -115,9 +112,6 @@ export class CartSummary extends ComponentV2 {
       const deliveryDate = deliveryOption.calculateDeliveryDate();
       if(cartItem.deliveryOption===val)
         deliveryText += `Delivery date: ${DateUtils.formatDateWeekday(deliveryDate)}`
-  
-      
-  
       val += 1;
     });
   
@@ -172,9 +166,6 @@ export class CartSummary extends ComponentV2 {
 
     });
 
-    
-    
-  
     this.element.innerHTML = cartSummaryHTML;
   }
 

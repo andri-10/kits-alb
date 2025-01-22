@@ -7,7 +7,7 @@ export class OrdersGrid extends Component {
   element;
   #kitsHeader;
   #orders = [];
-  #currentFilter = 'all'; // Add state to track current filter
+  #currentFilter = 'all'; 
 
   constructor(selector) {
     super();
@@ -35,7 +35,6 @@ export class OrdersGrid extends Component {
     }
   }
   render() {
-    // Add a filter menu at the top with the current filter value
     const filterMenu = `
       <div class="order-filter">
         <label for="order-status">Filter by Status:</label>
@@ -47,7 +46,6 @@ export class OrdersGrid extends Component {
       </div>
     `;
   
-    // Check if no orders exist
     if (this.#orders.length === 0) {
       this.element.innerHTML = `
         ${filterMenu}
@@ -70,7 +68,6 @@ export class OrdersGrid extends Component {
   
     let ordersHTML = disclaimer + filterMenu;
   
-    // Get filtered orders based on current filter
     const filteredOrders = this.#getFilteredOrders(this.#currentFilter);
   
     if (filteredOrders.length === 0) {
@@ -80,7 +77,6 @@ export class OrdersGrid extends Component {
         </div>
       `;
     } else {
-      // Render filtered orders
       filteredOrders.forEach(order => {
         const orderDate = DateUtils.formatDateMonth(new Date(order.created_at).getTime());
         const orderCost = MoneyUtils.formatMoney(order.total_price);
@@ -125,8 +121,6 @@ export class OrdersGrid extends Component {
     this.#attachEventListeners();
   }
   
-  
-
   #getFilteredOrders(status) {
     if (status === 'pending') {
       return this.#orders.filter(order => order.status === 'pending');
@@ -151,9 +145,7 @@ export class OrdersGrid extends Component {
   #renderOrderGroups(groupedItems, progress) {
     let html = '';
     
-    // Loop through each delivery date group
     Object.entries(groupedItems).forEach(([deliveryDate, items]) => {
-      // Render the HTML for each delivery date group
       html += `
         <div class="delivery-group">
           <div class="delivery-date">
@@ -171,12 +163,11 @@ export class OrdersGrid extends Component {
         </div>
       `;
       
-      // Check if the progress for any item is 100% and update the order status to 'completed'
       items.forEach(item => {
         const { progress } = this.#calculateProgress(deliveryDate);
         
         if (progress === 100 && item.order_status === 'pending') {
-          this.#updateOrderStatusToCompleted(item.order_id); // Call the update function if progress is 100%
+          this.#updateOrderStatusToCompleted(item.order_id);
         }
       });
     });
