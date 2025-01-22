@@ -128,13 +128,12 @@ export class OrdersGrid extends Component {
   
 
   #getFilteredOrders(status) {
-    // More explicit filtering based on exact status matches
     if (status === 'pending') {
-      return this.#orders.filter(order => order.status === 'pending' && this.#calculateProgress(order.delivery_date).progress !== 100);
+      return this.#orders.filter(order => order.status === 'pending');
     } else if (status === 'completed') {
-      return this.#orders.filter(order => order.status === 'completed' || this.#calculateProgress(order.delivery_date).progress === 100);
+      return this.#orders.filter(order => order.status === 'completed');
     }
-    return this.#orders; // Return all orders for 'all' filter
+    return this.#orders;
   }
   
 
