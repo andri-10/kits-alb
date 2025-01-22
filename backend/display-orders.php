@@ -32,6 +32,7 @@ try {
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     foreach ($orders as &$order) {
+        // Modified query to join orders with order_items and include created_at from orders
         $stmt = $conn->prepare("
             SELECT 
                 oi.id,
@@ -41,44 +42,18 @@ try {
                 oi.size,
                 oi.delivery_date,
                 oi.image,
-                p.name as product_name
+                p.name as product_name,
+                o.created_at as order_created_at, -- Include created_at from orders table
+                o.status as order_status,     -- Include order status from orders table
+                o.delivery_date as order_delivery_date
             FROM order_items oi
             LEFT JOIN products p ON oi.product_id = p.id
+            LEFT JOIN orders o ON oi.order_id = o.id -- Join orders to get created_at and status
             WHERE oi.order_id = :order_id
-        
         ");
         
         $stmt->execute([':order_id' => $order['id']]);
         $order['items'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Calculate order progress
-        $created = new DateTime($order['created_at']);
-        $delivery = new DateTime($order['delivery_date']);
-        $today = new DateTime();
-        
-        if ($today->format('Y-m-d') === $created->format('Y-m-d')) {
-            $order['progress'] = [
-                'status' => 'Pending',
-                'progress' => 10,
-                'message' => 'Payment confirmation'
-            ];
-        } elseif ($today >= $delivery) {
-            $order['progress'] = [
-                'status' => 'Delivered',
-                'progress' => 100,
-                'message' => 'Package delivered'
-            ];
-        } else {
-            $totalDays = $created->diff($delivery)->days;
-            $progressDays = $created->diff($today)->days;
-            $progressPercentage = min(90, 10 + (($progressDays / $totalDays) * 80));
-            
-            $order['progress'] = [
-                'status' => 'Shipped',
-                'progress' => $progressPercentage,
-                'message' => 'On the way'
-            ];
-        }
     }
     
     echo json_encode(['success' => true, 'orders' => $orders]);

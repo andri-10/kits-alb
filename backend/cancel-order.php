@@ -22,9 +22,8 @@ if (!$orderId) {
 try {
     $conn->beginTransaction();
 
-    // Check if order exists and can be cancelled
     $stmt = $conn->prepare("
-        SELECT created_at, delivery_date, status
+        SELECT status
         FROM orders 
         WHERE id = :order_id AND user_id = :user_id
     ");
@@ -44,15 +43,6 @@ try {
         throw new Exception('Order is already cancelled');
     }
 
-    // Check if cancellation is allowed (same day only)
-    $orderDate = new DateTime($order['created_at']);
-    $today = new DateTime();
-    
-    if ($orderDate->format('Y-m-d') !== $today->format('Y-m-d')) {
-        throw new Exception('Orders can only be cancelled on the same day');
-    }
-
-    // Update order status
     $stmt = $conn->prepare("
         UPDATE orders 
         SET status = 'cancelled' 
@@ -60,14 +50,12 @@ try {
     ");
     $stmt->execute([':order_id' => $orderId]);
 
-    // Remove payment logs
     $stmt = $conn->prepare("
         DELETE FROM payment_logs 
         WHERE order_id = :order_id
     ");
     $stmt->execute([':order_id' => $orderId]);
 
-    // Remove order items
     $stmt = $conn->prepare("
         DELETE FROM order_items 
         WHERE order_id = :order_id
