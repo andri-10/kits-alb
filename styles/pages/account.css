@@ -273,6 +273,27 @@ text-align: center;
   text-align: center;
 }
 
+.additional-links{
+  width:90%;
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+
+}
+
+.additional-links .quick-links-list{
+  display:flex;
+  flex-direction: row;
+  list-style-type: none;
+  justify-content: space-between;
+  padding:0;
+  margin-top: calc(15px + 5%);
+}
+
+.quick-link{
+  text-decoration: none;
+  color:rgb(0, 27, 70)
+}
 
 
 @media (max-height: 788px){
@@ -300,7 +321,7 @@ text-align: center;
     padding: 15px;
     box-sizing: border-box;
     margin-bottom: 20px;
-    max-height:400px;
+    max-height:450px;
   }
   
   .profile-info img {
@@ -313,7 +334,7 @@ text-align: center;
 @media (max-width:478px){
   .account-container {
     
-    max-height:430px;
+    max-height:530px;
   }
   .profile-info .two-main-buttons{
     flex-direction: column;
@@ -342,6 +363,17 @@ text-align: center;
  min-width:80px;
  padding-left:5px;
  padding-right: 5px;
+}
+
+.additional-links .quick-links-list{
+  
+  flex-direction: column;
+  list-style-type: none;
+  justify-content: center;
+  
+}
+.quick-links-list li{
+  text-align: center !important;
 }
   
 }

@@ -1,5 +1,6 @@
 main {
-  padding-top: 80px; /* Adjust based on your header height */
+  padding-top: 80px; 
+  box-sizing: border-box;
   min-height: 100vh;
   background-color: #f8f9fa;
 }
@@ -81,7 +82,7 @@ main {
 
 .progress {
   height: 100%;
-  background: #007bff;
+  background: #ff9900;
   transition: width 0.3s ease;
 }
 
@@ -90,9 +91,9 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #fff;
+  color: #000000;
   font-size: 12px;
-  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  
   white-space: nowrap;
 }
 
@@ -133,6 +134,11 @@ main {
   margin-bottom: 8px;
 }
 
+.price-and-button{
+  display: flex;
+  justify-content: space-between;
+}
+
 .toggle-btn {
   background: none;
   border: none;
@@ -142,7 +148,7 @@ main {
 
 .cancel-btn {
   padding: 8px 16px;
-  background-color: #dc3545;
+  background-color: #ffa200;
   color: white;
   border: none;
   border-radius: 4px;

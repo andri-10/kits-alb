@@ -465,14 +465,14 @@ async createOrders(userId, totalCents, groupedItems) {
   console.log('Grouped Items:', groupedItems);
 
   // Filter out empty groups and format the data
-  const ordersToCreate = groupedItems.filter(group => group.items.length > 0);
+  
 
   // Send the orders to the backend
   try {
     const response = await fetch('backend/create-order.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ordersToCreate)
+      body: JSON.stringify(groupedItems)
     });
 
     if (!response.ok) {

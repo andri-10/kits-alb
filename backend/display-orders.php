@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-
+    // Only select pending or completed orders
     $stmt = $conn->prepare("
         SELECT 
             o.id,
@@ -19,18 +19,23 @@ try {
             o.created_at,
             o.delivery_date
         FROM orders o
-        WHERE o.user_id = :user_id
-        ORDER BY o.created_at DESC
+        WHERE o.user_id = :user_id 
+        AND o.status IN ('pending', 'completed')
+        AND (
+            o.delivery_date IS NULL 
+            OR o.delivery_date > DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH)
+        )
+        ORDER BY o.id DESC
     ");
     
     $stmt->execute([':user_id' => $userId]);
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    
     foreach ($orders as &$order) {
         $stmt = $conn->prepare("
             SELECT 
                 oi.id,
+                oi.order_id,
                 oi.product_id,
                 oi.price,
                 oi.size,
@@ -40,6 +45,7 @@ try {
             FROM order_items oi
             LEFT JOIN products p ON oi.product_id = p.id
             WHERE oi.order_id = :order_id
+        
         ");
         
         $stmt->execute([':order_id' => $order['id']]);

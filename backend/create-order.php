@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 header('Content-Type: application/json');
 session_start();
 
@@ -7,15 +10,19 @@ $dbname = 'web';
 $username = 'root';
 $password = '';
 
+
+
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
+    
     echo json_encode(['error' => 'Connection failed: ' . $e->getMessage()]);
     exit;
 }
 
 if (!isset($_SESSION['user_id'])) {
+   
     echo json_encode(['error' => 'User is not logged in']);
     exit;
 }
@@ -46,63 +53,11 @@ function calculateDeliveryDate($deliveryOption) {
 try {
     $conn->beginTransaction();
     $createdOrderIds = [];
-    $option = 1;
 
-    foreach ($inputData as $batchOrder) {
-        if (empty($batchOrder['finalTotalCents'])) {
-            continue;
-        }
-
-        $totalPriceDollars = $batchOrder['finalTotalCents'];
-
-        // Insert the order
-        $stmt = $conn->prepare("
-            INSERT INTO orders (
-                user_id, 
-                total_price, 
-                status, 
-                delivery_date,
-                created_at,
-                updated_at
-            ) VALUES (
-                :user_id, 
-                :total_price, 
-                :status, 
-                :delivery_date,
-                NOW(),
-                NOW()
-            )
-        ");
-
-        $stmt->execute([
-            ':user_id' => $userId,
-            ':total_price' => $totalPriceDollars,
-            ':status' => 'pending',
-            ':delivery_date' => $batchOrder['deliveryDate']
-        ]);
-
-        $orderId = $conn->lastInsertId();
-        $createdOrderIds[] = $orderId;
-
-        // Log the payment
-        $stmtPayment = $conn->prepare("
-            INSERT INTO payment_logs (
-                order_id,
-                amount,
-                created_at
-            ) VALUES (
-                :order_id,
-                :amount,
-                NOW()
-            )
-        ");
-
-        $stmtPayment->execute([
-            ':order_id' => $orderId,
-            ':amount' => $totalPriceDollars
-        ]);
-
-        // Get cart items
+    // Process cart items for each delivery option (1, 2, 3)
+    for ($option = 1; $option <= 3; $option++) {
+        
+        
         $sql = "
             SELECT 
                 c.id AS cart_id,         
@@ -112,56 +67,103 @@ try {
                 p.priceCents AS product_pricecents,
                 p.image AS product_image,
                 c.size AS cart_size,
-                c.delivery_option AS delivery_option,
-                c.created_at
+                c.delivery_option AS delivery_option
             FROM shopping_cart c
             JOIN products p ON c.product_id = p.id
             WHERE c.user_id = :user_id AND c.delivery_option = :delivery_option
         ";
 
+        
         $stmtItems = $conn->prepare($sql);
         $stmtItems->bindParam(':user_id', $userId);
         $stmtItems->bindParam(':delivery_option', $option);
         $stmtItems->execute();
 
         $cartItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+       
+        if (!empty($cartItems)) {
+            $finalTotalCents = isset($inputData[$option - 1]['finalTotalCents']) && $inputData[$option - 1]['finalTotalCents'] > 0
+                ? $inputData[$option - 1]['finalTotalCents']
+                : 0;
 
-        // Insert order items
-foreach ($cartItems as $item) {
-    $stmtOrderItems = $conn->prepare("
-        INSERT INTO order_items (
-            order_id,
-            product_id,
-            price,
-            size,
-            delivery_date,
-            image
-        ) VALUES (
-            :order_id,
-            :product_id,
-            :price,
-            :size,
-            :delivery_date,
-            :product_image
-        )
-    ");
+          
 
-    $deliveryDate = calculateDeliveryDate($option);
+            $stmt = $conn->prepare("
+                INSERT INTO orders (
+                    user_id, 
+                    total_price, 
+                    status, 
+                    delivery_date,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    :user_id, 
+                    :total_price, 
+                    :status, 
+                    :delivery_date,
+                    NOW(),
+                    NOW()
+                )
+            ");
 
-    $stmtOrderItems->execute([
-        ':order_id' => $orderId,
-        ':product_id' => $item['product_id'],
-        ':price' => $item['product_pricecents'],
-        ':size' => $item['cart_size'],
-        ':delivery_date' => $deliveryDate,
-        ':product_image' => $item['product_image']
-    ]);
-}
+            $deliveryDate = calculateDeliveryDate($option);
 
+            $stmt->execute([
+                ':user_id' => $userId,
+                ':total_price' => $finalTotalCents,
+                ':status' => 'pending',
+                ':delivery_date' => $deliveryDate
+            ]);
 
-        $option++;
-        if ($option > 3) {
-            break;
+            $orderId = $conn->lastInsertId();
+            $createdOrderIds[] = $orderId;
+           
+            $stmtPayment = $conn->prepare("
+                INSERT INTO payment_logs (
+                    order_id,
+                    amount,
+                    created_at
+                ) VALUES (
+                    :order_id,
+                    :amount,
+                    NOW()
+                )
+            ");
+
+            $stmtPayment->execute([
+                ':order_id' => $orderId,
+                ':amount' => $finalTotalCents
+            ]);
+           
+            foreach ($cartItems as $item) {
+                $stmtOrderItems = $conn->prepare("
+                    INSERT INTO order_items (
+                        order_id,
+                        product_id,
+                        price,
+                        size,
+                        delivery_date,
+                        image
+                    ) VALUES (
+                        :order_id,
+                        :product_id,
+                        :price,
+                        :size,
+                        :delivery_date,
+                        :product_image
+                    )
+                ");
+
+                $stmtOrderItems->execute([
+                    ':order_id' => $orderId,
+                    ':product_id' => $item['product_id'],
+                    ':price' => $item['product_pricecents'],
+                    ':size' => $item['cart_size'],
+                    ':delivery_date' => $deliveryDate,
+                    ':product_image' => $item['product_image']
+                ]);
+                
+            }
         }
     }
 
@@ -169,7 +171,6 @@ foreach ($cartItems as $item) {
         throw new Exception('No valid orders were created');
     }
 
-    // Remove all items from the user's cart
     $stmtClearCart = $conn->prepare("
         DELETE FROM shopping_cart
         WHERE user_id = :user_id
@@ -180,12 +181,17 @@ foreach ($cartItems as $item) {
     echo json_encode([
         'order_ids' => $createdOrderIds, 
         'status' => 'success',
-        'message' => 'Orders created, payments logged, and cart cleared successfully'
+        'message' => 'Orders created, payments logged, and cart cleared successfully',
+       
     ]);
 
 } catch (Exception $e) {
     $conn->rollBack();
-    echo json_encode(['error' => 'Error processing order and payment: ' . $e->getMessage()]);
+   
+    echo json_encode([
+        'error' => 'Error processing order and payment: ' . $e->getMessage()
+        
+    ]);
     exit;
 }
 ?>

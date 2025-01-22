@@ -62,29 +62,44 @@ $orderResult = $orderStmt->get_result();
 
 <div class="account-container">
     <div class="everything-container">
-    <h1>User Profile</h1>
-    <div class="profile-info">
-        <div class="profile-image">
-            <?php if ($user['profile_photo']) { ?>
-                <img id="currentImg" src="<?php echo htmlspecialchars($user['profile_photo']); ?>".slice(2) alt="Profile Picture">
-            <?php } else { ?>
-                <img id="currentImg" src="images/default-profile.png" alt="Default Profile Picture">
-            <?php } ?>
+        <h1>User Profile</h1>
+        <div class="profile-info">
+            <div class="profile-image">
+                <?php if ($user['profile_photo']) { ?>
+                    <img id="currentImg" src="<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="Profile Picture">
+                <?php } else { ?>
+                    <img id="currentImg" src="images/default-profile.png" alt="Default Profile Picture">
+                <?php } ?>
+            </div>
 
-        <div class='name-and-email'>
-        <p class="profile-name"><?php echo htmlspecialchars($user['name']); ?></p>
-        <p class="profile-email"><?php echo htmlspecialchars($user['email']); ?></p>   
-        </div>
-        <div class='profile-buttons'>
-                <div class='two-main-buttons'>
+            <div class="name-and-email">
+                <p class="profile-name"><?php echo htmlspecialchars($user['name']); ?></p>
+                <p class="profile-email"><?php echo htmlspecialchars($user['email']); ?></p>
+            </div>
+
+            <div class="profile-buttons">
+                <div class="two-main-buttons">
                     <button class="edit-profile-btn">Edit profile</button>
-                    <a href = passwordreset.php?from=account><button class="reset-password-btn">Reset password</button></a>
+                    <a href="passwordreset.php?from=account">
+                        <button class="reset-password-btn">Reset password</button>
+                    </a>
                 </div>
             </div>
+
+            <div class="additional-links">
+            <ul class="quick-links-list">
+                <li><a href="catalog.php" class="quick-link">Catalog</a></li>
+                <li><a href="orders.php" class="quick-link">Orders</a></li>
+                <li><a href="contact.php" class="quick-link">Contact Us</a></li>
+                <li><a href="logout.php" class="quick-link">Log out</a></li>
+            </ul>
+            </div>
         </div>
-    </div>
+
+        
     </div>
 </div>
+
 
 <footer class="kits-footer">
     <p>&copy; 2024 Football Kits Albania. All rights reserved.<br>

@@ -8,10 +8,6 @@ import { ComponentV2 } from '../ComponentV2.js';
 import { PaymentSummary } from './PaymentSummary.js';
 
 export class CartSummary extends ComponentV2 {
-  constructor(selector, cartData) {
-    super(selector);
-    this.cartData = cartData; 
-  }
   events = {
     'click .js-delivery-option':(event) => this.#selectDeliveryOption(event),
     'keyup .js-new-quantity-input': (event) => this.#handleQuantityInput(event),
@@ -29,13 +25,13 @@ export class CartSummary extends ComponentV2 {
   setPaymentSummary(paymentSummary) {
     this.#paymentSummary = new PaymentSummary('#payment-summary', 'pk_test_51QingtJvqD1LcS3xYG4Frz4qh9htiMyRoTGr0weMwD5dROi3d6Iuj9LRTKC7HP2jdlL57jNtOI8Q1d4W0Pw7UfJI004aeLOIFC');
     this.#paymentSummary.create(); // Create and render the payment summary
-    this.#paymentSummary.setCartData(this.cartData);
   }
 
   setCheckoutHeader(checkoutHeader) {
     this.#checkoutHeader = checkoutHeader;
   }
- 
+  cartData = [];
+  
   
   async render() {
     try {
@@ -66,8 +62,8 @@ export class CartSummary extends ComponentV2 {
       });
     });
   }
-
-  async #handleRadioChange(event) {
+  
+  #handleRadioChange(event) {
     const selectedRadio = event.target;
     const productId = selectedRadio.getAttribute("name").slice(16);
     const val = selectedRadio.getAttribute("value");
@@ -76,27 +72,8 @@ export class CartSummary extends ComponentV2 {
     }
     console.log('Radio button changed:', selectedRadio);
     console.log(productId);
-    await this.#handleDeliveryUpdate(productId, val);
-
-    // Check validation and update payment summary
-    const isValid = this.#validateDeliveryOptions();
-    this.#paymentSummary.updateValidationStatus(isValid);
-  }
-
-  #validateDeliveryOptions() {
-    const cartItems = document.querySelectorAll('.js-cart-item');
-    let allValid = true;
-
-    cartItems.forEach(item => {
-      const productId = item.getAttribute('data-cart-item-id');
-      const deliveryOption = item.querySelector(`input[name="delivery-option-${productId}"]:checked`);
-
-      if (!deliveryOption) {
-        allValid = false;
-      }
-    });
-
-    return allValid;
+    this.#handleDeliveryUpdate(productId, val);
+    this.#paymentSummary.refreshPaymentDetails();
   }
 
 
@@ -113,9 +90,6 @@ export class CartSummary extends ComponentV2 {
       console.log('Cart data:', cartData);
 
       this.cartData = cartData;
-      if (this.#paymentSummary) {
-        this.#paymentSummary.setCartData(cartData);
-      }
       this.renderCartItems(cartData);
     } catch (error) {
       console.error('Error fetching cart data:', error);
@@ -390,20 +364,20 @@ export class CartSummary extends ComponentV2 {
           delivery_option: value,
         }),
       });
-
+  
       const result = await response.json();
-
-
-
+  
+  
+  
       if (result.success) {
         console.log(`Delivery option updated successfully for product ID ${productId}`);
-
+     
       } else {
         console.error('Failed to update delivery option:', result.message);
-
+     
       }
-
-
+  
+  
     } catch (error) {
       console.error('Error updating delivery option:', error);
     }
@@ -770,7 +744,6 @@ const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
       return; 
     }
  
-    
     this.#removeFromCart(cartItemId);
 
     this.#removeFromCartSummary(cartItemContainer);
@@ -803,7 +776,6 @@ const selectedOption = selectedOptionElement ? selectedOptionElement.value : 0;
     .catch(error => {
       console.error('Error with request or response:', error);
     });
-    this.fetchCartData();
   }
   
   #removeFromCartSummary(cartItemElement) {

@@ -21,7 +21,7 @@ $resultTotalOrders = mysqli_query($conn, $queryTotalOrders);
 $totalOrders = $resultTotalOrders ? mysqli_fetch_assoc($resultTotalOrders)['total_orders'] : 0;
 
 // Query to sum total price
-$queryTotalEarnings = "SELECT SUM(total_price) as total_earnings FROM orders";
+$queryTotalEarnings = "SELECT SUM(amount) as total_earnings FROM payment_logs";
 $resultTotalEarnings = mysqli_query($conn, $queryTotalEarnings);
 $totalEarnings = $resultTotalEarnings ? mysqli_fetch_assoc($resultTotalEarnings)['total_earnings'] : 0;
 
