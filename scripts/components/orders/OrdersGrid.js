@@ -302,7 +302,7 @@ export class OrdersGrid extends Component {
         <div class="price-and-button">
           <div class="product-price">${MoneyUtils.formatMoney(item.price)}</div>
           ${!isDisabled ? `
-            <button class="size-update-btn js-toggle-size" 
+            <button class="button-primary size-update-btn js-toggle-size" 
               data-item-id="${item.id}"
               data-order-id="${item.order_id}">
               Update Size

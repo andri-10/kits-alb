@@ -86,7 +86,6 @@ body {
     gap: 14px
 }
 
-
 .product-price {
     font-size: 22px;
     color: rgb(177, 39, 4);
@@ -119,8 +118,8 @@ body {
 
 .add-to-cart {
     padding: 12px 20px;
-    background-color: rgb(255, 216, 20);
-    color: black;
+    background: linear-gradient(to right, #2b5876, #4e4376);
+    color: white;
     border: none;
     font-size: 18px;
     cursor: pointer;
@@ -130,7 +129,8 @@ body {
 }
 
 .add-to-cart:hover {
-    background-color: rgb(221, 188, 18);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(43, 88, 118, 0.2);
 }
 
 

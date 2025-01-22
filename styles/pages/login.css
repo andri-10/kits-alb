@@ -1,181 +1,183 @@
-*{
+* {
   box-sizing: border-box;
 }
 
-
 body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  .new_home_web {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    animation: dropdown 1s ease-in-out;
-  }
-  
-  @keyframes dropdown {
-    from {
-      opacity: 0;
-      transform: translateY(-100px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .new_home_web .yellowLine {
-    background-color: rgb(233, 144, 11);
-    width: 100%;
-    height: 10px;
-    text-align: center;
-  }
-  
-  .new_home_web .yellowText {
-    color: rgb(233, 144, 11);
-  }
-  
-  .new_home_web .text-blk.subHeading {
-    text-align: center;
-    color: #939393;
-    max-width: 630px;
-  }
-  
-  .new_home_web .text-blk.heading {
-    font-size: 36px;
-    line-height: 55px;
-    font-weight: 600;
-    margin-bottom: 20px;
-  }
-  
-  .new_home_web .responsive-container-block.textContainer {
-    flex-direction: column;
-    align-items: center;
-    margin-top: 0;
-    margin-bottom: 10px;
-    max-width: 1320px;
-    z-index: 50;
-    text-align: center;
-  }
-  
-  .new_home_web .form-box {
-    width: 100%;
-    max-width: 600px;
-  }
-  
-  .new_home_web .send {
-    font-size: 18px;
-    color: white;
-    font-weight: 600;
-    background-color: rgb(19, 25, 33);
-    width: 100%;
-    text-align: center;
-    padding: 15px 0;
-    border: none;
-  }
-  
-  .new_home_web .send:hover {
-    background-color: rgb(233, 144, 11);
-  }
-  
-  .new_home_web .input,
-  .new_home_web .textinput {
-    width: 100%;
-    border: 2px solid #a2a2a2;
-    border-radius: 5px;
-    font-size: 16px;
-    background-color: #f1f1f1;
-    margin-bottom: 20px;
-    padding: 10px;
-  }
-  
-  .new_home_web .responsive-cell-block{
-    justify-content: center;
-  }
-  .new_home_web textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
-  
-  .new_home_web input:focus,
-  .new_home_web textarea:focus {
-    outline: none;
-    border-color: rgb(19, 25, 33);
-  }
-  
-  .new_home_web .topHead {
-    margin-bottom: 30px;
-  }
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #2d3748;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  line-height: 1.5;
+}
 
-  .new_home_web .checkbox-container{
-    margin-bottom: 20px;
-  }
+.new_home_web {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: dropdown 1s ease-in-out;
+}
 
-  .new_home_web .links{
-    text-align: center;
-    margin-top: 20px;
-    color: #939393;
+@keyframes dropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-100px);
   }
-
-  .new_home_web .links .link{
-    color: rgb(233, 144, 11);
-    font-weight: bold;
-    text-decoration: none;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  .new_home_web .links .link:hover{
-    text-decoration: underline;
-  }
+.new_home_web .yellowLine {
+  background: linear-gradient(to right, #f6d365, #fda085);
+  height: 10px;
+  width: 100%;
+}
 
-  .new_home_web .error-message{
-    color: red; 
-    font-size: 14px; 
-    text-align: center; 
-    margin-top: 25px;
+.new_home_web .yellowText {
+  color: #f6a623;
+  font-weight: 600;
+}
+
+.new_home_web .text-blk.subHeading {
+  text-align: center;
+  color: #718096;
+  max-width: 630px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.new_home_web .text-blk.heading {
+  font-size: 32px;
+  line-height: 1.4;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #2d3748;
+}
+
+.new_home_web .responsive-container-block.textContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: 10px;
+  max-width: 1200px;
+  text-align: center;
+  padding: 0 15px;
+}
+
+.new_home_web .form-box {
+  width: 100%;
+  max-width: 600px;
+}
+
+.new_home_web .send {
+  font-size: 16px;
+  color: white;
+  font-weight: 600;
+  background: linear-gradient(to right, #2b5876, #4e4376);
+  border: none;
+  border-radius: 25px;
+  width: 100%;
+  text-align: center;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.new_home_web .send:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.new_home_web .input,
+.new_home_web .textinput {
+  width: 100%;
+  border: 1px solid rgba(43, 88, 118, 0.2);
+  border-radius: 25px;
+  font-size: 16px;
+  background-color: #ffffff;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.new_home_web .input:focus,
+.new_home_web .textinput:focus {
+  border-color: #2b5876;
+  box-shadow: 0 0 0 2px rgba(43, 88, 118, 0.2);
+}
+
+.new_home_web textarea {
+  min-height: 120px;
+  resize: vertical;
+  border-radius: 15px;
+}
+
+.new_home_web .checkbox-container {
+  margin-bottom: 20px;
+}
+
+.new_home_web .links {
+  text-align: center;
+  margin-top: 20px;
+  color: #718096;
+}
+
+.new_home_web .links .link {
+  color: #2b5876;
+  font-weight: bold;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.new_home_web .links .link:hover {
+  color: #4e4376;
+}
+
+.new_home_web .error-message {
+  color: #e53e3e;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 25px;
   max-width: 315px;
   margin-left: auto;
   margin-right: auto;
 }
 
-
-  
-  @media (max-width: 768px) {
-
-    .new_home_web .form-box {
-      width: 100%;
-      padding: 0;
-    }
-  
-    .new_home_web .text-blk.heading {
-      font-size: 28px;
-    }
-  
-    .new_home_web .text-blk.subHeading {
-      font-size: 16px;
-      line-height: 22px;
-    }
-   
+@media (max-width: 768px) {
+  .new_home_web .form-box {
+    width: 100%;
+    padding: 0 15px;
   }
-  
-  @media (max-width: 500px) {
-    .new_home_web .text-blk.heading {
-      font-size: 24px;
-      text-align: center;
-      line-height: 30px;
-    }
-  
-    .new_home_web .text-blk.subHeading {
-      font-size: 14px;
-      line-height: 20px;
-    }
+
+  .new_home_web .text-blk.heading {
+    font-size: 28px;
+    line-height: 1.4;
   }
-  
+
+  .new_home_web .text-blk.subHeading {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 500px) {
+  .new_home_web .text-blk.heading {
+    font-size: 24px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .new_home_web .text-blk.subHeading {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}

@@ -189,21 +189,6 @@ flex-wrap:wrap;
 }
 
 
-.collapse-button{
-
-  padding: 10px;
-  font-weight: bold;
-  background-color: rgb(221, 229, 239);
-  border: none;
-  color: rgb(19, 25, 33);
-}
-
-.collapse-button:hover{
-  background-color: rgb(169, 181, 195);
-  border-color: none;
-}
-
-
 @media (max-width: 1000px) {
   .cart-item-container .cart-item-details-grid {
     grid-template-columns: 100px 1fr;
@@ -351,6 +336,9 @@ flex-wrap:wrap;
   margin-bottom: 23.5px;
 }
 
+.payment-button{
+  padding: 2px;
+}
 
 
 .payment-summary .total-row {
@@ -365,6 +353,7 @@ flex-wrap:wrap;
 .payment-summary .payment-buttons-disabled {
   pointer-events: none;
   opacity: 0.5;
+  
 }
 
 .payment-summary .place-order-button {
