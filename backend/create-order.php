@@ -2,6 +2,8 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+include('utils.php');
+
 header('Content-Type: application/json');
 session_start();
 
@@ -10,19 +12,15 @@ $dbname = 'web';
 $username = 'root';
 $password = '';
 
-
-
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    
     echo json_encode(['error' => 'Connection failed: ' . $e->getMessage()]);
     exit;
 }
 
 if (!isset($_SESSION['user_id'])) {
-   
     echo json_encode(['error' => 'User is not logged in']);
     exit;
 }
@@ -37,27 +35,60 @@ if (!is_array($inputData) || empty($inputData)) {
 
 function calculateDeliveryDate($deliveryOption) {
     $today = new DateTime();
-    
     $deliveryDays = [
         1 => 7,  // 1: 7 days delivery
         2 => 3,  // 2: 3 days delivery
         3 => 1   // 3: 1 day delivery
     ];
-
     $daysToAdd = isset($deliveryDays[$deliveryOption]) ? $deliveryDays[$deliveryOption] : 7;
     $deliveryDate = $today->modify("+$daysToAdd days");
-
     return $deliveryDate->format('Y-m-d');
+}
+
+function formatAllOrdersDetails($orderGroups) {
+    $totalAllOrders = 0;
+    $emailContent = "Thank you for your orders!\n\n";
+    
+    foreach ($orderGroups as $option => $orderData) {
+        if (!empty($orderData['items'])) {
+            $emailContent .= "=== Order Group " . ($option) . " (Delivery: " . 
+                           ($option == 1 ? "7 days" : ($option == 2 ? "3 days" : "1 day")) . ") ===\n";
+            $emailContent .= "Order ID: " . $orderData['order_id'] . "\n";
+            $emailContent .= "Delivery Date: " . $orderData['delivery_date'] . "\n\n";
+            $emailContent .= "Items:\n";
+            
+            foreach ($orderData['items'] as $item) {
+                $priceFormatted = number_format($item['product_pricecents'] / 100, 2);
+                $emailContent .= "- {$item['product_name']} (Size: {$item['cart_size']}) - \${$priceFormatted}\n";
+            }
+            
+            $groupTotal = number_format($orderData['total'] / 100, 2);
+            $emailContent .= "\nSubtotal for this group: \${$groupTotal}\n\n";
+            $totalAllOrders += $orderData['total'];
+        }
+    }
+    
+    $grandTotal = number_format($totalAllOrders / 100, 2);
+    $emailContent .= "===========================\n";
+    $emailContent .= "Grand Total for All Orders: \${$grandTotal}\n";
+    $emailContent .= "===========================\n\n";
+    
+    return $emailContent;
 }
 
 try {
     $conn->beginTransaction();
     $createdOrderIds = [];
+    $orderGroups = [];
+    $userEmail = '';
+
+    // Get user email first
+    $stmtUser = $conn->prepare("SELECT email FROM users WHERE id = :user_id");
+    $stmtUser->execute([':user_id' => $userId]);
+    $userEmail = $stmtUser->fetchColumn();
 
     // Process cart items for each delivery option (1, 2, 3)
     for ($option = 1; $option <= 3; $option++) {
-        
-        
         $sql = "
             SELECT 
                 c.id AS cart_id,         
@@ -73,20 +104,16 @@ try {
             WHERE c.user_id = :user_id AND c.delivery_option = :delivery_option
         ";
 
-        
         $stmtItems = $conn->prepare($sql);
         $stmtItems->bindParam(':user_id', $userId);
         $stmtItems->bindParam(':delivery_option', $option);
         $stmtItems->execute();
 
         $cartItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
-       
-        if (!empty($cartItems)) {
-            $finalTotalCents = isset($inputData[$option - 1]['finalTotalCents']) && $inputData[$option - 1]['finalTotalCents'] > 0
-                ? $inputData[$option - 1]['finalTotalCents']
-                : 0;
 
-          
+        if (!empty($cartItems)) {
+            $finalTotalCents = isset($inputData[$option - 1]['finalTotalCents']) ? 
+                              $inputData[$option - 1]['finalTotalCents'] : 0;
 
             $stmt = $conn->prepare("
                 INSERT INTO orders (
@@ -117,7 +144,16 @@ try {
 
             $orderId = $conn->lastInsertId();
             $createdOrderIds[] = $orderId;
-           
+
+            // Store order details for email
+            $orderGroups[$option] = [
+                'order_id' => $orderId,
+                'items' => $cartItems,
+                'total' => $finalTotalCents,
+                'delivery_date' => $deliveryDate
+            ];
+
+            // Insert into payment_logs
             $stmtPayment = $conn->prepare("
                 INSERT INTO payment_logs (
                     order_id,
@@ -134,7 +170,8 @@ try {
                 ':order_id' => $orderId,
                 ':amount' => $finalTotalCents
             ]);
-           
+
+            // Insert order items
             foreach ($cartItems as $item) {
                 $stmtOrderItems = $conn->prepare("
                     INSERT INTO order_items (
@@ -162,7 +199,6 @@ try {
                     ':delivery_date' => $deliveryDate,
                     ':product_image' => $item['product_image']
                 ]);
-                
             }
         }
     }
@@ -171,6 +207,23 @@ try {
         throw new Exception('No valid orders were created');
     }
 
+    // Format and send consolidated email
+    if (!empty($orderGroups)) {
+        $emailContent = formatAllOrdersDetails($orderGroups);
+        
+        // Send to customer
+        sendEmail($userEmail, 
+                 "Your Order Confirmation - Orders #" . implode(', #', $createdOrderIds),
+                 $emailContent);
+        
+        // Send to admin
+        $adminEmailContent = "New orders received from customer ($userEmail):\n\n" . $emailContent;
+        sendEmail('electroman784@gmail.com',
+                 "New Orders Received - Orders #" . implode(', #', $createdOrderIds),
+                 $adminEmailContent);
+    }
+
+    // Clear the cart
     $stmtClearCart = $conn->prepare("
         DELETE FROM shopping_cart
         WHERE user_id = :user_id
@@ -178,19 +231,18 @@ try {
     $stmtClearCart->execute([':user_id' => $userId]);
 
     $conn->commit();
+    
     echo json_encode([
-        'order_ids' => $createdOrderIds, 
+        'order_ids' => $createdOrderIds,
         'status' => 'success',
         'message' => 'Orders created, payments logged, and cart cleared successfully',
-       
+        'email_content' => $emailContent
     ]);
 
 } catch (Exception $e) {
     $conn->rollBack();
-   
     echo json_encode([
         'error' => 'Error processing order and payment: ' . $e->getMessage()
-        
     ]);
     exit;
 }

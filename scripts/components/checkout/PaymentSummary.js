@@ -194,45 +194,37 @@ export class PaymentSummary extends ComponentV2 {
   }
   async render() {
     try {
-      
-      await this.fetchCartData()
-      console.log("CartDataLength: "+this.cartData.length)
+      await this.fetchCartData();
+      console.log("CartDataLength: "+this.cartData.length);
       if (!this.cartData || this.cartData.length === 0) {
-
         this.element.style.display = 'none';
-
       }
 
-      await this.fetchIndividualProducts()
+      await this.fetchIndividualProducts();
 
-      this.groupCartDataByDeliveryOption(this.cartData)
-      this.groupIndividualCartData(this.individualCartData)
+      this.groupCartDataByDeliveryOption(this.cartData);
+      this.groupIndividualCartData(this.individualCartData);
       const { productCostCents, shippingCostCents, taxCents, totalCents } = await cart.calculateCosts();
       const quantity = await cart.calculateTotalQuantity();
       const cartItems = cart.items;
 
-
-
-
       const finalTaxCents = Math.ceil((productCostCents + shippingCostCents) * 0.10);
       const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
-      // Check if any items have no delivery option selected
       const hasInvalidDelivery = cartItems.some(item => item.selectedDelivery === 0);
-      console.log(hasInvalidDelivery)
+
       this.element.innerHTML = `
+        <div class="payment-summary-title">Order Summary</div>
         
-          <div class="payment-summary-title">Order Summary</div>
-          
-          ${hasInvalidDelivery ? `
-            <div class="payment-summary-warning">
-              ⚠️ Please select delivery options for all items before proceeding
-            </div>
-          ` : ''}
-          
-          <div class="payment-summary-row">
-            <div id="quantity-holder" >Items (${quantity}):</div>
-            <div id="items-cost" class="payment-summary-money">${MoneyUtils.formatMoney(productCostCents)}</div>
+        ${hasInvalidDelivery ? `
+          <div class="payment-summary-warning">
+            ⚠️ Please select delivery options for all items before proceeding
           </div>
+        ` : ''}
+        
+        <div class="payment-summary-row">
+          <div id="quantity-holder">Items (${quantity}):</div>
+          <div id="items-cost" class="payment-summary-money">${MoneyUtils.formatMoney(productCostCents)}</div>
+        </div>
           
           <div class="payment-summary-row">
             <div>Shipping & handling:</div>
@@ -254,23 +246,25 @@ export class PaymentSummary extends ComponentV2 {
             <div id="total-money" class="payment-summary-money">${MoneyUtils.formatMoney(finalTotalCents)}</div>
           </div>
 
-          <div class="payment-form">
-            <form id="payment-form">
-              <div id="card-element" class="stripe-element"></div>
-              <div id="card-errors" class="stripe-errors" role="alert"></div>
-              
-              <button type="submit" 
-                      id="submit-payment" 
-                      class="button-primary payment-button"
-                      ${hasInvalidDelivery ? 'disabled' : ''}>
-                Pay ${MoneyUtils.formatMoney(totalCents)}
-              </button>
-            </form>
-          </div>
-       
+         <div class="payment-form">
+          <form id="payment-form">
+            <div id="card-element" class="stripe-element"></div>
+            
+            
+            <button type="submit" 
+                    id="submit-payment" 
+                    class="button-primary payment-button"
+                    ${hasInvalidDelivery ? 'disabled' : ''}>
+              Pay ${MoneyUtils.formatMoney(totalCents)}
+            </button>
+          </form>
+
+        </div>
+        
+          <div id="card-errors" class="stripe-errors" role="alert"></div>
       `;
 
-      // Add style for the warning
+      // Add updated styles
       const style = document.createElement('style');
       style.textContent = `
         .payment-summary-warning {
@@ -286,6 +280,17 @@ export class PaymentSummary extends ComponentV2 {
           background-color: #cccccc;
           cursor: not-allowed;
         }
+
+        .stripe-errors {
+          color: #dc3545;
+          background-color: #f8d7da;
+          border: 1px solid #f5c6cb;
+          padding: 12px;
+          margin-top: 16px;
+          margin-bottom: 16px;
+          border-radius: 4px;
+          display: none;
+        }
       `;
       document.head.appendChild(style);
 
@@ -297,6 +302,7 @@ export class PaymentSummary extends ComponentV2 {
     }
   }
 
+
   attachEventListeners() {
     const form = this.element.querySelector('#payment-form');
     form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -304,57 +310,87 @@ export class PaymentSummary extends ComponentV2 {
 
   // In PaymentSummary.js, update the handleSubmit method
 
-async handleSubmit(event) {
-  event.preventDefault();
-  const submitButton = this.element.querySelector('#submit-payment');
-  submitButton.disabled = true;
-
-  try {
-    // First ensure cart data is fresh
-    await this.fetchCartData();
-    await this.fetchIndividualProducts();
-    
-    let { totalCents } = await cart.calculateCosts();
-    totalCents = Math.ceil(totalCents);
-
-    // Validate that the cart is not empty
-    const cartItems = cart.items;
-    if (!cartItems || cartItems.length === 0) {
-      throw new Error('Your cart is empty. Please add items to proceed.');
+  async handleSubmit(event) {
+    event.preventDefault();
+    const submitButton = this.element.querySelector('#submit-payment');
+    submitButton.disabled = true;
+  
+    try {
+      // First ensure cart data is fresh
+      await this.fetchCartData();
+      await this.fetchIndividualProducts();
+      
+      let { totalCents } = await cart.calculateCosts();
+      totalCents = Math.ceil(totalCents);
+  
+      // Validate that the cart is not empty
+      const cartItems = cart.items;
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error('Your cart is empty. Please add items to proceed.');
+      }
+  
+      // Check if card details are filled
+      const cardElement = this.stripeHandler.card;
+      if (!cardElement._complete) {
+        throw new Error('Please fill in all payment information before proceeding.');
+      }
+  
+      // Fetch the user ID from the backend
+      const userId = await this.fetchUserId();
+      if (!userId) {
+        throw new Error('User not logged in');
+      }
+  
+      // Wait for the latest grouped items data
+      await this.refreshPaymentDetails();
+      const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
+  
+      // Validate all items have delivery options selected
+      const hasInvalidDelivery = groupedItems.every(group => group.items.length === 0);
+      if (hasInvalidDelivery) {
+        throw new Error('Please select delivery options for all items before proceeding.');
+      }
+  
+      // Create payment intent and get client secret
+      const clientSecret = await this.stripeHandler.createPaymentIntent(totalCents);
+      if (!clientSecret) {
+        throw new Error('Failed to initialize payment. Please try again.');
+      }
+  
+      // Process payment with the client secret
+      const paymentResult = await this.stripeHandler.processPayment(clientSecret);
+      if (!paymentResult || paymentResult.status !== 'succeeded') {
+        throw new Error('Payment failed. Please try again.');
+      }
+  
+      // Send the grouped items to the backend to create orders
+      const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
+      if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
+        throw new Error('Failed to create orders');
+      }
+  
+      // Redirect to orders page on success
+      window.location.replace('orders.php');
+  
+    } catch (error) {
+      console.error('Payment error:', error);
+      this.showError(error.message || 'Payment failed. Please try again.');
+      submitButton.disabled = false;
     }
-
-    // Fetch the user ID from the backend
-    const userId = await this.fetchUserId();
-    if (!userId) {
-      throw new Error('User not logged in');
-    }
-
-    // Wait for the latest grouped items data
-    await this.refreshPaymentDetails();
-    const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
-
-    // Validate all items have delivery options selected
-    const hasInvalidDelivery = groupedItems.every(group => group.items.length === 0);
-    if (hasInvalidDelivery) {
-      throw new Error('Please select delivery options for all items before proceeding.');
-    }
-
-    // Send the grouped items to the backend to create orders
-    const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
-    if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
-      throw new Error('Failed to create orders');
-    }
-
- 
-    // Redirect to orders page
-    window.location.replace('orders.php');
-
-  } catch (error) {
-    console.error('Payment error:', error);
-    this.showError(error.message || 'Payment failed. Please try again.');
-    submitButton.disabled = false;
   }
-}
+
+  showError(message) {
+    const errorElement = this.element.querySelector('#card-errors');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+
+    // Remove the error message after 5 seconds
+    setTimeout(() => {
+      if (errorElement) {
+        errorElement.style.display = 'none';
+      }
+    }, 5000);
+  }
 
   
   

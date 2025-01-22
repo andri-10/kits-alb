@@ -74,64 +74,48 @@ export class StripeHandler {
   async createPaymentIntent(amount) {
     try {
       console.log('Sending amount to backend:', amount);
-
+  
       const response = await fetch('backend/create-payment-intent.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ amount }),
-        // Include credentials for session cookie
         credentials: 'same-origin'
       });
-
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Server response:', responseText);
-        throw new Error('Invalid server response');
-      }
-
-      // Handle authentication errors
-      if (response.status === 401) {
-        // Redirect to login page
-        window.location.href = 'login.php';
-        throw new Error('Please log in to continue');
-      }
-
-      if (response.status === 403) {
-        throw new Error('Access denied');
-      }
-
-      if (!response.ok || data.error) {
+  
+      const data = await response.json();
+      console.log('Payment intent response:', data);
+  
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Payment intent creation failed');
       }
-
-      return data;
-
+  
+      // Return the client secret from the response
+      return data.clientSecret;
     } catch (error) {
       console.error('Payment intent error:', error);
       throw error;
     }
   }
-
+  
   async processPayment(clientSecret) {
     try {
+      if (!clientSecret) {
+        throw new Error('Missing client secret for payment processing');
+      }
+  
       console.log('Processing payment with clientSecret:', clientSecret);
       const result = await this.stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: this.card },
+        payment_method: { card: this.card }
       });
-
+  
       if (result.error) {
-        console.error('Payment failed with error:', result.error.message);
+        console.error('Payment failed:', result.error);
         throw new Error(result.error.message);
       }
-
-      console.log('Payment successfully processed:', result.paymentIntent);
+  
+      console.log('Payment successful:', result.paymentIntent);
       return result.paymentIntent;
     } catch (error) {
       console.error('Error processing payment:', error);

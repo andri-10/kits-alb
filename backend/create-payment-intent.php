@@ -1,16 +1,10 @@
 <?php
-// create-payment-intent.php
-// Enable error logging
 error_reporting(E_ALL);
-
-
-// Start output buffering to catch any unexpected output
 ob_start();
 
 header('Content-Type: application/json');
 
 try {
-
     require __DIR__ . '/../stripe-php/init.php';
     require __DIR__ . '/./config.php';
 
@@ -19,8 +13,6 @@ try {
 
     // Get the raw POST data
     $input = json_decode(file_get_contents('php://input'), true);
-
-    // Log the decoded input
     error_log("Decoded input: " . print_r($input, true));
 
     if (!isset($input['amount'])) {
@@ -34,9 +26,8 @@ try {
         throw new Exception('Invalid amount');
     }
 
-    // Convert amount to cents for Stripe
-    $amountInCents = (int)($amount);  // Remove multiplication since amount is already in cents
-
+    // Amount is already in cents
+    $amountInCents = (int)$amount;
 
     // Initialize Stripe
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
@@ -45,26 +36,25 @@ try {
         new \Stripe\HttpClient\CurlClient([CURLOPT_SSL_VERIFYPEER => false])
     );
 
-    // Log the amount being sent to Stripe
     error_log("Creating PaymentIntent for amount: " . $amountInCents);
 
     // Create PaymentIntent
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $amountInCents,
         'currency' => 'usd',
-        'automatic_payment_methods' => [
-            'enabled' => true,
-        ],
+        'payment_method_types' => ['card'], // Explicitly specify card payment
         'metadata' => [
             'order_id' => uniqid('order_'),
             'customer_id' => $_SESSION['user_id'] ?? null
         ]
     ]);
 
-    // Clear any output buffer before sending JSON response
+    // Log the created payment intent
+    error_log("PaymentIntent created: " . print_r($paymentIntent, true));
+
+    // Clear output buffer and send response
     ob_clean();
 
-    // Return the client secret
     echo json_encode([
         'success' => true,
         'clientSecret' => $paymentIntent->client_secret
@@ -89,5 +79,4 @@ try {
     error_log("Stack trace: " . $e->getTraceAsString());
 }
 
-// End output buffering
 ob_end_flush();
