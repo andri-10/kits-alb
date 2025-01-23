@@ -248,7 +248,7 @@ export class CartSummary extends ComponentV2 {
       `;
       sizeSelectorContainer.appendChild(productElement);
       
-      // Add event listener to radio buttons instead of the Save button
+      
       productElement.querySelectorAll('input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', (event) => {
           this.#handleSizeUpdate(event, product.cart_id);

@@ -2,30 +2,30 @@
 session_start();
 include("backend/security-config.php");
 
-// backend/security-config.php
-$servername = "localhost"; // Replace with your database server name
-$username = "root";        // Replace with your database username
-$password = "";            // Replace with your database password
-$dbname = "web";      // Replace with your database name
 
-// Create connection
+$servername = "localhost"; 
+$username = "root";        
+$password = "";            
+$dbname = "web";      
+
+
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 
-// Check connection
+
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
-// Query to count total orders
+
 $queryTotalOrders = "SELECT COUNT(*) as total_orders FROM order_items WHERE id IS NOT NULL";
 $resultTotalOrders = mysqli_query($conn, $queryTotalOrders);
 $totalOrders = $resultTotalOrders ? mysqli_fetch_assoc($resultTotalOrders)['total_orders'] : 0;
 
-// Query to sum total price
+
 $queryTotalEarnings = "SELECT SUM(amount) as total_earnings FROM payment_logs";
 $resultTotalEarnings = mysqli_query($conn, $queryTotalEarnings);
 $totalEarnings = $resultTotalEarnings ? mysqli_fetch_assoc($resultTotalEarnings)['total_earnings'] : 0;
 
-// Convert total earnings from cents to dollars
+
 $totalEarningsFormatted = number_format($totalEarnings / 100, 2);
 ?>
 

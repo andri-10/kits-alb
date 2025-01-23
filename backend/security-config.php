@@ -1,6 +1,6 @@
 <?php
 
-// Define routes and access rules
+
 $routes = [
     'account.php' => ['logged'],
     'admin.php' => ['admin'],
@@ -13,25 +13,25 @@ $routes = [
     'passwordreset.php' => ['all'],
     'registration.php' => ['guest'],
     'tracking.php' => ['logged'],
-    'create-payment-intent.php' => ['logged'],  // Add payment endpoint with 'logged' access
+    'create-payment-intent.php' => ['logged'],  
     'verify-email.php' => ['all'],
     'view-product.php' => ['all'],
 ];
 
-// Define the current file
+
 $currentFile = basename($_SERVER['PHP_SELF']);
 
-// Check if the file is in the allowed routes
+
 if (!array_key_exists($currentFile, $routes)) {
     header("Location: 404-not-found.php");
     exit;
 }
 
-// Access control logic
+
 $access = $routes[$currentFile];
 
 if (in_array('all', $access)) {
-    // Everyone can access
+    
     return;
 }
 

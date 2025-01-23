@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
   let resendButton = document.getElementById("resend-btn");
   let timerDisplay = document.getElementById("timer");
-  let formContainer = document.querySelector("#step2Form"); // The container where the message is appended
+  let formContainer = document.querySelector("#step2Form"); 
   let timerText = resendButton?.querySelector("span");
   let errorMessageDiv = document.createElement('div');
   errorMessageDiv.classList.add('message-container');
 
-  // Ensure formContainer exists before appending errorMessageDiv
+  
   if (formContainer) {
     formContainer.appendChild(errorMessageDiv);
   } else {

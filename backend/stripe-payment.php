@@ -17,7 +17,7 @@ class StripePaymentHandler {
                 throw new Exception('Invalid amount');
             }
 
-            // Convert amount to cents for Stripe
+            
             $amountInCents = (int)($amount * 100);
 
             $paymentIntent = \Stripe\PaymentIntent::create([

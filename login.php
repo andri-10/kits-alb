@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Check if the email has failed attempts logged
+    
     $stmt = $conn->prepare("SELECT failed_attempts, last_failed_attempt FROM failed_login_attempts WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
-                // Successful login
+                
                 $stmt = $conn->prepare("DELETE FROM failed_login_attempts WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
-        // Generic error for incorrect email or password
+        
         if ($failed_attempts === 0) {
             $stmt = $conn->prepare("INSERT INTO failed_login_attempts (email, failed_attempts, last_failed_attempt) VALUES (?, 1, NOW())");
             $stmt->bind_param("s", $email);

@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
 
-require_once 'utils.php'; // Include utils.php to access the sendEmail function
+require_once 'utils.php'; 
 
 $servername = "localhost";
 $username = "root";
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $row = $userData->fetch_assoc();
         $currentUsername = $row['name'];
         $currentProfilePhoto = $row['profile_photo'];
-        $targetUserEmail = $row['email']; // Get the user's email
+        $targetUserEmail = $row['email']; 
     } else {
         echo json_encode(["success" => false, "message" => "Target user not found"]);
         exit();
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $logStmt->execute();
             }
 
-            // Send email to the user about the profile update
+            
             $subject = "Your Profile Has Been Updated";
             $body = "Dear $currentUsername,\n\nYour profile has been updated by an administrator.\n\n" . $logDescription . "\n\nIf you have any questions, please contact support.\n\nBest regards,\nFootball Kits Albania";
             if (!sendEmail($targetUserEmail, $subject, $body)) {

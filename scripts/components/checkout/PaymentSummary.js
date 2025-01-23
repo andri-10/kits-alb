@@ -1,6 +1,6 @@
 import StripeHandler from './StripeHandler.js';
 import { cart } from '../../data/cart.js';
-import { orders } from '../../data/orders.js';
+
 import { MoneyUtils } from '../../utils/MoneyUtils.js';
 import { ComponentV2 } from '../ComponentV2.js';
 
@@ -14,7 +14,7 @@ export class PaymentSummary extends ComponentV2 {
 
   setCartData(cartData) {
     this.cartData = cartData;
-    // If the element exists, update visibility based on cart data
+    
     const paymentSummaryElement = document.querySelector('.payment-summary');
     if (paymentSummaryElement) {
       paymentSummaryElement.style.display =
@@ -57,9 +57,9 @@ export class PaymentSummary extends ComponentV2 {
     try {
       console.log('Fetching all cart products for the logged-in user...');
       
-      // Send the request to the PHP backend to fetch all cart products for the logged-in user
+      
       const response = await fetch('backend/get-your-cart-products.php', {
-        method: 'GET',  // Using GET since we're fetching all cart products
+        method: 'GET',  
       });
 
       if (!response.ok) {
@@ -69,12 +69,12 @@ export class PaymentSummary extends ComponentV2 {
       const cartProducts = await response.json();
       console.log('Cart products:', cartProducts);
 
-      // Clear the individualCartData array before adding new data
+      
       this.individualCartData = [];
 
-      // If data is returned, add it to the individualCartData array
+      
       if (cartProducts.success && cartProducts.data.length > 0) {
-        this.individualCartData = cartProducts.data;  // Add all products to the array
+        this.individualCartData = cartProducts.data;  
         console.log("This is individual cartdata")
         console.log(this.individualCartData)
       } else {
@@ -92,7 +92,7 @@ export class PaymentSummary extends ComponentV2 {
     const submitButton = document.querySelector('#submit-payment');
 
     if (!isValid) {
-      // Show warning and disable submit button
+      
       if (!warningElement) {
         const warningHTML = `
           <div class="payment-summary-warning">
@@ -102,7 +102,7 @@ export class PaymentSummary extends ComponentV2 {
       }
       submitButton.disabled = true;
     } else {
-      // Hide warning and enable submit button
+      
       if (warningElement) {
         warningElement.remove();
       }
@@ -147,7 +147,7 @@ export class PaymentSummary extends ComponentV2 {
     const finalTotalCents = productCostCents + shippingCostCents + finalTaxCents;
     const quantity = await cart.calculateTotalQuantity();
 
-    // Get validation status from CartSummary
+    
     const cartItems = document.querySelectorAll('.js-cart-item');
     let allValid = true;
 
@@ -162,7 +162,7 @@ export class PaymentSummary extends ComponentV2 {
 
     });
 
-    // Update the payment details dynamically
+    
     document.getElementById("quantity-holder").textContent = `Items (${quantity}):`;
     document.getElementById("items-cost").textContent = `${MoneyUtils.formatMoney(productCostCents)}`;
     document.getElementById("shipping-money").textContent = `${MoneyUtils.formatMoney(shippingCostCents)}`;
@@ -170,12 +170,12 @@ export class PaymentSummary extends ComponentV2 {
     document.getElementById("tax-money").textContent = `${MoneyUtils.formatMoney(finalTaxCents)}`;
     document.getElementById("total-money").textContent = `${MoneyUtils.formatMoney(finalTotalCents)}`;
     document.getElementById("submit-payment").textContent = `Pay ${MoneyUtils.formatMoney(finalTotalCents)}`;
-    // Update warning and button based on validation
+    
     const warningElement = document.querySelector('.payment-summary-warning');
     const submitButton = document.querySelector('#submit-payment');
 
     if (!allValid) {
-      // Show warning and disable submit button
+      
       if (!warningElement) {
         const warningHTML = `
           <div class="payment-summary-warning">
@@ -185,7 +185,7 @@ export class PaymentSummary extends ComponentV2 {
       }
       submitButton.disabled = true;
     } else {
-      // Hide warning and enable submit button
+      
       if (warningElement) {
         warningElement.remove();
       }
@@ -264,7 +264,7 @@ export class PaymentSummary extends ComponentV2 {
           <div id="card-errors" class="stripe-errors" role="alert"></div>
       `;
 
-      // Add updated styles
+      
       const style = document.createElement('style');
       style.textContent = `
         .payment-summary-warning {
@@ -314,14 +314,14 @@ export class PaymentSummary extends ComponentV2 {
   }
 
   clearPaymentError() {
-    // Remove error message
+    
     const errorElement = this.element.querySelector('#card-errors');
     if (errorElement) {
-      errorElement.style.display = 'none'; // Hide error message
+      errorElement.style.display = 'none'; 
     }
   }
 
-  // In PaymentSummary.js, update the handleSubmit method
+  
 
   async handleSubmit(event) {
     event.preventDefault();
@@ -329,60 +329,60 @@ export class PaymentSummary extends ComponentV2 {
     submitButton.disabled = true;
   
     try {
-      // First ensure cart data is fresh
+      
       await this.fetchCartData();
       await this.fetchIndividualProducts();
       
       let { totalCents } = await cart.calculateCosts();
       totalCents = Math.ceil(totalCents);
   
-      // Validate that the cart is not empty
+      
       const cartItems = cart.items;
       if (!cartItems || cartItems.length === 0) {
         throw new Error('Your cart is empty. Please add items to proceed.');
       }
   
-      // Check if card details are filled
+      
       const cardElement = this.stripeHandler.card;
       if (!cardElement._complete) {
         throw new Error('Please fill in all payment information before proceeding.');
       }
   
-      // Fetch the user ID from the backend
+      
       const userId = await this.fetchUserId();
       if (!userId) {
         throw new Error('User not logged in');
       }
   
-      // Wait for the latest grouped items data
+      
       await this.refreshPaymentDetails();
       const groupedItems = this.groupCartDataByDeliveryOption(this.cartData);
   
-      // Validate all items have delivery options selected
+      
       const hasInvalidDelivery = groupedItems.every(group => group.items.length === 0);
       if (hasInvalidDelivery) {
         throw new Error('Please select delivery options for all items before proceeding.');
       }
   
-      // Create payment intent and get client secret
+      
       const clientSecret = await this.stripeHandler.createPaymentIntent(totalCents);
       if (!clientSecret) {
         throw new Error('Failed to initialize payment. Please try again.');
       }
   
-      // Process payment with the client secret
+      
       const paymentResult = await this.stripeHandler.processPayment(clientSecret);
       if (!paymentResult || paymentResult.status !== 'succeeded') {
         throw new Error('Payment failed. Please try again.');
       }
   
-      // Send the grouped items to the backend to create orders
+      
       const orderResponse = await this.createOrders(userId, totalCents, groupedItems);
       if (!orderResponse || !orderResponse.order_ids || orderResponse.order_ids.length === 0) {
         throw new Error('Failed to create orders');
       }
   
-      // Redirect to orders page on success
+      
       window.location.replace('orders.php');
   
     } catch (error) {
@@ -397,7 +397,7 @@ export class PaymentSummary extends ComponentV2 {
     errorElement.textContent = message;
     errorElement.style.display = 'block';
 
-    // Remove the error message after 5 seconds
+    
     setTimeout(() => {
       if (errorElement) {
         errorElement.style.display = 'none';
@@ -407,101 +407,101 @@ export class PaymentSummary extends ComponentV2 {
 
   
   
-  // Method to group cartData by delivery option
-// Modify the groupCartDataByDeliveryOption method to group by delivery option
-// Method to group cartData by delivery option, including quantity
+  
+
+
 groupCartDataByDeliveryOption(cartData) {
-  console.log("Cart Data Before Grouping:", cartData);  // Debug log to inspect cart data
+  console.log("Cart Data Before Grouping:", cartData);  
   
   const grouped = [
-    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, // Group for delivery option 1
-    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, // Group for delivery option 2
-    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }  // Group for delivery option 3
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, 
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }, 
+    { items: [], totalQuantity: 0, totalPriceCents: 0, shippingCostCents: 0, deliveryFeeCents: 0, taxCents: 0, finalTotalCents: 0, deliveryDate: null }  
   ];
 
-  // Shipping cost mapping for each delivery option
+  
   const shippingCosts = {
-    1: 0,      // Delivery option 1: No shipping cost
-    2: 499,    // Delivery option 2: $4.99 (499 cents)
-    3: 999     // Delivery option 3: $9.99 (999 cents)
+    1: 0,      
+    2: 499,    
+    3: 999     
   };
 
-  // Delivery fees for each delivery option
+  
   const deliveryFees = {
-    1: 0,      // Delivery option 1: No delivery fee
-    2: 499,    // Delivery option 2: $4.99 (499 cents)
-    3: 999     // Delivery option 3: $9.99 (999 cents)
+    1: 0,      
+    2: 499,    
+    3: 999     
   };
 
-  // Iterate through each item and group them by delivery option
+  
   cartData.forEach(item => {
-    const deliveryOption = item.deliveryOption;  // Delivery option number (1, 2, or 3)
-    console.log("Delivery Option:", deliveryOption);  // Debug log to inspect delivery option
+    const deliveryOption = item.deliveryOption;  
+    console.log("Delivery Option:", deliveryOption);  
     
     if (deliveryOption >= 1 && deliveryOption <= 3) {
       const group = grouped[deliveryOption - 1];
-      group.items.push(item);  // Add item to group for delivery option
-      group.totalQuantity += item.quantity; // Add quantity to total quantity for the group
-      group.totalPriceCents += item.priceCents * item.quantity; // Add price to total price for the group
+      group.items.push(item);  
+      group.totalQuantity += item.quantity; 
+      group.totalPriceCents += item.priceCents * item.quantity; 
 
-      // Add the shipping cost based on the delivery option
+      
       group.shippingCostCents += shippingCosts[deliveryOption]
     }
   });
 
-  // Process each group to calculate final pricing (delivery fee, tax, final total)
+  
   grouped.forEach((group, index) => {
     if (group.items.length > 0) {
       const deliveryOption = index + 1;
 
      
 
-      // Calculate tax (10% of product price + shipping cost + delivery fee)
+      
       group.taxCents = Math.ceil((group.totalPriceCents + group.shippingCostCents ) * 0.10);
 
-      // Final total for this batch (product price + shipping + delivery fee + tax)
+      
       group.finalTotalCents = group.totalPriceCents + group.shippingCostCents + group.taxCents;
 
-      // Assign a delivery date based on the delivery option
+      
       group.deliveryDate = this.calculateDeliveryDate(deliveryOption);
     }
   });
 
-  console.log("Grouped Cart Data By Delivery Option:", grouped);  // Debug log to inspect grouped cart data
+  console.log("Grouped Cart Data By Delivery Option:", grouped);  
   return grouped;
 }
 
 groupIndividualCartData(cartData) {
-  console.log("Individual Cart Data Before Grouping:", cartData);  // Debug log to inspect cart data
+  console.log("Individual Cart Data Before Grouping:", cartData);  
   
-  // Group for 3 delivery options
+  
   const grouped = [
-    { items: [], deliveryDate: null },  // Group for delivery option 1
-    { items: [], deliveryDate: null },  // Group for delivery option 2
-    { items: [], deliveryDate: null }   // Group for delivery option 3
+    { items: [], deliveryDate: null },  
+    { items: [], deliveryDate: null },  
+    { items: [], deliveryDate: null }   
   ];
 
-  // Iterate through each item and group them by delivery option
+  
   cartData.forEach(item => {
-    const deliveryOption = item.delivery_option;  // Delivery option number (1, 2, or 3)
-    console.log("Delivery Option:", deliveryOption);  // Debug log to inspect delivery option
+    const deliveryOption = item.delivery_option;  
+    console.log("Delivery Option:", deliveryOption);  
     
     if (deliveryOption >= 1 && deliveryOption <= 3) {
       const group = grouped[deliveryOption - 1];
-      group.items.push(item);  // Add item to group for the corresponding delivery option
+      group.items.push(item);  
     }
   });
 
-  // Process each group to assign a delivery date based on the delivery option
+  
   grouped.forEach((group, index) => {
     if (group.items.length > 0) {
       const deliveryOption = index + 1;
-      // Assign a delivery date based on the delivery option
+      
       group.deliveryDate = this.calculateDeliveryDate(deliveryOption);
     }
   });
 
-  console.log("Grouped Individual Cart Data By Delivery Option:", grouped);  // Debug log to inspect grouped cart data
+  console.log("Grouped Individual Cart Data By Delivery Option:", grouped);  
   return grouped;
 }
 
@@ -513,10 +513,10 @@ async createOrders(userId, totalCents, groupedItems) {
   console.log('User ID:', userId);
   console.log('Grouped Items:', groupedItems);
 
-  // Filter out empty groups and format the data
+  
   
 
-  // Send the orders to the backend
+  
   try {
     const response = await fetch('backend/create-order.php', {
       method: 'POST',
@@ -540,22 +540,22 @@ async createOrders(userId, totalCents, groupedItems) {
 
 
 
-// Helper method to calculate the delivery date based on the delivery option
+
 calculateDeliveryDate(deliveryOption) {
   const today = new Date();
 
   const deliveryDays = {
-    1: 7,  // 1: 7 days delivery
-    2: 3,  // 2: 3 days delivery
-    3: 1   // 3: 1 day delivery
+    1: 7,  
+    2: 3,  
+    3: 1   
   };
 
-  const daysToAdd = deliveryDays[deliveryOption] || 7;  // Default to 7 days if option not found
+  const daysToAdd = deliveryDays[deliveryOption] || 7;  
   const deliveryDate = new Date(today);
   deliveryDate.setDate(today.getDate() + daysToAdd);
 
-  // Format the date for MySQL
-  return deliveryDate.toISOString().split('T')[0]; // Returns in 'YYYY-MM-DD' format
+  
+  return deliveryDate.toISOString().split('T')[0]; 
 }
 
 
@@ -566,7 +566,7 @@ calculateDeliveryDate(deliveryOption) {
       const data = await response.json();
 
       if (response.ok && data.userId) {
-        return data.userId; // Return the user ID if it exists
+        return data.userId; 
       } else {
         console.error('Failed to fetch user ID:', data.message || 'Unknown error');
         return null;
@@ -607,7 +607,7 @@ calculateDeliveryDate(deliveryOption) {
       });
 
       const responseBody = await response.text();
-      console.log('Log Payment Response:', responseBody); // Debug log for log payment response
+      console.log('Log Payment Response:', responseBody); 
 
       if (!response.ok) {
         throw new Error('Failed to log payment');

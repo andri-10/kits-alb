@@ -110,7 +110,7 @@ export class OrdersGrid extends Component {
               </section>
             </header>
             <div class="order-details-grid js-order-details" style="display: none;">
-              ${this.#renderOrderGroups(groupedItems, order.progress)}
+              ${this.#renderOrderGroups(groupedItems, order.progress, order.created_at)}
             </div>
           </div>
         `;
@@ -142,7 +142,7 @@ export class OrdersGrid extends Component {
     }, {});
   }
 
-  #renderOrderGroups(groupedItems, progress) {
+  #renderOrderGroups(groupedItems, progress, createdAt) {
     let html = '';
     
     Object.entries(groupedItems).forEach(([deliveryDate, items]) => {
@@ -153,8 +153,8 @@ export class OrdersGrid extends Component {
           </div>
           <div class="progress-tracking">
             <div class="progress-bar">
-              <div class="progress" style="width: ${this.#calculateProgress(deliveryDate).progress}%"></div>
-              <span class="progress-status">${this.#calculateProgress(deliveryDate).status}: ${this.#calculateProgress(deliveryDate).message}</span>
+              <div class="progress" style="width: ${this.#calculateProgress(deliveryDate, createdAt).progress}%"></div>
+              <span class="progress-status">${this.#calculateProgress(deliveryDate, createdAt).status}: ${this.#calculateProgress(deliveryDate, createdAt).message}</span>
             </div>
           </div>
           <div class="items-grid">
@@ -164,7 +164,7 @@ export class OrdersGrid extends Component {
       `;
       
       items.forEach(item => {
-        const { progress } = this.#calculateProgress(deliveryDate);
+        const { progress } = this.#calculateProgress(deliveryDate, createdAt);
         
         if (progress === 100 && item.order_status === 'pending') {
           this.#updateOrderStatusToCompleted(item.order_id);
@@ -199,49 +199,63 @@ export class OrdersGrid extends Component {
   });
 }
 
-  #calculateProgress(deliveryDate) {
-    const delivery = new Date(deliveryDate);
-    delivery.setHours(0, 0, 0, 0); // Normalize delivery date to midnight
+#calculateProgress(deliveryDate, createdAt) {
+  
+  const formatDate = (dateStr) => {
+    return dateStr.includes(' ') ? dateStr.replace(' ', 'T') : dateStr;
+  }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize current date to midnight
+  const delivery = new Date(deliveryDate);
+  const created = new Date(formatDate(createdAt));
+  const now = new Date();
 
-    console.log("Normalized Delivery Date:", delivery.toISOString());
-    console.log("Normalized Today:", today.toISOString());
-
-    // Calculate the difference in milliseconds
-    const diffInMilliseconds = delivery - today;
-    
-    // Convert milliseconds to hours
-    const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
-    console.log("Difference in Hours:", diffInHours);
-
-    if (diffInHours <= 0) {
-        return {
-            status: 'Delivered',
-            progress: 100,
-            message: 'Package delivered',
-        };
-    }
-
-    // Define maximum delivery window in hours (e.g., 168 hours = 7 days)
-    const totalHours = 168; // 7 days * 24 hours
-
-    // Calculate the percentage based on remaining hours relative to totalHours
-    const hoursRemainingPercentage = Math.max(
-        0,
-        Math.min(100, ((totalHours - diffInHours) / totalHours) * 100)
-    );
-
-    // Scale from 10 to 100
-    const progressPercentage = 10 + hoursRemainingPercentage * 0.9;
-
+  if (isNaN(delivery.getTime()) || isNaN(created.getTime())) {
+    console.error("Invalid date(s) provided");
     return {
-        status: diffInHours <= 24 ? 'Arriving Today' : 'In Transit',  // Use 24 hours threshold for 'Arriving Today'
-        progress: progressPercentage,
-        message: diffInHours <= 24 ? 'Out for delivery' : 'On the way',
+      status: 'Invalid Date',
+      progress: 0,
+      message: 'Cannot calculate progress due to invalid dates',
     };
+  }
+
+  delivery.setHours(12, 0, 0, 0);  
+  
+
+
+  const totalMilliseconds = delivery - created;
+  const totalHours = totalMilliseconds / (1000 * 60 * 60); 
+ 
+
+
+  const passedMilliseconds = now - created;
+  
+  const passedHours = passedMilliseconds / (1000 * 60 * 60);
+  
+
+ 
+  const percentagePassed = (passedHours / totalHours) * 100;
+ 
+
+  
+  
+  
+  const progressPercentage = Math.max(10, percentagePassed)
+
+  if (passedHours >= totalHours) {
+    return {
+      status: 'Delivered',
+      progress: 100,
+      message: 'Package delivered',
+    };
+  }
+
+  return {
+    status: passedHours <= 24 ? 'Arriving Today' : 'In Transit',
+    progress: progressPercentage,
+    message: passedHours <= 24 ? 'Out for delivery' : 'On the way',
+  };
 }
+
 
 
 
@@ -309,43 +323,41 @@ export class OrdersGrid extends Component {
 
 
 #isUpdateDisabled(deliveryDate, createdAt) {
-  // Convert createdAt to a valid ISO format if needed
+  
   const formatDate = (dateStr) => {
-    // If the date already has a time component, replace the space with 'T' to make it ISO compatible
+    
     return dateStr.includes(' ') ? dateStr.replace(' ', 'T') : dateStr;
   }
 
   const delivery = new Date(deliveryDate);
-  const created = new Date(formatDate(createdAt)); // Convert createdAt to a proper format
+  const created = new Date(formatDate(createdAt)); 
 
   const now = new Date();
 
-  // Check if the dates are valid before proceeding
+  
   if (isNaN(delivery.getTime()) || isNaN(created.getTime())) {
     console.error("Invalid date(s) provided");
-    return false; // Or handle it in another way, e.g., returning true or a default value
+    return false; 
   }
 
-  // Set the delivery time to 12 PM (noon) for consistency
-  delivery.setHours(12, 0, 0, 0);  // Delivery time set to noon (12 PM)
+  
+  delivery.setHours(12, 0, 0, 0);  
 
-  // Get the total time difference between the creation date and delivery date in milliseconds
+  
   const totalMilliseconds = delivery - created;
   
-  // Convert milliseconds to hours
+  
   const totalHours = totalMilliseconds / (1000 * 60 * 60);
-  console.log("Total Hours Between Created and Delivery:", totalHours); // For debugging
+ 
 
-  // Get the total time passed since the order was created (in hours)
+  
   const passedMilliseconds = now - created;
   const passedHours = passedMilliseconds / (1000 * 60 * 60);
-  console.log("Total Hours Passed Since Order Created:", passedHours); // For debugging
+ 
 
-  // Calculate the percentage of time passed between the order creation and delivery
   const percentagePassed = (passedHours / totalHours) * 100;
-  console.log("Percentage of Time Passed:", percentagePassed); // For debugging
+  
 
-  // Disable updates if more than 50% of the time has passed
   return percentagePassed > 50;
 }
 
@@ -374,7 +386,7 @@ export class OrdersGrid extends Component {
         throw new Error(data.error || 'Failed to update size');
       }
 
-      // Show success message
+      
       const itemContainer = this.element.querySelector(`[data-item-id="${orderItemId}"]`)
         .closest('.product-details');
       const messageElement = itemContainer.querySelector('.js-update-message');
@@ -394,7 +406,7 @@ export class OrdersGrid extends Component {
   }
 
   #renderCancelButton(order) {
-    // Pass both delivery date and created date to check the update status
+    
     const isDisabled = this.#isUpdateDisabled(order.delivery_date, order.created_at);
     
     
@@ -406,7 +418,7 @@ export class OrdersGrid extends Component {
         </button>
       `;
     }
-    return ''; // Do not render the button if the update is disabled
+    return ''; 
   }
   
 
@@ -452,7 +464,7 @@ export class OrdersGrid extends Component {
       });
     }
 
-  // The rest of your existing event listeners go here...
+  
   this.element.querySelectorAll('.js-toggle-order').forEach(button => {
     button.addEventListener('click', (e) => {
       const container = e.target.closest('.js-order-container');
@@ -505,7 +517,7 @@ export class OrdersGrid extends Component {
         
         const success = await this.#updateSize(orderId, itemId, newSize);
         if (success) {
-          // Update the displayed current size
+          
           const itemContainer = e.target.closest('.product-details');
           const currentSizeElement = itemContainer.querySelector('.current-size');
           currentSizeElement.textContent = `Size: ${newSize}`;

@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-    // Only select pending or completed orders
+    
     $stmt = $conn->prepare("
         SELECT 
             o.id,
@@ -32,7 +32,7 @@ try {
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     foreach ($orders as &$order) {
-        // Modified query to join orders with order_items and include created_at from orders
+        
         $stmt = $conn->prepare("
             SELECT 
                 oi.id,

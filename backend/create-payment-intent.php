@@ -8,10 +8,10 @@ try {
     require __DIR__ . '/../stripe-php/init.php';
     require __DIR__ . '/./config.php';
 
-    // Log the incoming request
+    
     error_log("Received payment request: " . file_get_contents('php://input'));
 
-    // Get the raw POST data
+    
     $input = json_decode(file_get_contents('php://input'), true);
     error_log("Decoded input: " . print_r($input, true));
 
@@ -21,15 +21,15 @@ try {
 
     $amount = $input['amount'];
 
-    // Validate amount
+    
     if (!is_numeric($amount) || $amount <= 0) {
         throw new Exception('Invalid amount');
     }
 
-    // Amount is already in cents
+    
     $amountInCents = (int)$amount;
 
-    // Initialize Stripe
+    
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
     \Stripe\ApiRequestor::setHttpClient(
@@ -38,21 +38,21 @@ try {
 
     error_log("Creating PaymentIntent for amount: " . $amountInCents);
 
-    // Create PaymentIntent
+    
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $amountInCents,
         'currency' => 'usd',
-        'payment_method_types' => ['card'], // Explicitly specify card payment
+        'payment_method_types' => ['card'], 
         'metadata' => [
             'order_id' => uniqid('order_'),
             'customer_id' => $_SESSION['user_id'] ?? null
         ]
     ]);
 
-    // Log the created payment intent
+    
     error_log("PaymentIntent created: " . print_r($paymentIntent, true));
 
-    // Clear output buffer and send response
+    
     ob_clean();
 
     echo json_encode([

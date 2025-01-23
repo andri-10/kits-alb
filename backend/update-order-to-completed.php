@@ -17,7 +17,7 @@ $orderId = $_POST['order_id'];
 $userId = $_SESSION['user_id'];
 
 try {
-    // Check if the order belongs to the logged-in user and is not already completed
+    
     $stmt = $conn->prepare("SELECT o.status, o.id, o.total_price, u.email 
                            FROM orders o 
                            JOIN users u ON o.user_id = u.id 
@@ -35,11 +35,11 @@ try {
         exit;
     }
 
-    // Update order status to 'completed'
+    
     $stmt = $conn->prepare("UPDATE orders SET status = 'completed' WHERE id = :order_id");
     $stmt->execute([':order_id' => $orderId]);
 
-    // Prepare email content
+    
     $emailSubject = "Order Delivery Confirmation";
     $emailBody = "##### Order Delivery Confirmation #####
 
@@ -59,7 +59,7 @@ Thank you for shopping with Football Kits Albania.
 Best regards,
 Football Kits Albania Team";
 
-    // Send email notification
+    
     $emailSent = sendEmail($order['email'], $emailSubject, $emailBody);
 
     $response = [

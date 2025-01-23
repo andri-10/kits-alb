@@ -326,7 +326,7 @@ function loadUsersToTable() {
 
 async function updateUserRole(userId, newRole) {
   try {
-    const adminId = await getUserId(); // Make sure this function returns a promise
+    const adminId = await getUserId(); 
     const response = await fetch('backend/update-role.php', {
       method: 'POST',
       headers: {
@@ -380,13 +380,13 @@ function editUser(user) {
     document.body.classList.remove('popup-active');
   });
 
- // Add the remove picture event listener
+ 
 document.getElementById('remove-picture').addEventListener('click', () => {
   const formData = new FormData();
   formData.append('remove_profile_picture', true);
   formData.append('target_user_id', Number(user.id));
   
-  // Debug logging
+  
   console.log('Sending profile update request:');
   console.log('Target User ID:', user.id);
   console.log('FormData entries:');
@@ -424,11 +424,11 @@ document.getElementById('remove-picture').addEventListener('click', () => {
     
     const formData = new FormData();
 
-    // Use parameter names expected by PHP
+    
     
     console.log(Number(user.id));
-    formData.append('target_user_id', Number(user.id)); // Match PHP's 'target_user_id'
-    formData.append('new_username', username); // Match PHP's 'new_username'
+    formData.append('target_user_id', Number(user.id)); 
+    formData.append('new_username', username); 
 
 
     fetch('backend/update-user-profile.php', {
@@ -457,13 +457,13 @@ document.getElementById('remove-picture').addEventListener('click', () => {
 
 
 async function deleteUser(userId) {
-  const adminId = await getUserId(); // Capture the admin's ID, ensure getUserId() works properly
+  const adminId = await getUserId(); 
   fetch("backend/delete-user.php", {
       method: "POST",
       headers: {
           "Content-Type": "application/json",
       },
-      body: JSON.stringify({ user_id: userId, admin_id: adminId }), // Include admin_id in the request body
+      body: JSON.stringify({ user_id: userId, admin_id: adminId }), 
   })
       .then((response) => response.json())
       .then((data) => {

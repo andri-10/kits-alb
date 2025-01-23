@@ -36,9 +36,9 @@ if (!is_array($inputData) || empty($inputData)) {
 function calculateDeliveryDate($deliveryOption) {
     $today = new DateTime();
     $deliveryDays = [
-        1 => 7,  // 1: 7 days delivery
-        2 => 3,  // 2: 3 days delivery
-        3 => 1   // 3: 1 day delivery
+        1 => 7,  
+        2 => 3,  
+        3 => 1   
     ];
     $daysToAdd = isset($deliveryDays[$deliveryOption]) ? $deliveryDays[$deliveryOption] : 7;
     $deliveryDate = $today->modify("+$daysToAdd days");
@@ -82,12 +82,12 @@ try {
     $orderGroups = [];
     $userEmail = '';
 
-    // Get user email first
+    
     $stmtUser = $conn->prepare("SELECT email FROM users WHERE id = :user_id");
     $stmtUser->execute([':user_id' => $userId]);
     $userEmail = $stmtUser->fetchColumn();
 
-    // Process cart items for each delivery option (1, 2, 3)
+    
     for ($option = 1; $option <= 3; $option++) {
         $sql = "
             SELECT 
@@ -145,7 +145,7 @@ try {
             $orderId = $conn->lastInsertId();
             $createdOrderIds[] = $orderId;
 
-            // Store order details for email
+            
             $orderGroups[$option] = [
                 'order_id' => $orderId,
                 'items' => $cartItems,
@@ -153,7 +153,7 @@ try {
                 'delivery_date' => $deliveryDate
             ];
 
-            // Insert into payment_logs
+            
             $stmtPayment = $conn->prepare("
                 INSERT INTO payment_logs (
                     order_id,
@@ -171,7 +171,7 @@ try {
                 ':amount' => $finalTotalCents
             ]);
 
-            // Insert order items
+            
             foreach ($cartItems as $item) {
                 $stmtOrderItems = $conn->prepare("
                     INSERT INTO order_items (
@@ -207,23 +207,23 @@ try {
         throw new Exception('No valid orders were created');
     }
 
-    // Format and send consolidated email
+    
     if (!empty($orderGroups)) {
         $emailContent = formatAllOrdersDetails($orderGroups);
         
-        // Send to customer
+        
         sendEmail($userEmail, 
                  "Your Order Confirmation - Orders #" . implode(', #', $createdOrderIds),
                  $emailContent);
         
-        // Send to admin
+        
         $adminEmailContent = "New orders received from customer ($userEmail):\n\n" . $emailContent;
         sendEmail('electroman784@gmail.com',
                  "New Orders Received - Orders #" . implode(', #', $createdOrderIds),
                  $adminEmailContent);
     }
 
-    // Clear the cart
+    
     $stmtClearCart = $conn->prepare("
         DELETE FROM shopping_cart
         WHERE user_id = :user_id

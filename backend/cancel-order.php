@@ -23,7 +23,7 @@ if (!$orderId) {
 try {
     $conn->beginTransaction();
 
-    // Get order details including email and total
+    
     $stmt = $conn->prepare("
         SELECT o.status, o.total_price, u.email
         FROM orders o

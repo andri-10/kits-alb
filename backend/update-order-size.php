@@ -24,7 +24,7 @@ if (!$orderId || !$orderItemId || !$newSize) {
 try {
     $conn->beginTransaction();
 
-    // Get order details to check if size can be updated
+    
     $stmt = $conn->prepare("
         SELECT o.created_at, o.delivery_date, o.status
         FROM orders o
@@ -41,7 +41,7 @@ try {
         throw new Exception('Cannot update cancelled order');
     }
 
-    // Calculate if we're past halfway point
+    
     $createdAt = new DateTime($order['created_at']);
     $createdAt->setTime(0, 0, 0);
     $deliveryDate = new DateTime($order['delivery_date']);
@@ -54,7 +54,7 @@ try {
         throw new Exception('Cannot update size after halfway to delivery');
     }
 
-    // Update the size
+    
     $stmt = $conn->prepare("
         UPDATE order_items 
         SET size = :size 

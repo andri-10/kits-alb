@@ -1,4 +1,4 @@
-// StripeHandler.js
+
 export class StripeHandler {
   constructor(publishableKey) {
     this.stripe = null;
@@ -58,7 +58,7 @@ export class StripeHandler {
     this.card.mount(`#${elementId}`);
     console.log('Card Element mounted:', this.card);
 
-    // Add event listener for card errors
+    
     this.card.addEventListener('change', (event) => {
       const displayError = document.getElementById('card-errors');
       if (event.error) {
@@ -91,7 +91,7 @@ export class StripeHandler {
         throw new Error(data.error || 'Payment intent creation failed');
       }
   
-      // Return the client secret from the response
+      
       return data.clientSecret;
     } catch (error) {
       console.error('Payment intent error:', error);

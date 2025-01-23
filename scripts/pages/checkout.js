@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartSummary = document.querySelector(".js-cart-summary");
   const mainContainer = document.querySelector("main");
 
-  let hasPassedScrollPoint = false;  // Store whether scroll has passed the threshold
-  const scrollPoint = 130; // The scroll threshold
+  let hasPassedScrollPoint = false;  
+  const scrollPoint = 130; 
 
-  // Handle scroll event to track scroll position
+  
   window.addEventListener("scroll", () => {
     if (window.scrollY > scrollPoint && window.innerWidth >= 1001) {
       hasPassedScrollPoint = true;
@@ -30,27 +30,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Function to update the payment summary's position
+  
   function updatePaymentPosition() {
-    // Get the height of js-payment-summary element
+    
     const paymentSummaryHeight = summaryElement.offsetHeight;
 
-    // If the height exceeds 900px, change the position to relative
+    
     if (paymentSummaryHeight > 900) {
       summaryElement.style.position = "relative";
-      summaryElement.style.left = "";  // Reset left position
-      summaryElement.style.width = ""; // Reset width
-      summaryElement.style.top = "";   // Reset top when it's in relative mode
-      return;  // Exit the function when the position is relative
+      summaryElement.style.left = "";  
+      summaryElement.style.width = ""; 
+      summaryElement.style.top = "";   
+      return;  
     }
 
-    // Continue with fixed positioning logic when height <= 900px
+    
     if (!hasPassedScrollPoint || window.innerWidth < 1001) {
       summaryElement.style.left = "";
       summaryElement.style.width = "";
       summaryElement.classList.remove("scrolled");
-      summaryElement.style.position = "";  // Reset position to default
-      summaryElement.style.top = "";       // Reset top when it's not scrolled
+      summaryElement.style.position = "";  
+      summaryElement.style.top = "";       
       return;
     }
 
@@ -76,15 +76,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     
     summaryElement.style.position = "fixed";
-    summaryElement.style.top = "6.8%";  // Set top when scrolled
+    summaryElement.style.top = "6.8%";  
   }
 
-  // Add listeners for scroll and resize
+  
   window.addEventListener("scroll", updatePaymentPosition);
   window.addEventListener("resize", () => {
     updatePaymentPosition();
     
-    // Check if the scroll position has passed the threshold on resize
+    
     if (window.scrollY > scrollPoint && window.innerWidth >= 1001) {
       hasPassedScrollPoint = true;
       summaryElement.classList.add("scrolled");
@@ -94,5 +94,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  updatePaymentPosition(); // Call initially to set the position based on current height
+  updatePaymentPosition(); 
 });
