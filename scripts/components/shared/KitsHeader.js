@@ -16,7 +16,7 @@ export class KitsHeader extends ComponentV2 {
   
   };
   #cartQuantityElement;
-  #cartQuantityMobileElement;
+ 
   async getUserId() {
     const basePath = window.location.origin + '/backend';
     const response = await fetch(`${basePath}/get-user-id.php`);
@@ -54,6 +54,10 @@ export class KitsHeader extends ComponentV2 {
   
 
   async render() {
+
+    const currentPage = window.location.pathname.split('/').pop();
+    const logoLink = currentPage === 'orders.php' ? 'catalog.php' : 'index.php';
+
     const searchParams = new URLSearchParams(WindowUtils.getSearch());
     const searchText = searchParams.get('search') || '';
     let totalCartQuantity = await cart.calculateTotalQuantity();
@@ -93,11 +97,11 @@ export class KitsHeader extends ComponentV2 {
   
     this.element.innerHTML = `
       <section class="left-section">
-        <a href="index.php" class="header-link">
-          <img class="kits-logo" src="images/kits-logo-white.png">
-          <img class="kits-mobile-logo" src="images/kits-mobile-logo-white.png">
-        </a>
-      </section>
+      <a href="${logoLink}" class="header-link">
+        <img class="kits-logo" src="images/kits-logo-white.png">
+        <img class="kits-mobile-logo" src="images/kits-mobile-logo-white.png">
+      </a>
+    </section>
   
       ${searchSection}
   
@@ -129,7 +133,7 @@ export class KitsHeader extends ComponentV2 {
       <div class="js-hamburger-menu-dropdown hamburger-menu-dropdown" data-testid="hamburger-menu-dropdown">
         <a class="hamburger-menu-link" href="${orderLinkHref}">Returns & Orders</a>
         <a class="hamburger-menu-link" href="${cartLinkHref}">
-          Cart (<span class="js-cart-quantity-mobile cart-quantity-mobile" data-testid="cart-quantity-mobile">${totalCartQuantity}</span>)
+          Cart (${totalCartQuantity})
         </a>
         
       </div>
@@ -167,7 +171,7 @@ export class KitsHeader extends ComponentV2 {
   }
 
     this.#cartQuantityElement = this.element.querySelector('.js-cart-quantity');
-    this.#cartQuantityMobileElement = this.element.querySelector('.js-cart-quantity-mobile');
+    
 
     this.updateCartCount();
     this.#initializeHamburgerMenu();
@@ -176,12 +180,10 @@ export class KitsHeader extends ComponentV2 {
     return this.#cartQuantityElement;
   }
 
-  getCartQuantityMobileElement() {
-    return this.#cartQuantityMobileElement;
-  }
+ 
 
   async updateCartCount() {
-    if (!this.#cartQuantityElement || !this.#cartQuantityMobileElement) {
+    if (!this.#cartQuantityElement) {
       console.error("Cart quantity elements are not available.");
       return;
     }
@@ -193,7 +195,7 @@ export class KitsHeader extends ComponentV2 {
         return;
       }
       this.#cartQuantityElement.textContent = totalCartQuantity;
-      this.#cartQuantityMobileElement.textContent = totalCartQuantity;
+ 
     } catch (error) {
       console.error("Error updating cart count:", error);
     }

@@ -25,24 +25,33 @@ body {
 
 .new_home_web .send:hover,
 .new_home_web #resend-btn:hover {
-  background-color: rgb(233, 144, 11);
-  border: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.new_home_web .form-box {
+  width: 100%;
+  max-width: 600px;
 }
 
 .new_home_web .send {
-  font-size: 18px;
+  font-size: 16px;
   color: white;
   font-weight: 600;
-  background-color: rgb(19, 25, 33);
+  background: linear-gradient(to right, #2b5876, #4e4376);
+  border: none;
+  border-radius: 25px;
   width: 100%;
   text-align: center;
-  padding: 15px 0;
-  border: none;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
+
+
 
 .new_home_web .resend {
   margin-top: 10px;
-  background-color: rgb(86, 99, 116);
+  background: linear-gradient(to right, #69757d, #7e7a89);
 }
 
 .new_home_web .code-sent {
@@ -102,7 +111,11 @@ body {
   font-weight: bold;
   text-align: center;
 }
-
+.error {
+  color: rgb(255, 0, 0);
+  font-weight: bold;
+  text-align: center;
+}
 /* Animation */
 @keyframes dropdown {
   from {
@@ -115,42 +128,63 @@ body {
   }
 }
 
-/* Yellow Line */
 .new_home_web .yellowLine {
-  background-color: rgb(233, 144, 11);
-  width: 100%;
+  background: linear-gradient(to right, #f6d365, #fda085);
   height: 10px;
-  text-align: center;
+  width: 100%;
 }
 
 .new_home_web .yellowText {
   color: rgb(233, 144, 11);
 }
 
-/* Input Styles */
 .new_home_web .input,
 .new_home_web .textinput {
   width: 100%;
-  border: 2px solid #a2a2a2;
-  border-radius: 5px;
+  border: 1px solid rgba(43, 88, 118, 0.2);
+  border-radius: 25px;
   font-size: 16px;
-  background-color: #f1f1f1;
+  background-color: #ffffff;
+  padding: 10px 16px;
   margin-bottom: 20px;
-  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.new_home_web .input:focus,
+.new_home_web .textinput:focus {
+  border-color: #2b5876;
+  box-shadow: 0 0 0 2px rgba(43, 88, 118, 0.2);
 }
 
 .new_home_web textarea {
   min-height: 120px;
   resize: vertical;
+  border-radius: 15px;
 }
 
-.new_home_web input:focus,
-.new_home_web textarea:focus {
-  outline: none;
-  border-color: rgb(19, 25, 33);
+.new_home_web .checkbox-container {
+  margin-bottom: 20px;
 }
 
-/* Text Blocks */
+.new_home_web .links {
+  text-align: center;
+  margin-top: 20px;
+  color: #718096;
+}
+
+.link {
+  color: #2b5876;
+  font-weight: bold;
+  text-decoration: none !important;
+  position: relative;
+  transition: all 0.3s ease;
+  
+}
+
+.link:hover {
+  color: #4e4376;
+}
+
 .new_home_web .topHead {
   margin-bottom: 30px;
 }
@@ -161,15 +195,9 @@ body {
   text-align: center;
 }
 
-.new_home_web .link {
-  color: rgb(233, 144, 11);
-  font-weight: bold;
-  text-decoration: none;
-}
 
-.new_home_web .link:hover {
-  text-decoration: underline;
-}
+
+
 
 .new_home_web .text-blk.subHeading {
   text-align: center;

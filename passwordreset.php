@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $row = $result->fetch_assoc();
                 $current_hashed_password = $row['password'];
                 if (password_verify($new_password, $current_hashed_password)) {
-                    $error = "Error changing password.";
+                    $error = "Error changing password."; // if we said that your new password cannot be the same as the old password, this exposes our password
                     $step = 3;
                 } else {
                     $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
@@ -98,7 +98,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     if ($stmt->execute()) {
                         $success = "Password reset successful.";
-                        session_destroy();
+                        if (isset($_GET['from']) && $_GET['from'] === 'account') {
+                            
+                            header("Location: account.php");
+                            exit;
+                        } else {
+                            
+                            session_destroy();
+                        }
                     } else {
                         $error = "Something went wrong. Please try again.";
                         $step = 3;

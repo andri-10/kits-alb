@@ -176,11 +176,11 @@
 }
 
 .kits-header .hamburger-menu-dropdown {
-  background: linear-gradient(to bottom, #2b5876, #4e4376);
+  background: linear-gradient(to right, #2b5876, #4e4376);
   position: absolute;
   left: 0;
   right: 0;
-  top: 70px;
+  top: 55px;
   z-index: 100;
   text-align: center;
   max-height: 0;
@@ -278,7 +278,7 @@
   font-weight: 700;
   position: absolute;
   top: 10px;
-  right: 40px;
+  right: 44.5px;
   min-width: 20px;
   height: 20px;
   text-align: center;
@@ -300,7 +300,7 @@
 }
 
 .kits-header .cart-icon {
-  width: 35px;
+  
   transition: transform 0.3s ease;
   position: relative;
 }
@@ -322,13 +322,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-@media (min-width: 576px) {
+@media (min-width: 651px) {
   .kits-header .hamburger-menu-dropdown {
     display: none;
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 650px) {
   .kits-header .right-section {
     display: none;
   }
@@ -341,5 +341,75 @@
     padding-left: 15px;
     padding-right: 15px;
     height: 60px;
+  }
+}
+
+.kits-header .right-section-mobile {
+  display: none;
+}
+
+
+@media (min-width: 651px){
+  .kits-header .hamburger-menu-dropdown{
+    display: none;
+  }
+
+  
+}
+@media (max-width: 650px) {
+  .kits-header .right-section {
+    display: none;
+  }
+
+  .kits-header .right-section-mobile {
+    display: block;
+  }
+}
+
+.kits-header .hamburger-menu-toggle {
+  display: block;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.kits-header .hamburger-menu-dropdown {
+  background-color: rgb(19, 25, 33);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  z-index: 100;
+  text-align: center;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+}
+
+.kits-header .hamburger-menu-opened {
+  max-height: 88px; 
+}
+
+@media (max-width: 650px) {
+  .kits-header .hamburger-menu-dropdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease-out;
+  }
+
+  .kits-header .hamburger-menu-opened {
+    max-height: 88px;
+    
+  }
+
+  .kits-header .hamburger-menu-link {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    font-weight: 500;
+  }
+
+  .kits-header .hamburger-menu-link:hover {
+    background-color: rgb(38, 50, 63);
   }
 }

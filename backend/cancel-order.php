@@ -1,5 +1,6 @@
 <?php
 require_once 'db-config.php';
+include('utils.php');
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {
@@ -22,10 +23,12 @@ if (!$orderId) {
 try {
     $conn->beginTransaction();
 
+    // Get order details including email and total
     $stmt = $conn->prepare("
-        SELECT status
-        FROM orders 
-        WHERE id = :order_id AND user_id = :user_id
+        SELECT o.status, o.total_price, u.email
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE o.id = :order_id AND o.user_id = :user_id
     ");
     
     $stmt->execute([
@@ -62,8 +65,36 @@ try {
     ");
     $stmt->execute([':order_id' => $orderId]);
 
+   
+    $subject = 'Order Cancellation - Football Kits Albania';
+    $body = "
+##### Order Cancellation Confirmation #####
+
+Order Details:
+Order ID: #{$orderId}
+Total Amount: $" . number_format($order['total_price']/100, 2) . "
+
+Dear Customer,
+
+We confirm that your order #{$orderId} has been successfully cancelled. 
+If you have already paid for this order, a refund will be processed according to our refund policy.
+
+If you did not request this cancellation or have any questions, please contact our customer support team immediately.
+
+Thank you for shopping with Football Kits Albania.
+
+Best regards,
+Football Kits Albania Team
+";
+
+ 
+    $emailSent = sendEmail($order['email'], $subject, $body);
+
     $conn->commit();
-    echo json_encode(['success' => true]);
+    echo json_encode([
+        'success' => true,
+        'email_sent' => $emailSent
+    ]);
 
 } catch (Exception $e) {
     $conn->rollBack();

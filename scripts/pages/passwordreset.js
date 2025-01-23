@@ -1,11 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
   let resendButton = document.getElementById("resend-btn");
   let timerDisplay = document.getElementById("timer");
-  let formContainer = document.querySelector("#step2Form");
+  let formContainer = document.querySelector("#step2Form"); // The container where the message is appended
   let timerText = resendButton?.querySelector("span");
   let errorMessageDiv = document.createElement('div');
   errorMessageDiv.classList.add('message-container');
-  if (formContainer) formContainer.appendChild(errorMessageDiv);
+
+  // Ensure formContainer exists before appending errorMessageDiv
+  if (formContainer) {
+    formContainer.appendChild(errorMessageDiv);
+  } else {
+    console.error("formContainer not found");
+  }
 
   if (timerDisplay) {
     let remainingTime = 10;
@@ -45,6 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       resendButton.disabled = true;
       resendButton.classList.add('disabled');
       resendButton.textContent = "Resending...";
+
       fetch('backend/resend-token.php', {
         method: 'POST',
         body: JSON.stringify({ action: 'resend' }),
@@ -56,9 +63,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
           if (data.success) {
             phpError = document.getElementById("phpError2");
-            phpError.textContent = "";
-            errorMessageDiv.textContent = 'Token resent successfully!';
+            if(phpError) phpError.textContent = "";
+            errorMessageDiv.classList.add('success-message-box');
             errorMessageDiv.classList.add('success-message');
+            errorMessageDiv.textContent = 'Token resent successfully!';
             errorMessageDiv.classList.remove('error-message');
             errorMessageDiv.classList.remove('fade-out');
             setTimeout(function () {
@@ -68,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(function () {
               errorMessageDiv.textContent = '';
             }, 3000);
+
             resendButton.disabled = true;
             resendButton.classList.add('disabled');
             resendButton.innerHTML = `Resend Code in <span id="timer">10s</span>`;
@@ -111,9 +120,16 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(function () {
               errorMessageDiv.textContent = '';
             }, 3000);
+
+            resendButton.disabled = false;
+            resendButton.classList.remove('disabled');
+            resendButton.textContent = "Resend";
+            resendButton.style.backgroundColor = 'rgb(19, 25, 33)';
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Error occurred:', error);
+
           errorMessageDiv.textContent = 'An error occurred. Please try again later.';
           errorMessageDiv.classList.add('error-message');
           errorMessageDiv.classList.remove('success-message');
@@ -124,9 +140,15 @@ document.addEventListener("DOMContentLoaded", function () {
           setTimeout(function () {
             errorMessageDiv.textContent = '';
           }, 3000);
+
+          resendButton.disabled = false;
+          resendButton.classList.remove('disabled');
+          resendButton.textContent = "Resend";
+          resendButton.style.backgroundColor = 'rgb(19, 25, 33)';
         });
     });
   }
+
   let togglePassword = document.getElementById('toggle-password');
   let passwordFields = document.querySelectorAll('input[type="password"]');
 

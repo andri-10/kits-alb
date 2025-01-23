@@ -160,8 +160,19 @@ body {
   background: rgba(255, 255, 255, 0.1);
   text-decoration: none;
 }
+/* Hide mobile menu by default */
+.right-section-mobile {
+  display: none;
+}
 
-@media (max-width: 575px) {
+.hamburger-menu-toggle {
+  width: 30px;
+  height: 30px;
+}
+
+
+
+@media (max-width: 650px) {
   .kits-header-right-section {
     display: none;
   }
@@ -180,11 +191,13 @@ body {
   .kits-header .hamburger-menu-toggle:hover {
     transform: scale(1.1);
   }
-
+.right-section-mobile {
+    display: block;  
+  }
   .kits-header .hamburger-menu-dropdown {
-    background: linear-gradient(to bottom, #2b5876, #4e4376);
+    background: linear-gradient(to right, #2b5876, #4e4376);
     position: absolute;
-    top: 70px;
+    top: 55px;
     left: 0;
     right: 0;
     z-index: 100;
@@ -193,6 +206,7 @@ body {
     overflow: hidden;
     transition: all 0.4s ease-in-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
   }
 
   .kits-header .hamburger-menu-opened {

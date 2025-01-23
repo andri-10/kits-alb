@@ -306,6 +306,19 @@ export class PaymentSummary extends ComponentV2 {
   attachEventListeners() {
     const form = this.element.querySelector('#payment-form');
     form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+    const cardElement = document.getElementById("card-element");
+  if (cardElement) {
+    cardElement.addEventListener('input', () => this.clearPaymentError());
+  }
+  }
+
+  clearPaymentError() {
+    // Remove error message
+    const errorElement = this.element.querySelector('#card-errors');
+    if (errorElement) {
+      errorElement.style.display = 'none'; // Hide error message
+    }
   }
 
   // In PaymentSummary.js, update the handleSubmit method
@@ -389,7 +402,7 @@ export class PaymentSummary extends ComponentV2 {
       if (errorElement) {
         errorElement.style.display = 'none';
       }
-    }, 5000);
+    }, 3000);
   }
 
   
@@ -583,15 +596,7 @@ calculateDeliveryDate(deliveryOption) {
     }
   }
 
-  showError(message) {
-    const errorElement = this.element.querySelector('#card-errors');
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
 
-    setTimeout(() => {
-      errorElement.style.display = 'none';
-    }, 5000);
-  }
 
   async logPayment(paymentData) {
     try {
